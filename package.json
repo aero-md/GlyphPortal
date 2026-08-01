@@ -1,7 +1,9 @@
 {
   "name": "glyphcast",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Convertit une image en rendu Glyph Matrix 25x25 pour Nothing Phone (3).",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",

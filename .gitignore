@@ -12,6 +12,19 @@ dist
 dist-ssr
 *.local
 
+# Build TypeScript incrémental
+*.tsbuildinfo
+
+# Secrets et surcharges locales
+.env
+.env.*
+!.env.example
+
+# Sorties de l'app, si on les enregistre dans le dossier du projet
+glyphcast-*.png
+glyphcast-*.kt
+glyphcast-*.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

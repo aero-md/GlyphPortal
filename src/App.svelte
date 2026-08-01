@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { LED_COUNT, SIZE } from "./lib/matrix";
+  import { LED_COUNT, SIZE, inside } from "./lib/matrix";
   import { CHANNEL_PRESETS, DEFAULTS, convert, type DitherMode, type Params } from "./lib/pipeline";
   import {
+    RANGES as R,
     VERSION,
     copy,
     downloadJson,
@@ -135,11 +136,12 @@
       { ...params, black: 0, white: 1, contrast: 0, gamma: 1, levels: 256, dither: "none" },
       scratchB,
     );
+    // uniquement les cellules du disque : les 136 cellules hors masque valent
+    // toujours 0 et clouaient le point noir à 0 quelle que soit l'image
     let lo = 1;
     let hi = 0;
-    for (let i = 0; i < probe.values.length; i++) {
+    for (const i of inside) {
       const v = probe.values[i];
-      if (v === 0 && !probe.lit) continue;
       if (v < lo) lo = v;
       if (v > hi) hi = v;
     }
@@ -249,14 +251,13 @@
       </Card>
 
       <Card ref="02" title="Cadrage" stat="{Math.round(params.zoom * 100)} %">
-        <Slider label="Zoom" bind:value={params.zoom} min={0.2} max={6} reset={DEFAULTS.zoom} format={pct} />
-        <Slider label="Décalage X" bind:value={params.offsetX} min={-1} max={1} reset={0} format={signed} />
-        <Slider label="Décalage Y" bind:value={params.offsetY} min={-1} max={1} reset={0} format={signed} />
+        <Slider label="Zoom" bind:value={params.zoom} range={R.zoom} reset={DEFAULTS.zoom} format={pct} />
+        <Slider label="Décalage X" bind:value={params.offsetX} range={R.offsetX} reset={0} format={signed} />
+        <Slider label="Décalage Y" bind:value={params.offsetY} range={R.offsetY} reset={0} format={signed} />
         <Slider
           label="Rotation"
           bind:value={params.rotation}
-          min={-180}
-          max={180}
+          range={R.rotation}
           step={1}
           reset={0}
           format={(v) => v.toFixed(0)}
@@ -289,9 +290,9 @@
           luminance. C'est un filtre coloré de photo noir et blanc — monter le rouge éclaircit les
           peaux et noircit un ciel bleu.
         </p>
-        <Slider label="Rouge" bind:value={params.wR} min={-1} max={2} reset={DEFAULTS.wR} />
-        <Slider label="Vert" bind:value={params.wG} min={-1} max={2} reset={DEFAULTS.wG} />
-        <Slider label="Bleu" bind:value={params.wB} min={-1} max={2} reset={DEFAULTS.wB} />
+        <Slider label="Rouge" bind:value={params.wR} range={R.wR} reset={DEFAULTS.wR} />
+        <Slider label="Vert" bind:value={params.wG} range={R.wG} reset={DEFAULTS.wG} />
+        <Slider label="Bleu" bind:value={params.wB} range={R.wB} reset={DEFAULTS.wB} />
         <div class="btns">
           {#each Object.keys(CHANNEL_PRESETS) as name (name)}
             <button type="button" onclick={() => mix(name)}>{name}</button>
@@ -303,17 +304,16 @@
         <Slider
           label="Exposition"
           bind:value={params.exposure}
-          min={-3}
-          max={3}
+          range={R.exposure}
           reset={0}
           format={signed}
           unit=" IL"
         />
-        <Slider label="Gate — point noir" bind:value={params.black} min={0} max={1} reset={0} format={pct} />
-        <Slider label="Gate — point blanc" bind:value={params.white} min={0} max={1} reset={1} format={pct} />
-        <Slider label="Contraste" bind:value={params.contrast} min={-0.9} max={3} reset={0} format={signed} />
-        <Slider label="Gamma" bind:value={params.gamma} min={0.2} max={3} reset={1} />
-        <Slider label="Netteté" bind:value={params.sharpen} min={0} max={2} reset={DEFAULTS.sharpen} />
+        <Slider label="Gate — point noir" bind:value={params.black} range={R.black} reset={0} format={pct} />
+        <Slider label="Gate — point blanc" bind:value={params.white} range={R.white} reset={1} format={pct} />
+        <Slider label="Contraste" bind:value={params.contrast} range={R.contrast} reset={0} format={signed} />
+        <Slider label="Gamma" bind:value={params.gamma} range={R.gamma} reset={1} />
+        <Slider label="Netteté" bind:value={params.sharpen} range={R.sharpen} reset={DEFAULTS.sharpen} />
         <div class="btns">
           <button type="button" class:on={params.invert} onclick={() => (params.invert = !params.invert)}>
             Inverser
@@ -326,8 +326,7 @@
         <Slider
           label="Paliers de luminosité"
           bind:value={params.levels}
-          min={2}
-          max={64}
+          range={R.levels}
           step={1}
           reset={DEFAULTS.levels}
           format={(v) => v.toFixed(0)}
@@ -335,8 +334,7 @@
         <Slider
           label="Plafond de luminosité"
           bind:value={params.ceiling}
-          min={0.05}
-          max={1}
+          range={R.ceiling}
           reset={1}
           format={pct}
         />
@@ -350,7 +348,13 @@
           ]}
         />
         {#if params.dither !== "none"}
-          <Slider label="Force du dither" bind:value={params.ditherAmount} min={0} max={1} reset={1} format={pct} />
+          <Slider
+            label="Force du dither"
+            bind:value={params.ditherAmount}
+            range={R.ditherAmount}
+            reset={1}
+            format={pct}
+          />
         {/if}
         <p class="note">
           À 2 paliers le rendu devient binaire et le dithering fait tout le travail. Au-delà de

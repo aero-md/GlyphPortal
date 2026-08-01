@@ -5,8 +5,8 @@
   type Props = {
     label: string;
     value: number;
-    min: number;
-    max: number;
+    /** Bornes, prises dans RANGES pour que curseur et import ne divergent pas. */
+    range: readonly [number, number];
     /** « any » par défaut : un pas numérique fait snapper le navigateur sur
         l'échelle min + n·pas, et 0,2 + 80 × 0,01 ne vaut pas 1 en flottant —
         un zoom laissé au repos s'affichait à 99 %. Pas explicite = réglage
@@ -22,14 +22,15 @@
   let {
     label,
     value = $bindable(),
-    min,
-    max,
+    range,
     step = "any",
     reset,
     format,
     unit = "",
   }: Props = $props();
 
+  const min = $derived(range[0]);
+  const max = $derived(range[1]);
   const shown = $derived(format ? format(value) : value.toFixed(2));
   const pct = $derived(((value - min) / (max - min)) * 100);
   const dirty = $derived(

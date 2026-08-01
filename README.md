@@ -13,6 +13,33 @@ bun run build    # dist/
 bun run check    # svelte-check + tsc
 ```
 
+Le détail fonctionnel — formules, bornes, invariants, schéma JSON — est dans
+[SPECS.md](SPECS.md). Ce README en donne le résumé.
+
+## Fonctions
+
+- **Charger une image** par glisser-déposer n'importe où sur la page, par
+  collage (`Ctrl+V`) ou par sélecteur de fichier.
+- **Cadrer** : zoom, décalage X/Y, rotation au degré, rotations rapides ± 90°.
+- **Doser les canaux** R/G/B — la matrice étant monochrome, ces poids agissent
+  comme un filtre coloré de photo noir et blanc. Six presets, dont un filtre
+  rouge à poids bleu négatif.
+- **Régler la tonalité** : exposition en IL, gates point noir / point blanc,
+  contraste, gamma, netteté, inversion, plus un **auto-gates** qui étale
+  l'histogramme sur les extrêmes réellement présents dans l'image.
+- **Choisir la sortie LED** : de 2 à 64 paliers de luminosité, plafond de
+  luminosité, dithering Floyd-Steinberg ou Bayer 4 × 4 avec dosage.
+- **Comparer avant / après** en maintenant le Glyph Button : même cadrage,
+  tonalité au repos.
+- **Prévisualiser** à deux échelles (sur le dos du téléphone à taille réelle,
+  ou disque plein cadre) et dans deux styles de LED (`sharp` / `soft`).
+- **Exporter** en PNG, en `IntArray` Kotlin prêt à coller dans un Glyph Toy,
+  ou en JSON rechargeable.
+
+Ce qu'il ne fait pas : pas d'animation ni de séquence, pas d'envoi direct à
+l'appareil (aucune API navigateur ne le permet — la passerelle est l'export
+Kotlin), pas de retouche locale.
+
 ## La matrice
 
 | Constante | Valeur |
