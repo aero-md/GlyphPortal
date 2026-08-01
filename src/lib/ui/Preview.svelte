@@ -13,18 +13,19 @@
   import { onMount } from "svelte";
   import { LED_COUNT } from "../matrix";
   import type { Frame } from "../pipeline";
-  import { paint, screenGrid, type Grid } from "../render";
+  import { DISC_BG, paint, screenGrid, type Grid, type LedStyle } from "../render";
 
   type Props = {
     frame: Frame;
     mode?: PreviewMode;
+    style?: LedStyle;
     /** Rendu de comparaison affiché tant que le bouton est maintenu. */
     compare?: Frame | null;
     /** Largeur disponible en px CSS, pour caler la grille du mode « grand ». */
     width?: number;
   };
 
-  let { frame, mode = "phone", compare = null, width = 576 }: Props = $props();
+  let { frame, mode = "phone", style = "sharp", compare = null, width = 576 }: Props = $props();
 
   let cvs = $state<HTMLCanvasElement>();
   let held = $state(false);
@@ -49,7 +50,7 @@
     const g = grid;
     if (cvs.width !== g.size) cvs.width = cvs.height = g.size;
     const ctx = cvs.getContext("2d");
-    if (ctx) paint(ctx, held && compare ? compare : frame, g);
+    if (ctx) paint(ctx, held && compare ? compare : frame, g, { style });
   });
 
   function hold(on: boolean) {
@@ -74,7 +75,7 @@
     <div class="phone">
       <img src="/phone3-back.webp" alt="Dos d'un Nothing Phone (3)" draggable="false" />
 
-      <div class="disc">
+      <div class="disc" style="background:{DISC_BG[style]}">
         <canvas bind:this={cvs}></canvas>
       </div>
 
@@ -89,7 +90,10 @@
       <span class="hint" class:on={held}>{held ? "Rendu brut" : "Maintenir"}</span>
     </div>
   {:else}
-    <div class="disc big" style="width:{grid.cssSize}px;height:{grid.cssSize}px">
+    <div
+      class="disc big"
+      style="width:{grid.cssSize}px;height:{grid.cssSize}px;background:{DISC_BG[style]}"
+    >
       <canvas bind:this={cvs}></canvas>
     </div>
     <button class="ab" class:is-held={held} disabled={!compare} {...holdHandlers}>
@@ -140,8 +144,8 @@
     mask-image: linear-gradient(to bottom, #000 86%, transparent 99%);
   }
 
+  /* la couleur de fond vient du style de LED, posée en inline */
   .disc {
-    background: #08080a;
     border-radius: 50%;
     overflow: hidden;
   }

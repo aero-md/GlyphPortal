@@ -93,6 +93,24 @@ un canvas redimensionné par le navigateur avec un ratio fractionnaire donne
 une trame irrégulière, une colonne sur n gagne un pixel de gap. La grille est
 donc calculée depuis le `devicePixelRatio`.
 
+### Rendu des LED : sharp / soft
+
+| | `sharp` | `soft` |
+|---|---|---|
+| Forme | carré vif | angles adoucis, r ≈ 24 % |
+| Halo | proportionnel à la luminosité | aucun |
+| Gap | 1/6 de cellule | 0,14 de cellule |
+| Rampe | plancher à 0,25 | quasi linéaire (0,08) |
+| Fond du disque | `#08080a` | `#131316`, plus clair que les LEDs éteintes |
+
+`sharp` émule l'appareil, c'est ce qu'on voit sur le dos d'un Phone (3).
+`soft` est fait pour un affichage tel quel sur un écran normal : sans halo
+pour porter l'intensité, un plancher haut écraserait tout le bas de la plage
+sur un même gris — d'où la rampe quasi linéaire.
+
+**L'export PNG suit le style affiché**, et le nomme dans le fichier
+(`glyphcast-soft-…​.png`).
+
 ## Direction artistique
 
 Langage Nothing : angles vifs partout, le cercle est réservé aux points et aux

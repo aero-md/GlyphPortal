@@ -10,6 +10,7 @@
     parseSession,
     toKotlin,
   } from "./lib/export";
+  import type { LedStyle } from "./lib/render";
   import Card from "./lib/ui/Card.svelte";
   import Preview, { type PreviewMode } from "./lib/ui/Preview.svelte";
   import Seg from "./lib/ui/Seg.svelte";
@@ -29,9 +30,12 @@
   /* --- réglages --- */
   let params = $state<Params>({ ...DEFAULTS });
   let mode = $state<PreviewMode>("phone");
+  let ledStyle = $state<LedStyle>("sharp");
 
-  /* Hauteur réelle de l'en-tête collant : la préview se cale dessous plutôt
-     que sur une valeur en dur, qui casserait au moindre retour à la ligne. */
+  /* Hauteur réelle de l'en-tête collant, bordure comprise (offsetHeight, pas
+     clientHeight qui l'exclut). La préview se colle exactement là où elle se
+     trouve au repos : sur une valeur approchée elle remonte de quelques pixels
+     avant d'accrocher, ce qui donne un scroll janky. */
   let headH = $state(0);
   /* Largeur de la colonne, pour que le mode « grand » occupe exactement la
      place du téléphone. */
@@ -186,7 +190,7 @@
 <span class="reg br"></span>
 
 <div class="page" class:dragging>
-  <header bind:clientHeight={headH}>
+  <header bind:offsetHeight={headH}>
     <div class="brand">
       <Wordmark text="GLYPHCAST" dot={3} />
       <span class="model">(1a)</span>
@@ -208,8 +212,22 @@
             { v: "large" as PreviewMode, t: "Grand" },
           ]}
         />
+        <Seg
+          label="Rendu des LED"
+          bind:value={ledStyle}
+          options={[
+            { v: "sharp" as LedStyle, t: "Sharp" },
+            { v: "soft" as LedStyle, t: "Soft" },
+          ]}
+        />
       </div>
-      <Preview {frame} {mode} width={colW} compare={hasImg ? rawFrame : null} />
+      <Preview
+        {frame}
+        {mode}
+        style={ledStyle}
+        width={colW}
+        compare={hasImg ? rawFrame : null}
+      />
       {#if !hasImg}
         <p class="empty meta">
           Matrice éteinte — déposez une image n'importe où sur la page, collez-en une
@@ -343,7 +361,9 @@
 
       <Card ref="06" title="Export" stat="{LED_COUNT} / {SIZE * SIZE}">
         <div class="btns">
-          <button type="button" onclick={() => exportPng(frame)} disabled={!hasImg}>PNG</button>
+          <button type="button" onclick={() => exportPng(frame, ledStyle)} disabled={!hasImg}>
+            PNG · {ledStyle}
+          </button>
           <button type="button" onclick={copyKotlin} disabled={!hasImg}>Copier IntArray</button>
           <button type="button" onclick={() => downloadKotlin(frame)} disabled={!hasImg}>.kt</button>
           <button type="button" onclick={() => downloadJson(frame, params)} disabled={!hasImg}>.json</button>
@@ -431,8 +451,10 @@
 
   .col-preview {
     position: sticky;
-    /* sous l'en-tête collant, dont la hauteur est mesurée à l'exécution */
-    top: calc(var(--head-h, 140px) + 1rem);
+    /* exactement la position au repos : hauteur de l'en-tête collant + sa
+       marge basse. Un seuil plus haut et la colonne remonte de la différence
+       avant d'accrocher. */
+    top: calc(var(--head-h, 140px) + 1.6rem);
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -442,6 +464,8 @@
   .scale {
     display: flex;
     justify-content: center;
+    gap: 1.4rem;
+    flex-wrap: wrap;
   }
 
   .empty {

@@ -7,7 +7,7 @@
 
 import { SIZE, CELLS, LED_COUNT } from "./matrix";
 import { toBytes, DEFAULTS, type Frame, type Params } from "./pipeline";
-import { exportGrid, paint } from "./render";
+import { DISC_BG, exportGrid, paint, type LedStyle } from "./render";
 
 export const VERSION = "1.0";
 
@@ -28,14 +28,14 @@ function stamp(): string {
 
 /* -------------------------------------------------------------------------- */
 
-/** PNG carré du disque, 24 px par LED (600 x 600). */
-export async function exportPng(frame: Frame): Promise<void> {
+/** PNG carré du disque, 24 px par LED (600 x 600), dans le style affiché. */
+export async function exportPng(frame: Frame, style: LedStyle = "sharp"): Promise<void> {
   const g = exportGrid(24);
   const cvs = document.createElement("canvas");
   cvs.width = cvs.height = g.size;
-  paint(cvs.getContext("2d")!, frame, g, { background: "#08080a", glow: true });
+  paint(cvs.getContext("2d")!, frame, g, { style, background: DISC_BG[style] });
   const blob = await new Promise<Blob | null>((r) => cvs.toBlob(r, "image/png"));
-  if (blob) download(blob, `glyphcast-${stamp()}.png`);
+  if (blob) download(blob, `glyphcast-${style}-${stamp()}.png`);
 }
 
 /* -------------------------------------------------------------------------- */
