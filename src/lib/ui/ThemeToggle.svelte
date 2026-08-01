@@ -22,30 +22,41 @@
 </button>
 
 <style>
+  /* Même habillage que les boutons du rack : sans filet il se lisait comme une
+     simple mention de pied de page, pas comme une commande. */
   button {
     display: inline-flex;
     align-items: center;
     gap: 0.45em;
-    background: none;
-    border: none;
-    padding: 0;
+    background: transparent;
+    border: 1px solid var(--line-strong);
+    border-radius: 0;
+    padding: 0.34rem 0.6rem;
     cursor: pointer;
     font-size: 10px;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--faint);
+    color: var(--dim);
+    transition:
+      color 0.12s,
+      border-color 0.12s;
   }
 
   button:hover {
     color: var(--ink);
+    border-color: var(--ink);
+  }
+
+  .k {
+    color: var(--faint);
   }
 
   .v {
-    color: var(--dim);
+    color: var(--ink);
   }
 
-  button:hover .v {
-    color: var(--ink);
+  button:hover .k {
+    color: var(--dim);
   }
 
   .icon {

@@ -36,6 +36,10 @@ Le détail fonctionnel — formules, bornes, invariants, schéma JSON — est da
 - **Exporter** en PNG, en `IntArray` Kotlin prêt à coller dans un Glyph Toy,
   ou en JSON rechargeable.
 
+Sur poste de travail la page ne défile pas : en-tête, préview et pied restent
+en place, seul le rack de réglages défile. Régler un curseur ne déplace jamais
+la matrice qu'on regarde.
+
 Ce qu'il ne fait pas : pas d'animation ni de séquence, pas d'envoi direct à
 l'appareil (aucune API navigateur ne le permet — la passerelle est l'export
 Kotlin), pas de retouche locale.
@@ -109,11 +113,15 @@ pousser hors du masque la ferait disparaître et assombrirait tout le bord.
 
 Deux échelles, au choix :
 
-- **Téléphone** — la matrice à sa taille réelle (150 px de diamètre pour un
-  appareil rendu à 576 px de large), sur la photo du dos. Maintenir le Glyph
-  Button compare avec le rendu sans aucun réglage.
+- **Téléphone** — la matrice sur la photo du dos, à sa taille réelle quand la
+  place le permet : 150 px de diamètre pour un appareil rendu à 576 px de
+  large, soit 6 px par LED. Maintenir le Glyph Button compare avec le rendu
+  sans aucun réglage.
 - **Grand** — le disque seul sur toute la largeur de la colonne, pour lire LED
   par LED ce que fait un curseur.
+
+La préview ne défile pas : elle s'inscrit dans la place disponible et rétrécit
+si la fenêtre est courte, la cellule suivant le diamètre réellement affiché.
 
 Dans les deux cas une cellule occupe un nombre **entier** de pixels de canvas :
 un canvas redimensionné par le navigateur avec un ratio fractionnaire donne

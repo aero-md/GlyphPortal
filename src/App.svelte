@@ -33,14 +33,40 @@
   let mode = $state<PreviewMode>("phone");
   let ledStyle = $state<LedStyle>("sharp");
 
-  /* Hauteur réelle de l'en-tête collant, bordure comprise (offsetHeight, pas
-     clientHeight qui l'exclut). La préview se colle exactement là où elle se
-     trouve au repos : sur une valeur approchée elle remonte de quelques pixels
-     avant d'accrocher, ce qui donne un scroll janky. */
-  let headH = $state(0);
   /* Largeur de la colonne, pour que le mode « grand » occupe exactement la
      place du téléphone. */
   let colW = $state(576);
+
+  /* --- défilement du rack ---
+     La page ne défile pas : l'en-tête, la préview et le pied restent en place
+     et seul le rack de réglages défile. Le fondu haut/bas est proportionnel à
+     la distance déjà parcourue, plafonnée à FADE — il apparaît donc en douceur
+     sans transition CSS, et reste nul tant que la liste tient dans la hauteur. */
+  const FADE = 32;
+  let rackEl = $state<HTMLElement | null>(null);
+  let rackTop = $state(0);
+  let rackMax = $state(0);
+  const fadeTop = $derived(Math.min(FADE, rackTop));
+  const fadeBot = $derived(Math.min(FADE, rackMax - rackTop));
+
+  function syncRack() {
+    if (!rackEl) return;
+    rackTop = rackEl.scrollTop;
+    rackMax = Math.max(0, rackEl.scrollHeight - rackEl.clientHeight);
+  }
+
+  $effect(() => {
+    const el = rackEl;
+    if (!el) return;
+    syncRack();
+    /* La limite de défilement bouge sans qu'aucun scroll ne soit émis : la
+       fenêtre change la hauteur du cadre, le curseur de dither apparaît et
+       disparaît. On observe donc le cadre et chaque carte. */
+    const ro = new ResizeObserver(syncRack);
+    ro.observe(el);
+    for (const card of Array.from(el.children)) ro.observe(card);
+    return () => ro.disconnect();
+  });
 
   /* Deux canvas de travail distincts : le rendu courant et le rendu de
      comparaison sont recalculés dans la même passe réactive, partager le
@@ -192,7 +218,7 @@
 <span class="reg br"></span>
 
 <div class="page" class:dragging>
-  <header bind:offsetHeight={headH}>
+  <header>
     <div class="brand">
       <Wordmark text="GLYPHCAST" dot={3} />
       <span class="model">(1a)</span>
@@ -204,7 +230,7 @@
   </header>
 
   <main>
-    <div class="col-preview" style="--head-h:{headH}px" bind:clientWidth={colW}>
+    <div class="col-preview" bind:clientWidth={colW}>
       <div class="scale">
         <Seg
           label="Échelle de préview"
@@ -238,7 +264,12 @@
       {/if}
     </div>
 
-    <div class="rack">
+    <div
+      class="rack"
+      bind:this={rackEl}
+      onscroll={syncRack}
+      style="--fade-t:{fadeTop}px;--fade-b:{fadeBot}px"
+    >
       <Card ref="01" title="Source" stat={hasImg ? `${srcW}×${srcH}` : "aucune"}>
         <label class="drop" class:armed={dragging}>
           <input type="file" accept="image/*" onchange={pickFile} />
@@ -387,7 +418,6 @@
       <span class="ref">[{VERSION}]</span>
       <span class="meta">
         Row-major {SIZE}×{SIZE}, valeurs 0-255, masque circulaire r = 12,5 → {LED_COUNT} LEDs.
-        Géométrie relevée sur les repos GlyphLapse / GlyphSlot.
       </span>
       <ThemeToggle />
     </div>
@@ -396,12 +426,19 @@
 </div>
 
 <style>
+  /* Sur poste de travail la page ne défile pas : elle occupe exactement la
+     fenêtre, l'en-tête, la préview et le pied restent en place et seul le rack
+     de réglages défile. */
   .page {
     position: relative;
     z-index: 2;
     max-width: 1180px;
     margin: 0 auto;
-    padding: 3rem 2.4rem 3rem;
+    padding: 0 2.4rem;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
 
   .page.dragging {
@@ -410,16 +447,11 @@
   }
 
   /* --- en-tête --- */
-  /* Collant, et opaque : la trame de points passe dessous, elle ne doit pas
-     transparaître à travers. Un fond dépoli serait l'inverse de la DA. */
   header {
-    position: sticky;
-    top: 0;
-    z-index: 3;
-    background: var(--bg);
+    flex: none;
     border-bottom: 1px solid var(--line);
-    padding: 1.4rem 0 1rem;
-    margin: -3rem 0 1.6rem;
+    padding: 1.6rem 0 1rem;
+    margin-bottom: 1.6rem;
   }
 
   .brand {
@@ -446,26 +478,30 @@
   }
 
   /* --- corps --- */
+  /* La rangée est en 1fr et non en auto : elle doit occuper toute la place
+     laissée par l'en-tête et le pied, pas se dimensionner sur son contenu.
+     Le minmax(0, …) lui permet de descendre sous la taille du contenu, sinon
+     le rack pousserait au lieu de défiler. */
   main {
+    flex: 1 1 auto;
+    min-height: 0;
     display: grid;
     grid-template-columns: minmax(0, 576px) minmax(300px, 1fr);
+    grid-template-rows: minmax(0, 1fr);
     gap: 1.6rem;
-    align-items: start;
   }
 
   .col-preview {
-    position: sticky;
-    /* exactement la position au repos : hauteur de l'en-tête collant + sa
-       marge basse. Un seuil plus haut et la colonne remonte de la différence
-       avant d'accrocher. */
-    top: calc(var(--head-h, 140px) + 1.6rem);
     display: flex;
     flex-direction: column;
     gap: 1rem;
     min-width: 0;
+    min-height: 0;
   }
 
+
   .scale {
+    flex: none;
     display: flex;
     justify-content: center;
     gap: 1.4rem;
@@ -473,6 +509,7 @@
   }
 
   .empty {
+    flex: none;
     margin: 0;
     border: 1px solid var(--line);
     padding: 0.7rem 0.75rem;
@@ -486,11 +523,37 @@
     font-weight: 500;
   }
 
+  /* Le seul élément qui défile. Le fondu est un masque et non un aplat posé
+     par-dessus : la trame de points reste visible dans la bande, comme sur le
+     bas de la photo du téléphone. Les bornes viennent du script — à 0 le
+     dégradé est plat et n'enlève rien. */
   .rack {
+    flex: 1 1 auto;
     display: flex;
     flex-direction: column;
     gap: 1rem;
     min-width: 0;
+    overflow-y: auto;
+    /* gouttière réservée en permanence : sans ça l'apparition du curseur de
+       dither décale toute la colonne d'une largeur d'ascenseur */
+    scrollbar-gutter: stable;
+    padding-right: 0.5rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      #000 var(--fade-t, 0px),
+      #000 calc(100% - var(--fade-b, 0px)),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      #000 var(--fade-t, 0px),
+      #000 calc(100% - var(--fade-b, 0px)),
+      transparent 100%
+    );
   }
 
   /* --- dépôt de fichier --- */
@@ -610,9 +673,10 @@
 
   /* --- pied --- */
   footer {
-    margin-top: 2.2rem;
+    flex: none;
+    margin-top: 1.6rem;
     border-top: 1px solid var(--line);
-    padding-top: 1rem;
+    padding: 1rem 0 1.2rem;
   }
 
   .f-row {
@@ -636,21 +700,35 @@
     text-transform: uppercase;
   }
 
+  /* En colonne unique il n'y a plus assez de hauteur pour deux zones fixes :
+     retour au défilement de page, en-tête collant, rack sans scroll propre. */
   @media (max-width: 980px) {
-    main {
-      grid-template-columns: minmax(0, 1fr);
-    }
-
-    .col-preview {
-      position: static;
+    .page {
+      display: block;
+      height: auto;
+      overflow: visible;
+      padding: 2rem 1.2rem 2.5rem;
     }
 
     header {
-      margin-top: -2rem;
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      background: var(--bg);
+      margin: -2rem 0 1.6rem;
     }
 
-    .page {
-      padding: 2rem 1.2rem 2.5rem;
+    main {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto;
+    }
+
+    .rack {
+      overflow: visible;
+      padding-right: 0;
+      scrollbar-gutter: auto;
+      -webkit-mask-image: none;
+      mask-image: none;
     }
   }
 </style>

@@ -310,8 +310,16 @@ Deux axes indépendants.
 
 | Mode | Grille | Rendu |
 |---|---|---|
-| Téléphone | 6 px CSS par LED → disque de 150 px | matrice calée sur la photo du dos, à l'échelle réelle |
-| Grand | `max(6, ⌊largeur de colonne / 25⌋)` px par LED | disque seul, pleine largeur |
+| Téléphone | `diamètre affiché / 25` px CSS par LED | matrice calée sur la photo du dos |
+| Grand | `max(6, ⌊côté du cadre / 25⌋)` px par LED | disque seul |
+
+Les deux s'inscrivent dans la place disponible : la préview ne défile pas, elle
+est mesurée sur son cadre puis plafonnée par sa hauteur. Le téléphone fait
+`min(576, largeur du cadre, ⌊hauteur du cadre × 704/913⌋)` px de large, le mode
+grand `min(largeur, hauteur)`. À pleine taille — 576 px de large — le disque
+mesure 150 px, soit les 6 px CSS par LED de l'échelle réelle ; en dessous la
+cellule suit le diamètre réellement affiché, une valeur figée donnerait une
+trame irrégulière.
 
 **Style de LED** :
 
@@ -361,14 +369,39 @@ repo GlyphLapse, asset `phone3-back.webp` partagé.
 | Glyph Button | 84,53 % / 74,82 % | 15,86 % |
 | Rappel « maintenir » | 74,6 % / 74,82 % | — |
 
-Cadre en `aspect-ratio: 704/913`, rendu à 576 px de large → disque de 150 px,
-soit 6 px CSS par LED.
+Cadre en `aspect-ratio: 704/913`, rendu au plus à 576 px de large → disque de
+150 px, soit 6 px CSS par LED.
 
 ### 5.5 Lectures
 
 Sous la préview, en permanence : **LED allumées** `[nnn / 489]`, **moyenne**
 en pourcentage, **échelle** en pixels par LED. Ce sont des mesures de la trame
 courante, pas des estimations.
+
+### 5.6 Mise en page et défilement
+
+Au-dessus de 980 px de large, **la page ne défile pas** : elle occupe
+exactement la fenêtre. L'en-tête, la préview, les lectures et le pied restent
+en place ; le rack de réglages est le seul élément qui défile. Régler un
+curseur ne déplace donc jamais la matrice qu'on regarde.
+
+Le rack porte un fondu haut et bas, en masque et non en aplat superposé, pour
+que le fond de page reste visible dans la bande. Sa profondeur est
+proportionnelle à la distance déjà parcourue, plafonnée à 32 px :
+
+```
+fondu haut = min(32, scrollTop)
+fondu bas  = min(32, scrollHeight − clientHeight − scrollTop)
+```
+
+Il est donc nul quand la liste tient dans la hauteur, et apparaît
+progressivement plutôt que d'un bloc. La gouttière d'ascenseur est réservée en
+permanence : sans ça l'apparition du curseur de dither décalerait toute la
+colonne.
+
+En dessous de 980 px la mise en page repasse en colonne unique et en
+défilement de page classique, en-tête collant — la hauteur ne suffit plus pour
+deux zones fixes.
 
 ---
 
