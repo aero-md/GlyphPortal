@@ -311,15 +311,17 @@ Deux axes indépendants.
 | Mode | Grille | Rendu |
 |---|---|---|
 | Téléphone | `diamètre affiché / 25` px CSS par LED | matrice calée sur la photo du dos |
-| Grand | `max(6, ⌊côté du cadre / 25⌋)` px par LED | disque seul |
+| Grand | `max(6, ⌊côté / 25⌋)` px par LED | disque seul |
 
-Les deux s'inscrivent dans la place disponible : la préview ne défile pas, elle
-est mesurée sur son cadre puis plafonnée par sa hauteur. Le téléphone fait
-`min(576, largeur du cadre, ⌊hauteur du cadre × 704/913⌋)` px de large, le mode
-grand `min(largeur, hauteur)`. À pleine taille — 576 px de large — le disque
-mesure 150 px, soit les 6 px CSS par LED de l'échelle réelle ; en dessous la
-cellule suit le diamètre réellement affiché, une valeur figée donnerait une
-trame irrégulière.
+Les deux sont larges de `min(576, largeur de colonne)`. À 576 px le disque du
+téléphone mesure 150 px, soit **6 px CSS par LED** : l'échelle réelle de
+l'appareil.
+
+**La préview n'est jamais réduite pour tenir dans la fenêtre** — la rétrécir
+viderait le mode « téléphone » de son sens. Si elle ne rentre pas en hauteur,
+c'est la mise en page qui cède (§ 5.6). Seule une colonne plus étroite que
+576 px la contraint, et la cellule suit alors le diamètre réellement affiché :
+une valeur figée donnerait une trame irrégulière.
 
 **Style de LED** :
 
@@ -380,10 +382,36 @@ courante, pas des estimations.
 
 ### 5.6 Mise en page et défilement
 
-Au-dessus de 980 px de large, **la page ne défile pas** : elle occupe
-exactement la fenêtre. L'en-tête, la préview, les lectures et le pied restent
-en place ; le rack de réglages est le seul élément qui défile. Régler un
-curseur ne déplace donc jamais la matrice qu'on regarde.
+Deux mises en page, choisies par mesure et non par media query.
+
+**Fixe** — le cas nominal. La page occupe exactement la fenêtre et **ne défile
+pas**. L'en-tête, la préview, les lectures et le pied restent en place ; le
+rack de réglages est le seul élément qui défile. Régler un curseur ne déplace
+donc jamais la matrice qu'on regarde.
+
+**Repli** — quand la colonne de préview ne rentre pas dans la hauteur laissée
+par l'en-tête et le pied. Défilement de page classique, un seul ascenseur :
+l'en-tête et la colonne de préview restent collants, le rack perd son
+défilement propre et son fondu. La préview garde sa taille réelle, c'est tout
+l'objet du repli.
+
+Le choix se fait sur deux quantités **indépendantes de la mise en page
+retenue**, sans quoi passer à l'une rendrait l'autre valide et l'affichage
+oscillerait :
+
+| Quantité | Définition |
+|---|---|
+| `previewH` | hauteur naturelle de la colonne de préview, jamais étirée (`align-self: start`) |
+| `availH` | `hauteur de fenêtre − haut de <main> − gouttière basse − hauteur du pied` |
+
+Repli si `previewH > availH + 2`. Les gouttières sont relevées sur le DOM
+plutôt que recopiées du CSS, pour ne pas dériver ; les deux pixels de mou
+absorbent l'arrondi à l'entier des deux mesures, qui ferait sinon clignoter la
+bascule au moindre redimensionnement.
+
+La colonne collante s'accroche exactement à sa position au repos — hauteur de
+l'en-tête plus sa marge basse, relevée elle aussi. Un seuil approché et la
+colonne remonte de la différence avant d'accrocher.
 
 Le rack porte un fondu haut et bas, en masque et non en aplat superposé, pour
 que le fond de page reste visible dans la bande. Sa profondeur est
@@ -399,9 +427,8 @@ progressivement plutôt que d'un bloc. La gouttière d'ascenseur est réservée 
 permanence : sans ça l'apparition du curseur de dither décalerait toute la
 colonne.
 
-En dessous de 980 px la mise en page repasse en colonne unique et en
-défilement de page classique, en-tête collant — la hauteur ne suffit plus pour
-deux zones fixes.
+En dessous de 980 px de large, colonne unique et repli permanent : la préview
+ne peut de toute façon plus rentrer.
 
 ---
 

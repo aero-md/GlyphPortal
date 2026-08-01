@@ -19,8 +19,7 @@
      CSS : la taille de cellule s'en déduit, une seule source évite qu'un des
      deux dérive. */
   const DISC_PCT = 0.2604;
-  const PHONE_RATIO = 704 / 913;
-  const PHONE_MAX = 576;
+  const FULL = 576;
 
   type Props = {
     frame: Frame;
@@ -38,11 +37,6 @@
   let held = $state(false);
   let dpr = $state(1);
 
-  /* Place réellement disponible, mesurée sur le cadre et non sur la photo : la
-     préview se cale dessus, jamais l'inverse. */
-  let stageW = $state(0);
-  let stageH = $state(0);
-
   onMount(() => {
     const sync = () => (dpr = window.devicePixelRatio || 1);
     sync();
@@ -50,24 +44,21 @@
     return () => window.removeEventListener("resize", sync);
   });
 
-  /* Repli tant que le cadre n'est pas mesuré : à zéro le premier rendu sortirait
-     une matrice d'un pixel avant de se corriger. */
-  const availW = $derived(stageW || width);
-  const availH = $derived(stageH || Math.round(PHONE_MAX / PHONE_RATIO));
+  /* La préview n'est jamais réduite pour tenir dans la fenêtre : à 576 px de
+     large le disque fait 150 px, soit les 6 px CSS par LED de l'échelle réelle
+     de l'appareil — la rétrécir viderait le mode « téléphone » de son sens. Si
+     elle ne rentre pas en hauteur, c'est la page qui défile (voir App). Seule
+     une colonne plus étroite que 576 px la contraint. */
+  const size = $derived(Math.min(FULL, width));
 
-  /* Le téléphone prend la largeur de la colonne, plafonnée à sa taille réelle
-     et à ce que la hauteur laisse passer. */
-  const phoneW = $derived(Math.min(PHONE_MAX, availW, Math.floor(availH * PHONE_RATIO)));
-  const bigSize = $derived(Math.min(availW, availH));
-
-  /* Mode téléphone : la cellule suit le diamètre réellement affiché — figée à
-     6 px elle donnerait une trame irrégulière dès que le téléphone est réduit
-     pour tenir en hauteur. Mode grand : la plus grande cellule entière qui
-     tient dans le cadre, un pas fractionnaire élargirait une colonne sur n. */
+  /* Mode téléphone : la cellule suit le diamètre réellement affiché, pas une
+     valeur figée — sur colonne étroite la trame deviendrait irrégulière. Mode
+     grand : la plus grande cellule entière qui tient dans la colonne, un pas
+     fractionnaire élargirait une colonne sur n. */
   const grid = $derived<Grid>(
     mode === "phone"
-      ? screenGrid((phoneW * DISC_PCT) / SIZE, dpr)
-      : screenGrid(Math.max(6, Math.floor(bigSize / SIZE)), dpr),
+      ? screenGrid((size * DISC_PCT) / SIZE, dpr)
+      : screenGrid(Math.max(6, Math.floor(size / SIZE)), dpr),
   );
 
   $effect(() => {
@@ -96,36 +87,31 @@
 </script>
 
 <figure class="device">
-  <div class="stage" bind:clientWidth={stageW} bind:clientHeight={stageH}>
-    {#if mode === "phone"}
-      <div class="phone" style="width:{phoneW}px">
-        <img src="/phone3-back.webp" alt="Dos d'un Nothing Phone (3)" draggable="false" />
+  {#if mode === "phone"}
+    <div class="phone" style="width:{size}px">
+      <img src="/phone3-back.webp" alt="Dos d'un Nothing Phone (3)" draggable="false" />
 
-        <div class="disc" style="width:{DISC_PCT * 100}%;background:{DISC_BG[style]}">
-          <canvas bind:this={cvs}></canvas>
-        </div>
-
-        <button
-          class="glyphbtn"
-          class:is-held={held}
-          disabled={!compare}
-          aria-label="Glyph Button — maintenir pour comparer avec le rendu sans réglages"
-          {...holdHandlers}
-        ></button>
-
-        <span class="hint" class:on={held}>{held ? "Rendu brut" : "Maintenir"}</span>
-      </div>
-    {:else}
-      <div
-        class="disc big"
-        style="width:{grid.cssSize}px;height:{grid.cssSize}px;background:{DISC_BG[style]}"
-      >
+      <div class="disc" style="width:{DISC_PCT * 100}%;background:{DISC_BG[style]}">
         <canvas bind:this={cvs}></canvas>
       </div>
-    {/if}
-  </div>
 
-  {#if mode === "large"}
+      <button
+        class="glyphbtn"
+        class:is-held={held}
+        disabled={!compare}
+        aria-label="Glyph Button — maintenir pour comparer avec le rendu sans réglages"
+        {...holdHandlers}
+      ></button>
+
+      <span class="hint" class:on={held}>{held ? "Rendu brut" : "Maintenir"}</span>
+    </div>
+  {:else}
+    <div
+      class="disc big"
+      style="width:{grid.cssSize}px;height:{grid.cssSize}px;background:{DISC_BG[style]}"
+    >
+      <canvas bind:this={cvs}></canvas>
+    </div>
     <button class="ab" class:is-held={held} disabled={!compare} {...holdHandlers}>
       {held ? "Rendu brut" : "Maintenir : avant / après"}
     </button>
@@ -148,27 +134,9 @@
     flex-direction: column;
     align-items: center;
     gap: 0.9rem;
-    /* prend la hauteur laissée par la colonne ; min-height:0 pour qu'un
-       contenu trop haut soit rogné plutôt que de repousser le pied de page */
-    flex: 1 1 auto;
-    min-height: 0;
   }
 
-  /* Seul enfant rétractable de .device — voir le flex:none du bouton et de la
-     légende. S'ils pouvaient se comprimer, la hauteur restante du cadre
-     dépendrait de la taille du téléphone qui en dépend lui-même : la mise en
-     page se met à osciller au lieu de converger. */
-  .stage {
-    flex: 1 1 auto;
-    min-height: 0;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-  }
-
-  /* la largeur vient du script, plafonnée par la hauteur disponible */
+  /* largeur posée en ligne : la taille de cellule s'en déduit */
   .phone {
     position: relative;
     aspect-ratio: 704 / 913;
@@ -277,7 +245,6 @@
 
   /* équivalent du Glyph Button quand il n'y a pas de téléphone à l'écran */
   .ab {
-    flex: none;
     border: 1px solid var(--line-strong);
     background: transparent;
     color: var(--dim);
@@ -308,7 +275,6 @@
   }
 
   figcaption {
-    flex: none;
     display: flex;
     align-items: baseline;
     gap: 0.5rem 0.9rem;
