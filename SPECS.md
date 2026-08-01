@@ -317,11 +317,22 @@ Les deux sont larges de `min(576, largeur de colonne)`. À 576 px le disque du
 téléphone mesure 150 px, soit **6 px CSS par LED** : l'échelle réelle de
 l'appareil.
 
-**La préview n'est jamais réduite pour tenir dans la fenêtre** — la rétrécir
-viderait le mode « téléphone » de son sens. Si elle ne rentre pas en hauteur,
-c'est la mise en page qui cède (§ 5.6). Seule une colonne plus étroite que
-576 px la contraint, et la cellule suit alors le diamètre réellement affiché :
-une valeur figée donnerait une trame irrégulière.
+**Le téléphone n'est jamais réduit pour tenir en hauteur** — le rétrécir
+viderait le mode de son sens. Quand la place manque il est **rogné par le
+bas** : le disque est dans le haut de l'appareil, ce qu'on perd est le dos et
+le Glyph Button, décoratifs. D'où l'alignement en haut du cadre, un centrage
+rognerait des deux côtés et mangerait la matrice.
+
+Le disque seul, lui, **se réduit** plutôt que d'être rogné : il n'a pas
+d'échelle réelle à préserver et le couper ferait perdre des LEDs.
+
+Seule une colonne plus étroite que 576 px contraint la largeur, et la cellule
+suit alors le diamètre réellement affiché : une valeur figée donnerait une
+trame irrégulière.
+
+Un fondu de 56 px (28 px en colonne unique) marque le bord du rognage, et
+seulement quand il y a rognage — la photo se termine déjà par un dégradé, la
+couper net trancherait dedans.
 
 **Style de LED** :
 
@@ -382,36 +393,39 @@ courante, pas des estimations.
 
 ### 5.6 Mise en page et défilement
 
-Deux mises en page, choisies par mesure et non par media query.
+Invariant commun aux deux largeurs : **la matrice est visible en permanence**,
+sans avoir à faire défiler quoi que ce soit. Régler un curseur sans voir son
+effet n'aurait aucun intérêt. Ce qui cède quand la place manque, c'est le bas
+de la préview — jamais son échelle, jamais sa présence à l'écran.
 
-**Fixe** — le cas nominal. La page occupe exactement la fenêtre et **ne défile
-pas**. L'en-tête, la préview, les lectures et le pied restent en place ; le
-rack de réglages est le seul élément qui défile. Régler un curseur ne déplace
-donc jamais la matrice qu'on regarde.
+**Deux colonnes** (au-dessus de 980 px). La page occupe exactement la fenêtre
+et **ne défile pas**. L'en-tête, la préview, les lectures et le pied restent en
+place ; le rack de réglages est le seul élément qui défile. Si la préview ne
+rentre pas dans la hauteur laissée par l'en-tête et le pied, son cadre la rogne
+par le bas.
 
-**Repli** — quand la colonne de préview ne rentre pas dans la hauteur laissée
-par l'en-tête et le pied. Défilement de page classique, un seul ascenseur :
-l'en-tête et la colonne de préview restent collants, le rack perd son
-défilement propre et son fondu. La préview garde sa taille réelle, c'est tout
-l'objet du repli.
+**Colonne unique** (980 px et moins). Défilement de page classique, un seul
+ascenseur. L'en-tête défile — collant il volerait 160 px à la préview — et
+c'est la **colonne de préview qui s'épingle en haut de l'écran**, réduite à la
+bande qui porte le disque, le rack passant dessous.
 
-Le choix se fait sur deux quantités **indépendantes de la mise en page
-retenue**, sans quoi passer à l'une rendrait l'autre valide et l'affichage
-oscillerait :
+Hauteur de la bande :
 
-| Quantité | Définition |
+| Mode | Bande |
 |---|---|
-| `previewH` | hauteur naturelle de la colonne de préview, jamais étirée (`align-self: start`) |
-| `availH` | `hauteur de fenêtre − haut de <main> − gouttière basse − hauteur du pied` |
+| Téléphone | `min(0,5 × largeur du téléphone, 0,4 × hauteur d'écran)` |
+| Grand | taille du disque, elle-même réduite à `min(largeur, 0,4 × hauteur d'écran)` |
 
-Repli si `previewH > availH + 2`. Les gouttières sont relevées sur le DOM
-plutôt que recopiées du CSS, pour ne pas dériver ; les deux pixels de mou
-absorbent l'arrondi à l'entier des deux mesures, qui ferait sinon clignoter la
-bascule au moindre redimensionnement.
+Le facteur 0,5 vient de la géométrie : le bas du disque tombe à 0,329 de la
+largeur de l'appareil (centre à 15,36 % de la hauteur, rayon à 13,02 % de la
+largeur, cadre en 704/913). Il reste donc de la marge sous le disque, et le
+fondu ne mord pas sur les LEDs. Le plafond en hauteur d'écran évite qu'un
+appareil large sur un écran court ne laisse rien au rack.
 
-La colonne collante s'accroche exactement à sa position au repos — hauteur de
-l'en-tête plus sa marge basse, relevée elle aussi. Un seuil approché et la
-colonne remonte de la différence avant d'accrocher.
+#### Défilement du rack
+
+Le rack n'a de défilement propre qu'en deux colonnes ; en colonne unique il
+suit le défilement de la page, sans fondu ni gouttière réservée.
 
 Le rack porte un fondu haut et bas, en masque et non en aplat superposé, pour
 que le fond de page reste visible dans la bande. Sa profondeur est
@@ -426,9 +440,6 @@ Il est donc nul quand la liste tient dans la hauteur, et apparaît
 progressivement plutôt que d'un bloc. La gouttière d'ascenseur est réservée en
 permanence : sans ça l'apparition du curseur de dither décalerait toute la
 colonne.
-
-En dessous de 980 px de large, colonne unique et repli permanent : la préview
-ne peut de toute façon plus rentrer.
 
 ---
 

@@ -37,46 +37,12 @@
      place du téléphone. */
   let colW = $state(576);
 
-  /* --- mise en page ---
-     Par défaut la page ne défile pas : elle occupe la fenêtre, l'en-tête, la
-     préview et le pied restent en place et seul le rack défile. Ça suppose que
-     la préview tienne en hauteur — et elle n'est jamais réduite pour y arriver,
-     le téléphone perdrait son échelle réelle. Quand elle ne rentre pas, on
-     repasse en défilement de page classique.
-
-     Les deux mesures sont volontairement indépendantes du mode retenu, sans
-     quoi le passage à l'un rendrait l'autre valide et la mise en page
-     oscillerait :
-     - `previewH` est la hauteur naturelle de la colonne, qui n'est jamais
-       étirée (align-self: start) ;
-     - `availH` se déduit des gouttières réelles autour de <main>, que le mode
-       ne change pas. Elles sont relevées sur le DOM plutôt que recopiées du
-       CSS, pour ne pas dériver. */
-  let headEl = $state<HTMLElement | null>(null);
-  let mainEl = $state<HTMLElement | null>(null);
-  let footEl = $state<HTMLElement | null>(null);
-  let previewH = $state(0);
-  let availH = $state(0);
-  let stickTop = $state(0);
-  /* Les deux hauteurs sont arrondies à l'entier : le test a un pixel de bruit,
-     et bascule sur un cheveu ferait clignoter la mise en page au moindre
-     redimensionnement. Deux pixels de mou ne coûtent qu'un rognage invisible. */
-  const SLACK = 2;
-  const loose = $derived(previewH > 0 && availH > 0 && previewH > availH + SLACK);
-
-  function measure() {
-    if (!mainEl || !footEl) return;
-    /* marge basse de <main> : l'écart entre son bas et le haut du pied. Le
-       offsetHeight de <main> dépend du mode mais s'annule dans la soustraction. */
-    const gutter = footEl.offsetTop - mainEl.offsetTop - mainEl.offsetHeight;
-    stickTop = mainEl.offsetTop;
-    availH = window.innerHeight - mainEl.offsetTop - gutter - footEl.offsetHeight;
-  }
-
   /* --- défilement du rack ---
-     Le fondu haut/bas est proportionnel à la distance déjà parcourue, plafonnée
-     à FADE — il apparaît donc en douceur sans transition CSS, et reste nul tant
-     que la liste tient dans la hauteur. */
+     La page ne défile jamais : elle occupe la fenêtre, l'en-tête, la préview et
+     le pied restent en place et seul le rack défile. Le fondu haut/bas est
+     proportionnel à la distance déjà parcourue, plafonnée à FADE — il apparaît
+     donc en douceur sans transition CSS, et reste nul tant que la liste tient
+     dans la hauteur. */
   const FADE = 32;
   let rackEl = $state<HTMLElement | null>(null);
   let rackTop = $state(0);
@@ -92,24 +58,15 @@
 
   $effect(() => {
     const el = rackEl;
-    if (!el || !headEl || !mainEl || !footEl) return;
-    const sync = () => {
-      syncRack();
-      measure();
-    };
-    sync();
-    /* La limite de défilement et les gouttières bougent sans qu'aucun scroll ne
-       soit émis : la fenêtre change de taille, le curseur de dither apparaît et
-       disparaît, le message d'état allonge le pied, le sous-titre se replie sur
-       deux lignes. L'en-tête compte autant que les autres : en repli la hauteur
-       de <main> ne dépend plus de lui, son changement passerait inaperçu. */
-    const ro = new ResizeObserver(sync);
-    for (const node of [el, headEl, mainEl, footEl, ...Array.from(el.children)]) ro.observe(node);
-    window.addEventListener("resize", sync);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", sync);
-    };
+    if (!el) return;
+    syncRack();
+    /* La limite de défilement bouge sans qu'aucun scroll ne soit émis : la
+       fenêtre change la hauteur du cadre, le curseur de dither apparaît et
+       disparaît. On observe donc le cadre et chaque carte. */
+    const ro = new ResizeObserver(syncRack);
+    ro.observe(el);
+    for (const card of Array.from(el.children)) ro.observe(card);
+    return () => ro.disconnect();
   });
 
   /* Deux canvas de travail distincts : le rendu courant et le rendu de
@@ -261,8 +218,8 @@
 <span class="reg bl"></span>
 <span class="reg br"></span>
 
-<div class="page" class:dragging class:loose style="--stick:{stickTop}px">
-  <header bind:this={headEl}>
+<div class="page" class:dragging>
+  <header>
     <div class="brand">
       <Wordmark text="GLYPHCAST" dot={3} />
       <span class="model">(1a)</span>
@@ -273,8 +230,8 @@
     </p>
   </header>
 
-  <main bind:this={mainEl}>
-    <div class="col-preview" bind:clientWidth={colW} bind:offsetHeight={previewH}>
+  <main>
+    <div class="col-preview" bind:clientWidth={colW}>
       <div class="scale">
         <Seg
           label="Échelle de préview"
@@ -457,7 +414,7 @@
     </div>
   </main>
 
-  <footer bind:this={footEl}>
+  <footer>
     <div class="f-row">
       <span class="ref">[{VERSION}]</span>
       <span class="meta">
@@ -470,9 +427,10 @@
 </div>
 
 <style>
-  /* Par défaut la page ne défile pas : elle occupe exactement la fenêtre,
-     l'en-tête, la préview et le pied restent en place et seul le rack de
-     réglages défile. */
+  /* La page ne défile pas : elle occupe exactement la fenêtre, l'en-tête, la
+     préview et le pied restent en place et seul le rack de réglages défile.
+     Quand la préview ne rentre pas en hauteur elle est rognée par le bas, pas
+     réduite — voir Preview. */
   .page {
     position: relative;
     z-index: 2;
@@ -483,45 +441,6 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-  }
-
-  /* Repli quand la préview ne rentre pas en hauteur : défilement de page,
-     en-tête collant, rack sans défilement propre. Le téléphone reste à sa
-     taille réelle, c'est le principe. */
-  .page.loose {
-    height: auto;
-    min-height: 100dvh;
-    overflow: visible;
-    padding-bottom: 2rem;
-  }
-
-  .page.loose header {
-    position: sticky;
-    top: 0;
-    z-index: 3;
-    /* opaque : la trame de points passe dessous, elle ne doit pas transparaître
-       à travers. Un fond dépoli serait l'inverse de la DA. */
-    background: var(--bg);
-  }
-
-  .page.loose main {
-    grid-template-rows: auto;
-  }
-
-  /* --stick vaut exactement la position au repos de la colonne — hauteur de
-     l'en-tête collant plus sa marge basse, relevée sur le DOM. Un seuil
-     approché et la colonne remonte de la différence avant d'accrocher. */
-  .page.loose .col-preview {
-    position: sticky;
-    top: var(--stick, 0px);
-  }
-
-  .page.loose .rack {
-    overflow: visible;
-    padding-right: 0;
-    scrollbar-gutter: auto;
-    -webkit-mask-image: none;
-    mask-image: none;
   }
 
   .page.dragging {
@@ -574,14 +493,12 @@
     gap: 1.6rem;
   }
 
-  /* jamais étirée : sa hauteur reste celle de son contenu dans les deux modes,
-     c'est la mesure qui décide lequel s'applique */
   .col-preview {
-    align-self: start;
     display: flex;
     flex-direction: column;
     gap: 1rem;
     min-width: 0;
+    min-height: 0;
   }
 
 
@@ -785,36 +702,43 @@
     text-transform: uppercase;
   }
 
-  /* En colonne unique la préview ne peut jamais rentrer : repli permanent, et
-     pas de colonne collante puisqu'il n'y a plus deux colonnes. */
+  /* En colonne unique il n'y a plus la place pour deux zones fixes : la page
+     redevient défilante et c'est la préview, réduite à la bande qui porte le
+     disque, qui s'épingle en haut de l'écran. Régler un curseur sans voir la
+     matrice n'aurait aucun intérêt. */
   @media (max-width: 980px) {
-    .page,
-    .page.loose {
+    .page {
       height: auto;
-      min-height: 0;
       overflow: visible;
       padding: 0 1.2rem 2.5rem;
     }
 
+    /* L'en-tête défile : collant il ferait 160 px volés à la bande de préview,
+       qui est la seule chose qui doit rester à l'écran. */
     header {
-      position: sticky;
-      top: 0;
-      z-index: 3;
-      background: var(--bg);
+      padding-top: 1.2rem;
     }
 
-    main,
-    .page.loose main {
+    main {
       grid-template-columns: minmax(0, 1fr);
       grid-template-rows: auto;
     }
 
-    .page.loose .col-preview {
-      position: static;
+    .col-preview {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      /* opaque et refermée par un filet : le rack passe dessous, la trame de
+         fond ne doit pas transparaître à travers */
+      background: var(--bg);
+      border-bottom: 1px solid var(--line);
+      /* un peu d'air en haut : épinglée, la bande toucherait sinon le bord de
+         l'écran */
+      padding: 0.6rem 0 0.8rem;
+      gap: 0.7rem;
     }
 
-    .rack,
-    .page.loose .rack {
+    .rack {
       overflow: visible;
       padding-right: 0;
       scrollbar-gutter: auto;

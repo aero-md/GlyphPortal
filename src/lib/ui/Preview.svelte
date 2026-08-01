@@ -21,6 +21,20 @@
   const DISC_PCT = 0.2604;
   const FULL = 576;
 
+  /* Colonne unique : la préview est épinglée en haut de l'écran et le rack
+     défile dessous, pour qu'on voie l'effet d'un curseur pendant qu'on le
+     manipule. On n'en garde donc qu'une bande.
+     - BAND est la fraction de la largeur du téléphone qu'on conserve. Le bas du
+       disque tombe à 0,329 de cette largeur (centre à 15,36 % de la hauteur,
+       rayon à 13,02 % de la largeur, cadre en 704/913) : à 0,5 il reste de la
+       marge dessous et le fondu ne mord pas sur les LEDs.
+     - SHARE plafonne la bande en hauteur d'écran, sinon un appareil large sur
+       un écran court ne laisserait rien au rack.
+     - NARROW double le point de rupture du CSS. */
+  const BAND = 0.5;
+  const SHARE = 0.4;
+  const NARROW = 980;
+
   type Props = {
     frame: Frame;
     mode?: PreviewMode;
@@ -36,30 +50,60 @@
   let cvs = $state<HTMLCanvasElement>();
   let held = $state(false);
   let dpr = $state(1);
+  let vw = $state(1440);
+  let vh = $state(900);
 
   onMount(() => {
-    const sync = () => (dpr = window.devicePixelRatio || 1);
+    const sync = () => {
+      dpr = window.devicePixelRatio || 1;
+      vw = window.innerWidth;
+      vh = window.innerHeight;
+    };
     sync();
     window.addEventListener("resize", sync);
     return () => window.removeEventListener("resize", sync);
   });
 
-  /* La préview n'est jamais réduite pour tenir dans la fenêtre : à 576 px de
+  /* Le téléphone n'est jamais réduit pour tenir dans la fenêtre : à 576 px de
      large le disque fait 150 px, soit les 6 px CSS par LED de l'échelle réelle
-     de l'appareil — la rétrécir viderait le mode « téléphone » de son sens. Si
-     elle ne rentre pas en hauteur, c'est la page qui défile (voir App). Seule
-     une colonne plus étroite que 576 px la contraint. */
+     de l'appareil — la rétrécir viderait le mode « téléphone » de son sens.
+     Seule une colonne plus étroite que 576 px le contraint. */
   const size = $derived(Math.min(FULL, width));
+
+  const narrow = $derived(vw <= NARROW);
+  const cap = $derived(Math.floor(vh * SHARE));
+
+  /* Le disque seul, lui, se réduit : il n'a pas d'échelle réelle à préserver, et
+     le rogner ferait perdre des LEDs — l'inverse du téléphone, dont on ne perd
+     que le dos et le Glyph Button. */
+  const discSize = $derived(narrow ? Math.min(size, cap) : size);
+
+  /* Hauteur gardée en colonne unique. Nulle ailleurs : le CSS ne s'en sert que
+     sous le point de rupture. */
+  const band = $derived(
+    mode === "phone" ? Math.min(Math.round(size * BAND), cap) : discSize,
+  );
 
   /* Mode téléphone : la cellule suit le diamètre réellement affiché, pas une
      valeur figée — sur colonne étroite la trame deviendrait irrégulière. Mode
-     grand : la plus grande cellule entière qui tient dans la colonne, un pas
+     grand : la plus grande cellule entière qui tient dans le cadre, un pas
      fractionnaire élargirait une colonne sur n. */
   const grid = $derived<Grid>(
     mode === "phone"
       ? screenGrid((size * DISC_PCT) / SIZE, dpr)
-      : screenGrid(Math.max(6, Math.floor(size / SIZE)), dpr),
+      : screenGrid(Math.max(6, Math.floor(discSize / SIZE)), dpr),
   );
+
+  /* Si la préview ne rentre pas en hauteur, le cadre la rogne **par le bas**
+     plutôt que de la réduire ou de rendre la page défilante. Le disque est dans
+     le haut de l'appareil (15,36 %) : ce qu'on perd, c'est le Glyph Button et
+     le bas du dos, décoratifs. D'où l'alignement en haut du cadre — un centrage
+     rognerait des deux côtés et mangerait la matrice. */
+  let stageH = $state(0);
+  const naturalH = $derived(mode === "phone" ? (size * 913) / 704 : grid.cssSize);
+  /* deux pixels de mou : les deux hauteurs s'égalisent pile quand ça rentre, et
+     l'arrondi à l'entier ferait apparaître le fondu sur un cheveu */
+  const clipped = $derived(stageH > 0 && naturalH - stageH > 2);
 
   $effect(() => {
     if (!cvs) return;
@@ -87,31 +131,41 @@
 </script>
 
 <figure class="device">
-  {#if mode === "phone"}
-    <div class="phone" style="width:{size}px">
-      <img src="/phone3-back.webp" alt="Dos d'un Nothing Phone (3)" draggable="false" />
+  <div
+    class="stage"
+    class:clipped
+    style="--band:{band}px"
+    bind:clientHeight={stageH}
+  >
+    {#if mode === "phone"}
+      <div class="phone" style="width:{size}px">
+        <img src="/phone3-back.webp" alt="Dos d'un Nothing Phone (3)" draggable="false" />
 
-      <div class="disc" style="width:{DISC_PCT * 100}%;background:{DISC_BG[style]}">
+        <div class="disc" style="width:{DISC_PCT * 100}%;background:{DISC_BG[style]}">
+          <canvas bind:this={cvs}></canvas>
+        </div>
+
+        <button
+          class="glyphbtn"
+          class:is-held={held}
+          disabled={!compare}
+          aria-label="Glyph Button — maintenir pour comparer avec le rendu sans réglages"
+          {...holdHandlers}
+        ></button>
+
+        <span class="hint" class:on={held}>{held ? "Rendu brut" : "Maintenir"}</span>
+      </div>
+    {:else}
+      <div
+        class="disc big"
+        style="width:{grid.cssSize}px;height:{grid.cssSize}px;background:{DISC_BG[style]}"
+      >
         <canvas bind:this={cvs}></canvas>
       </div>
+    {/if}
+  </div>
 
-      <button
-        class="glyphbtn"
-        class:is-held={held}
-        disabled={!compare}
-        aria-label="Glyph Button — maintenir pour comparer avec le rendu sans réglages"
-        {...holdHandlers}
-      ></button>
-
-      <span class="hint" class:on={held}>{held ? "Rendu brut" : "Maintenir"}</span>
-    </div>
-  {:else}
-    <div
-      class="disc big"
-      style="width:{grid.cssSize}px;height:{grid.cssSize}px;background:{DISC_BG[style]}"
-    >
-      <canvas bind:this={cvs}></canvas>
-    </div>
+  {#if mode === "large"}
     <button class="ab" class:is-held={held} disabled={!compare} {...holdHandlers}>
       {held ? "Rendu brut" : "Maintenir : avant / après"}
     </button>
@@ -134,6 +188,32 @@
     flex-direction: column;
     align-items: center;
     gap: 0.9rem;
+    /* ne grandit pas — il n'y aurait rien à mettre dans la place en trop — mais
+       se comprime, et c'est ce qui déclenche le rognage */
+    flex: 0 1 auto;
+    min-height: 0;
+  }
+
+  /* Cadre de rognage. Il colle à la hauteur de son contenu tant que celui-ci
+     tient, et se comprime sinon : c'est le seul enfant rétractable de .device,
+     la légende et le bouton A/B sont figés pour rester lisibles. */
+  .stage {
+    --fade: 56px;
+    flex: 0 1 auto;
+    min-height: 0;
+    width: 100%;
+    display: flex;
+    /* en haut, pas au centre : le rognage doit se faire par le bas */
+    align-items: flex-start;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* Fondu au bord du rognage, seulement quand il y a rognage. Sans lui la
+     photo, qui se termine déjà par un dégradé, se ferait couper net. */
+  .stage.clipped {
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--fade)), transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - var(--fade)), transparent 100%);
   }
 
   /* largeur posée en ligne : la taille de cellule s'en déduit */
@@ -245,6 +325,7 @@
 
   /* équivalent du Glyph Button quand il n'y a pas de téléphone à l'écran */
   .ab {
+    flex: none;
     border: 1px solid var(--line-strong);
     background: transparent;
     color: var(--dim);
@@ -275,6 +356,7 @@
   }
 
   figcaption {
+    flex: none;
     display: flex;
     align-items: baseline;
     gap: 0.5rem 0.9rem;
@@ -295,5 +377,15 @@
 
   figcaption .v {
     color: var(--ink);
+  }
+
+  /* Bande calculée dans le script — voir BAND / SHARE. Le fondu y est plus
+     court : sur une colonne de téléphone, 56 px mordraient sur le bas du
+     disque. */
+  @media (max-width: 980px) {
+    .stage {
+      --fade: 28px;
+      max-height: var(--band);
+    }
   }
 </style>

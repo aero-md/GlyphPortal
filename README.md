@@ -36,10 +36,12 @@ Le détail fonctionnel — formules, bornes, invariants, schéma JSON — est da
 - **Exporter** en PNG, en `IntArray` Kotlin prêt à coller dans un Glyph Toy,
   ou en JSON rechargeable.
 
-Quand la fenêtre est assez haute, la page ne défile pas : en-tête, préview et
-pied restent en place, seul le rack de réglages défile. Régler un curseur ne
-déplace jamais la matrice qu'on regarde. Si la préview ne rentre pas, on
-repasse en défilement de page — elle n'est jamais réduite pour y arriver.
+La matrice reste visible en permanence, quelle que soit la largeur d'écran :
+régler un curseur sans voir son effet n'aurait pas d'intérêt. Sur deux colonnes
+la page ne défile pas du tout — en-tête, préview et pied restent en place, seul
+le rack de réglages défile. Sur une colonne c'est la préview qui s'épingle en
+haut de l'écran, réduite à la bande qui porte le disque, et le rack passe
+dessous.
 
 Ce qu'il ne fait pas : pas d'animation ni de séquence, pas d'envoi direct à
 l'appareil (aucune API navigateur ne le permet — la passerelle est l'export
@@ -120,9 +122,10 @@ Deux échelles, au choix :
 - **Grand** — le disque seul sur toute la largeur de la colonne, pour lire LED
   par LED ce que fait un curseur.
 
-La préview n'est jamais réduite pour tenir dans la fenêtre — ce serait perdre
-l'échelle réelle, qui est tout l'intérêt du mode téléphone. C'est la page qui
-se remet à défiler.
+Le téléphone n'est jamais réduit pour tenir dans la fenêtre — ce serait perdre
+l'échelle réelle, qui est tout l'intérêt du mode. Quand la place manque il est
+rogné par le bas : le disque est en haut de l'appareil, ce qu'on perd c'est le
+dos et le Glyph Button.
 
 Dans les deux cas une cellule occupe un nombre **entier** de pixels de canvas :
 un canvas redimensionné par le navigateur avec un ratio fractionnaire donne
