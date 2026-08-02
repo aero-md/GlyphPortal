@@ -164,13 +164,20 @@ fond, repères d'imprimerie aux quatre angles, sections numérotées entre
 crochets. Geist Mono partout — le wordmark est la seule exception, et il
 n'appelle aucune fonte.
 
-Une seconde couleur, le **jaune Nothing**, et un seul emploi : la zone de dépôt
-tant qu'aucune image n'est chargée. C'est le seul aplat de couleur de la page et
-il ne dure pas — dès qu'il y a une image, la zone repasse en filet neutre et le
-jaune disparaît. Il ne décore rien, il désigne le seul geste possible ; le
-diluer ailleurs lui retirerait sa fonction. Tout le reste du rack est éteint
-pendant ce temps, si bien qu'un visiteur qui ne connaît ni l'appli ni l'appareil
-n'a matériellement rien d'autre à cliquer.
+Une seconde couleur, le **jaune Nothing**, et un seul emploi : l'encadré de la
+zone de dépôt tant qu'aucune image n'est chargée. Il ne dure pas — dès qu'il y a
+une image, l'encadré repasse en filet neutre et le jaune disparaît. Il ne décore
+rien, il désigne le seul geste possible ; le diluer ailleurs lui retirerait sa
+fonction. Tout le reste du rack est éteint pendant ce temps, si bien qu'un
+visiteur qui ne connaît ni l'appli ni l'appareil n'a matériellement rien d'autre
+à cliquer.
+
+C'est le seul trait de la page à faire 2 px et non 1. Le jaune ne tient pas en
+filet fin sur le fond clair : il ne fait que **1,06 : 1** de contraste de
+luminance contre `#eff0f1`, contre 15,8 : 1 sur le fond sombre. Ce qui le rend
+lisible en clair, c'est l'écart de teinte et l'épaisseur, pas la clarté — un œil
+qui ne perçoit que la luminance le verra à peine. C'est le verrouillage du reste
+du rack qui porte réellement le message, le jaune ne fait que le confirmer.
 
 Chaque capitale du wordmark est une **trame 7 × 7 dessinée à la main** — et une
 trame *valide* : aucun point ne tombe hors du disque, avec la même convention

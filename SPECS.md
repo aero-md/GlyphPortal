@@ -241,7 +241,7 @@ chargement, et **il n'y a qu'un seul geste possible dans toute la page** :
 
 | Élément | État sans image |
 |---|---|
-| Zone de dépôt `[01]` | seul aplat de couleur de la page, jaune Nothing |
+| Zone de dépôt `[01]` | encadré en jaune Nothing, seule couleur de la page |
 | Cartes `[02]` à `[05]` | contenu `inert` et grisé à 32 % |
 | Exports `[06]` | boutons `disabled` |
 | Glyph Button | `disabled`, sans légende |

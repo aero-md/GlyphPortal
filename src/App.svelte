@@ -546,28 +546,22 @@
     border-color: var(--accent);
   }
 
-  /* Seul aplat de couleur de toute la page, et il ne dure pas : dès qu'une
-     image est chargée la zone repasse en filet neutre. Le jaune ne décore pas,
-     il désigne le seul geste possible — c'est aussi pour ça qu'il n'y en a
-     qu'un. Encre en dur, le jaune ne bouge pas avec le thème. */
+  /* Le jaune ne prend que l'encadré, et il ne dure pas : dès qu'une image est
+     chargée la zone repasse en filet neutre. Deux pixels au lieu d'un — c'est
+     le seul endroit de la page qui déroge au filet de 1 px, et il le faut : un
+     trait jaune d'un pixel sur le fond clair ne se voit pas. */
   .drop.cta {
-    background: var(--nothing);
     border-color: var(--nothing);
+    border-width: 2px;
+    /* la bordure gagne un pixel de chaque côté, le padding le rend : la boîte
+       ne saute pas au chargement de l'image */
+    padding: calc(0.9rem - 1px) calc(0.75rem - 1px);
   }
 
   .drop.cta:hover,
   .drop.cta.armed {
-    background: var(--nothing-deep);
-    border-color: var(--ink);
-  }
-
-  .drop.cta .drop-t {
-    color: #14161a;
-    font-weight: 500;
-  }
-
-  .drop.cta .drop-s {
-    color: rgba(20, 22, 26, 0.62);
+    background: var(--hover);
+    border-color: var(--nothing-deep);
   }
 
   .drop input {
