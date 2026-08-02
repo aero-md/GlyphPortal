@@ -480,6 +480,22 @@ progressivement plutôt que d'un bloc. La gouttière d'ascenseur est réservée 
 permanence : sans ça l'apparition du curseur de dither décalerait toute la
 colonne.
 
+#### Le piège des inputs de fichier cachés
+
+Les deux `<input type="file">` sont masqués en absolu dans leur `<label>`, et
+ces labels **doivent** être `position: relative`. Sans ça leur bloc conteneur
+remonte jusqu'à `.page`, et leur position statique y est calculée sans tenir
+compte du défilement interne du rack : à mi-course, l'input atterrit un millier
+de pixels sous son libellé. Cliquer le label le focalise, le navigateur fait
+défiler `.page` pour l'amener à l'écran — et `.page` est en `overflow: hidden`,
+donc sans ascenseur pour revenir. Toute la mise en page part vers le haut et n'y
+revient jamais.
+
+C'est le prix de la règle « la page ne défile pas » : un conteneur qui n'a pas
+d'ascenseur reste programmatiquement défilable, et le défilement de mise au
+point du navigateur s'en sert. Tout élément focusable posé en absolu dans cette
+page doit donc avoir son bloc conteneur explicitement déclaré.
+
 ---
 
 ## 6. Sorties

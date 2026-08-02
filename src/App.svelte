@@ -532,7 +532,10 @@
   }
 
   /* --- dépôt de fichier --- */
+  /* `relative` obligatoire : l'input caché est en absolu, et sans bloc
+     conteneur ici il se cale sur `.page`. Voir la note sur `.filebtn input`. */
   .drop {
+    position: relative;
     display: block;
     border: 1px solid var(--line-strong);
     padding: 0.9rem 0.75rem;
@@ -566,6 +569,7 @@
 
   .drop input {
     position: absolute;
+    inset: 0;
     width: 1px;
     height: 1px;
     opacity: 0;
@@ -599,6 +603,7 @@
 
   .btns button,
   .filebtn {
+    position: relative;
     border: 1px solid var(--line-strong);
     background: transparent;
     color: var(--dim);
@@ -631,8 +636,17 @@
     border-color: var(--ink);
   }
 
+  /* L'input reste focusable — c'est ce qui rend le label utilisable au clavier
+     — donc il doit rester DANS le label. Sans `position: relative` sur celui-ci
+     il se calait sur `.page`, à sa position statique, c'est-à-dire sans tenir
+     compte du défilement interne du rack : à mi-course il atterrissait mille
+     pixels sous son libellé. Cliquer le label le focalisait, le navigateur
+     faisait défiler `.page` pour l'amener à l'écran — et `.page` est en
+     `overflow: hidden`, donc sans ascenseur pour revenir. L'en-tête partait à
+     −665 px et la mise en page ne se remettait jamais droite. */
   .filebtn input {
     position: absolute;
+    inset: 0;
     width: 1px;
     height: 1px;
     opacity: 0;
