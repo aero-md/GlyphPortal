@@ -153,7 +153,11 @@
           {...holdHandlers}
         ></button>
 
-        <span class="hint" class:on={held}>{held ? "Rendu brut" : "Maintenir"}</span>
+        <!-- pas de légende quand il n'y a rien à comparer : elle promettrait une
+             action que le bouton désactivé ne rend pas -->
+        {#if compare}
+          <span class="hint" class:on={held}>{held ? "Rendu brut" : "Maintenir"}</span>
+        {/if}
       </div>
     {:else}
       <div
