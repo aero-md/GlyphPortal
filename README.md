@@ -155,8 +155,18 @@ sur un même gris — d'où la rampe quasi linéaire.
 Langage Nothing : angles vifs partout, le cercle est réservé aux points et aux
 LEDs, filets de 1 px, un seul accent rouge en ponctuation, grille de points en
 fond, repères d'imprimerie aux quatre angles, nomenclature parenthétique.
-Geist Mono pour ~90 % de la page, serif système pour le seul titre éditorial,
-dot-matrix en canvas pour le wordmark.
+Geist Mono pour ~90 % de la page, serif système pour le titre éditorial et
+pour le wordmark, ce dernier tramé en points dans un canvas.
+
+Le wordmark rend le texte hors écran, cadre sur sa boîte d'encre et repeint
+chaque cellule encrée en cercle. La trame se pose sur la boîte et non sur le
+canvas : le haut des capitales et la ligne de base tombent ainsi sur des bords
+de cellule, sinon la rangée qui chevauche la ligne de base ne récupère qu'une
+moitié de fût et s'allume en points orphelins sous les lettres.
+
+La résolution se règle en **rangées de points par capitale**, pas en diamètre
+de point. Dix est un plancher mesuré : à neuf et moins les deux fûts du H se
+rejoignent par leurs empattements et le mot se lit « GLYPIICAST ».
 
 Thème clair par défaut, bascule en pied de page. Le thème est posé par un
 script inline dans `<head>` : un `onMount` s'exécute après le premier paint et

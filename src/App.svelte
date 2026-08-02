@@ -221,7 +221,7 @@
 <div class="page" class:dragging>
   <header>
     <div class="brand">
-      <Wordmark text="GLYPHCAST" dot={3} />
+      <Wordmark text="GLYPHCAST" />
       <span class="model">(1a)</span>
     </div>
     <p class="lede serif">Une image, {LED_COUNT} diodes.</p>
