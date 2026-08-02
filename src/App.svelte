@@ -193,6 +193,13 @@
     }
   }
 
+  /** Part des cellules que le masque circulaire laisse éteintes : 136 sur 625.
+      Dérivée des constantes, jamais recopiée — c'est la même règle que partout
+      ailleurs, un chiffre en dur finirait par mentir. */
+  const OUTSIDE = (((SIZE * SIZE - LED_COUNT) / (SIZE * SIZE)) * 100)
+    .toFixed(1)
+    .replace(".", ",");
+
   const pct = (v: number) => `${Math.round(v * 100)} %`;
   const signed = (v: number) => (v >= 0 ? "+" : "") + v.toFixed(2);
 </script>
@@ -216,11 +223,14 @@
 <div class="page" class:dragging>
   <header>
     <Wordmark text="GLYPHCAST" />
-    <!-- registre « plaque d'instrument » : la cible d'abord, constantes vives,
-         puis ce que fait l'outil. Les capitales viennent de `.meta`. -->
+    <!-- registre « plaque d'instrument » : la grille et sa perte au masque
+         d'abord, constantes vives, puis ce que fait l'outil. Les capitales
+         viennent de `.meta`, le point médian gras de `.sub`. -->
     <p class="sub meta">
-      Glyph Matrix {SIZE}×{SIZE} · Nothing Phone (3) · Stylisez une image en la projetant sur
-      la Glyph Matrix
+      {SIZE}×{SIZE} % {OUTSIDE}
+      <span class="sep">·</span> Glyph Matrix
+      <span class="sep">·</span> Nothing Phone (3)
+      <span class="sep">·</span> Stylisez une image en la projetant sur la Glyph Matrix
     </p>
   </header>
 
@@ -462,6 +472,19 @@
 
   .sub {
     margin: 0.7rem 0 0;
+  }
+
+  /* Séparateurs de la plaque. Le point médian de la fonte est trop fin pour
+     découper une ligne de 100 caractères : on le grossit sur place plutôt que
+     de passer à une puce, qui ferait une liste et non une plaque. Décalé vers
+     le haut parce qu'un point médian agrandi retombe sous l'axe des capitales. */
+  .sub .sep {
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 0;
+    vertical-align: -1px;
+    color: var(--faint);
+    margin: 0 0.15em;
   }
 
   /* --- corps --- */
