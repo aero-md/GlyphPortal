@@ -3,8 +3,9 @@
    Un seul accent rouge, employé comme ponctuation. */
 
 :root {
+  /* une seule fonte : le wordmark est dessiné point par point, plus rien
+     n'appelle de serif système */
   --mono: "Geist Mono", ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace;
-  --serif: Charter, "Bitstream Charter", "Sitka Text", "Iowan Old Style", Georgia, serif;
 
   --bg: #eff0f1;
   --ink: #14161a;
@@ -172,11 +173,6 @@ a:focus-visible {
   font-size: 12px;
   letter-spacing: 0.12em;
   color: var(--faint);
-}
-
-.serif {
-  font-family: var(--serif);
-  font-weight: 400;
 }
 
 .accent {

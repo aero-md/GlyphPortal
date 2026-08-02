@@ -155,18 +155,28 @@ sur un même gris — d'où la rampe quasi linéaire.
 Langage Nothing : angles vifs partout, le cercle est réservé aux points et aux
 LEDs, filets de 1 px, un seul accent rouge en ponctuation, grille de points en
 fond, repères d'imprimerie aux quatre angles, nomenclature parenthétique.
-Geist Mono pour ~90 % de la page, serif système pour le titre éditorial et
-pour le wordmark, ce dernier tramé en points dans un canvas.
+Geist Mono partout — le wordmark est la seule exception, et il n'appelle
+aucune fonte.
 
-Le wordmark rend le texte hors écran, cadre sur sa boîte d'encre et repeint
-chaque cellule encrée en cercle. La trame se pose sur la boîte et non sur le
-canvas : le haut des capitales et la ligne de base tombent ainsi sur des bords
-de cellule, sinon la rangée qui chevauche la ligne de base ne récupère qu'une
-moitié de fût et s'allume en points orphelins sous les lettres.
+Chaque capitale du wordmark est une **matrice 13 × 13 dessinée à la main**,
+peinte en points dans un canvas. La version précédente rendait une serif hors
+écran et échantillonnait le résultat : à cette taille un empattement n'encre
+qu'une fraction de sa cellule, il passe ou saute selon le sous-pixel où il est
+tombé, et deux lettres voisines ne reçoivent pas le même traitement — d'où des
+lettres inégales. Dessinées, elles sont régulières par construction : fûts d'un
+point, empattements d'un point de part et d'autre du fût. C'est le seul serif
+que treize rangées autorisent.
 
-La résolution se règle en **rangées de points par capitale**, pas en diamètre
-de point. Dix est un plancher mesuré : à neuf et moins les deux fûts du H se
-rejoignent par leurs empattements et le mot se lit « GLYPIICAST ».
+La hauteur ne se règle pas au goût : la trame doit rester lisible **en tant que
+trame**. Sous ~2 px de diamètre les points se rejoignent, on ne voit plus que
+des traits et l'idée de matrice tombe. Treize rangées imposent donc une
+capitale d'au moins 34 px — c'est la ligne éditoriale retirée de l'en-tête qui
+paie cette hauteur.
+
+Les colonnes 0 et 12 de chaque matrice sont l'approche — deux colonnes vides
+entre deux lettres, avance fixe, pas de crénage à gérer. Le canvas est ensuite
+cadré sur les points allumés, sinon l'approche des lettres de bord deviendrait
+une marge morte et le wordmark ne s'alignerait plus sur le texte posé dessous.
 
 Thème clair par défaut, bascule en pied de page. Le thème est posé par un
 script inline dans `<head>` : un `onMount` s'exécute après le premier paint et

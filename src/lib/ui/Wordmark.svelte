@@ -1,126 +1,236 @@
 <script lang="ts">
-  /* Wordmark dot-matrix : le texte est rendu dans un canvas hors écran, on lit
-     getImageData et on repeint chaque cellule encrée en cercle. Moment
-     signature — c'est aussi la seule chose de la page qui parle le même langage
-     que la matrice qu'on programme. */
-  /** `cap` est la hauteur de capitale rendue, en px CSS — la taille du point
-      s'en déduit. C'est le bon bouton : la lisibilité de la trame tient au
-      nombre de rangées par capitale, pas au diamètre du point. */
-  type Props = { text?: string; cap?: number };
-  let { text = "GLYPHCAST", cap = 26 }: Props = $props();
+  /* Wordmark : chaque capitale est une matrice 13 × 13 dessinée à la main, pas
+     un texte tramé.
 
+     La version précédente rendait la fonte serif hors écran et échantillonnait
+     le résultat. À cette taille ça ne pardonne pas : un empattement n'encre
+     qu'une fraction de sa cellule, il passe ou saute selon le sous-pixel où il
+     est tombé, et deux lettres voisines ne reçoivent pas le même traitement.
+     D'où des lettres inégales, « maladroitement dessinées ».
+
+     Dessinées, elles sont régulières par construction : fûts d'un point,
+     empattements d'un point de part et d'autre du fût. C'est le seul serif que
+     13 rangées autorisent, et c'est aussi le plus juste ici — un empattement
+     réduit à un point, c'est exactement la LED en trop qui distingue deux
+     glyphes sur une matrice. */
+
+  /** `cap` est la hauteur de capitale rendue, en px CSS. Les lettres occupent
+      les 13 rangées, donc une cellule vaut `cap / 13` et le point s'en déduit.
+      34 px, et pas moins : la trame doit rester lisible EN TANT QUE trame. En
+      dessous d'environ 2 px de diamètre les points se rejoignent, on ne voit
+      plus que des traits et l'idée de matrice tombe — c'est tout le propos du
+      wordmark. La ligne éditoriale retirée de l'en-tête paie la hauteur. */
+  type Props = { text?: string; cap?: number };
+  let { text = "GLYPHCAST", cap = 34 }: Props = $props();
+
+  const CELL = 13; // côté de la matrice d'une capitale
   const STEP = 1.28; // pas de la trame, en multiples du diamètre du point
 
-  /* Rangées de points sur la hauteur de capitale. C'est la commande de
-     résolution, et 10 est un plancher mesuré, pas un réglage de confort : à 9
-     et moins les deux fûts du H se rejoignent par leurs empattements et le mot
-     se lit « GLYPIICAST ». Au-delà de 12 les points deviennent si fins que ce
-     n'est plus une trame mais une similigravure. */
-  const CAPS = 10;
-
-  /* Seuil de couverture d'une cellule. Bas — 165 convenait à une grotesque
-     grasse, il effacerait les empattements et les déliés d'un serif, qui
-     n'encrent qu'une fraction de leur cellule. Les points orphelins que ce
-     seuil retenait avant sont réglés autrement : la trame se pose sur la boîte
-     d'encre, donc pile sur la ligne de base. */
-  const INK = 118;
-
-  /* Approche, en cadratins du corps rendu. Elle n'est pas lue depuis le CSS :
-     une valeur en em s'y calculerait sur la taille de police de l'élément —
-     14 px hérités du corps de page — et non sur celle du rendu, qui en fait
-     près de trois fois plus. */
-  const TRACK = 0.06;
+  /* Les colonnes 0 et 12 sont l'approche : deux colonnes vides entre deux
+     lettres voisines, sans avoir à gérer un crénage. L'avance est donc fixe —
+     le mot se lit comme une grille, ce qui est le propos. */
+  const GLYPHS: Record<string, string[]> = {
+    " ": [
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+      ".............",
+    ],
+    G: [
+      "....#####....",
+      "..##.....##..",
+      ".##.......##.",
+      ".#.........#.",
+      ".#...........",
+      ".#...........",
+      ".#....#####..",
+      ".#........#..",
+      ".#........#..",
+      ".#........#..",
+      ".##.......##.",
+      "..##.....##..",
+      "....#####....",
+    ],
+    L: [
+      ".###.........",
+      "..#..........",
+      "..#..........",
+      "..#..........",
+      "..#..........",
+      "..#..........",
+      "..#..........",
+      "..#..........",
+      "..#..........",
+      "..#..........",
+      "..#..........",
+      "..#.......#..",
+      "..#########..",
+    ],
+    Y: [
+      ".###.....###.",
+      "..#.......#..",
+      "...#.....#...",
+      "....#...#....",
+      ".....#.#.....",
+      "......#......",
+      "......#......",
+      "......#......",
+      "......#......",
+      "......#......",
+      "......#......",
+      "......#......",
+      "....#####....",
+    ],
+    P: [
+      ".########....",
+      "..#.....##...",
+      "..#......#...",
+      "..#......#...",
+      "..#......#...",
+      "..#.....##...",
+      "..#######....",
+      "..#..........",
+      "..#..........",
+      "..#..........",
+      "..#..........",
+      "..#..........",
+      ".###.........",
+    ],
+    H: [
+      ".###.....###.",
+      "..#.......#..",
+      "..#.......#..",
+      "..#.......#..",
+      "..#.......#..",
+      "..#.......#..",
+      "..#########..",
+      "..#.......#..",
+      "..#.......#..",
+      "..#.......#..",
+      "..#.......#..",
+      "..#.......#..",
+      ".###.....###.",
+    ],
+    C: [
+      "....#####....",
+      "..##.....##..",
+      ".##.......##.",
+      ".#.........#.",
+      ".#...........",
+      ".#...........",
+      ".#...........",
+      ".#...........",
+      ".#...........",
+      ".#.........#.",
+      ".##.......##.",
+      "..##.....##..",
+      "....#####....",
+    ],
+    A: [
+      ".....###.....",
+      ".....#.#.....",
+      ".....#.#.....",
+      "....#...#....",
+      "....#...#....",
+      "....#...#....",
+      "...#######...",
+      "...#.....#...",
+      "...#.....#...",
+      "..#.......#..",
+      "..#.......#..",
+      "..#.......#..",
+      ".###.....###.",
+    ],
+    S: [
+      "...######....",
+      "..##....##...",
+      ".##......#...",
+      ".#...........",
+      ".##..........",
+      "..##.........",
+      "....##.......",
+      "......##.....",
+      "........##...",
+      "..........#..",
+      ".#........#..",
+      "..##....##...",
+      "...######....",
+    ],
+    T: [
+      ".###########.",
+      "......#......",
+      "......#......",
+      "......#......",
+      "......#......",
+      "......#......",
+      "......#......",
+      "......#......",
+      "......#......",
+      "......#......",
+      "......#......",
+      "......#......",
+      "....#####....",
+    ],
+  };
 
   let cvs = $state<HTMLCanvasElement>();
 
   function draw() {
     if (!cvs) return;
     const dpr = Math.min(2, window.devicePixelRatio || 1);
-    /* la fonte vient du CSS de l'élément : une seule source, et le wordmark
-       suit la pile serif de la page sans la recopier ici */
-    const cs = getComputedStyle(cvs);
-    const stack = cs.fontFamily;
-    const weight = cs.fontWeight;
-    // la hauteur de capitale demandée fixe le pas, le pas fixe le point
-    const step = cap / CAPS;
-    const dot = step / STEP;
+    const cell = cap / CELL;
+    const dot = cell / STEP;
 
-    const off = document.createElement("canvas");
-    const octx = off.getContext("2d", { willReadFrequently: true })!;
-    const setFont = (px: number) => {
-      octx.font = `${weight} ${px}px ${stack}`;
-      // Chrome uniquement ; ailleurs le crénage reste celui de la fonte
-      if ("letterSpacing" in octx) octx.letterSpacing = `${TRACK * px}px`;
-    };
+    const word = [...text.toUpperCase()].map((ch) => GLYPHS[ch]).filter(Boolean);
+    if (!word.length) return;
 
-    /* Première passe sur une taille arbitraire : on relève la hauteur d'encre
-       réelle. Elle dépend de la fonte — une capitale de Georgia ne fait pas la
-       même fraction du corps qu'une de Sitka — donc on ne peut pas la déduire
-       du corps demandé, il faut la mesurer. */
-    const PROBE = 200;
-    setFont(PROBE);
-    const pm = octx.measureText(text);
-    const probeH = pm.actualBoundingBoxAscent + pm.actualBoundingBoxDescent;
-    if (!probeH) return;
-    const px = Math.max(8, Math.round((PROBE * cap) / probeH));
+    /* On relève les points allumés et leur boîte : l'approche des lettres de
+       bord serait sinon une marge morte, et le wordmark ne s'alignerait plus
+       sur le texte posé dessous. */
+    const pts: number[][] = [];
+    let x0 = Infinity;
+    let x1 = -Infinity;
+    let y0 = Infinity;
+    let y1 = -Infinity;
+    word.forEach((g, i) => {
+      for (let r = 0; r < CELL; r++) {
+        for (let c = 0; c < CELL; c++) {
+          if (g[r][c] !== "#") continue;
+          const x = i * CELL + c;
+          pts.push([x, r]);
+          if (x < x0) x0 = x;
+          if (x > x1) x1 = x;
+          if (r < y0) y0 = r;
+          if (r > y1) y1 = r;
+        }
+      }
+    });
+    if (!pts.length) return;
 
-    setFont(px);
-    const m = octx.measureText(text);
-    const inkW = Math.ceil(m.actualBoundingBoxLeft + m.actualBoundingBoxRight);
-    const inkH = Math.ceil(m.actualBoundingBoxAscent + m.actualBoundingBoxDescent);
-    if (inkW <= 0 || inkH <= 0) return;
-
-    const PAD = 2; // marge de sécurité, l'antialiasing déborde de la boîte
-    off.width = inkW + PAD * 2;
-    off.height = inkH + PAD * 2;
-    // redimensionner un canvas remet son contexte à zéro : la fonte se repose
-    // APRÈS avoir fixé width/height, sinon on dessine en 10px sans-serif
-    setFont(px);
-    octx.textBaseline = "alphabetic";
-    octx.fillStyle = "#fff";
-    octx.fillText(text, PAD + m.actualBoundingBoxLeft, PAD + m.actualBoundingBoxAscent);
-
-    const src = octx.getImageData(0, 0, off.width, off.height).data;
-
-    /* La trame se pose sur la boîte d'encre, pas sur le canvas : le haut des
-       capitales et la ligne de base tombent ainsi sur des bords de cellule.
-       Sans ça la rangée qui chevauche la ligne de base ne récupère qu'une
-       moitié de fût et s'allume en points orphelins sous les lettres. */
-    const cols = Math.max(1, Math.round(inkW / step));
-    const rows = Math.max(1, Math.round(inkH / step));
-    const cw = inkW / cols;
-    const ch = inkH / rows;
-
-    const outW = cols * step;
-    const outH = rows * step;
-    cvs.width = Math.round(outW * dpr);
-    cvs.height = Math.round(outH * dpr);
-    cvs.style.width = outW + "px";
-    cvs.style.height = outH + "px";
+    const w = (x1 - x0 + 1) * cell;
+    const h = (y1 - y0 + 1) * cell;
+    cvs.width = Math.round(w * dpr);
+    cvs.height = Math.round(h * dpr);
+    cvs.style.width = w + "px";
+    cvs.style.height = h + "px";
 
     const ctx = cvs.getContext("2d")!;
     ctx.scale(dpr, dpr);
-    ctx.clearRect(0, 0, outW, outH);
-    ctx.fillStyle = cs.color;
-
-    // moyenne de zone plutôt qu'un pixel central : à cette taille un seul
-    // échantillon rate les traits fins et les lettres partent en bouillie
-    for (let r = 0; r < rows; r++) {
-      const y0 = Math.floor(PAD + r * ch);
-      const y1 = Math.max(y0 + 1, Math.ceil(PAD + (r + 1) * ch));
-      for (let c = 0; c < cols; c++) {
-        const x0 = Math.floor(PAD + c * cw);
-        const x1 = Math.max(x0 + 1, Math.ceil(PAD + (c + 1) * cw));
-        let acc = 0;
-        let n = 0;
-        for (let sy = y0; sy < y1; sy++) {
-          for (let sx = x0; sx < x1; sx++, n++) acc += src[(sy * off.width + sx) * 4 + 3];
-        }
-        if (!n || acc / n < INK) continue;
-        ctx.beginPath();
-        ctx.arc(c * step + step / 2, r * step + step / 2, dot / 2, 0, Math.PI * 2);
-        ctx.fill();
-      }
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = getComputedStyle(cvs).color;
+    for (const [x, y] of pts) {
+      ctx.beginPath();
+      ctx.arc((x - x0) * cell + cell / 2, (y - y0) * cell + cell / 2, dot / 2, 0, Math.PI * 2);
+      ctx.fill();
     }
   }
 
@@ -131,9 +241,8 @@
     // la couleur du wordmark suit le thème : redessiner au changement d'attribut
     const mo = new MutationObserver(draw);
     mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    // un changement d'écran change le devicePixelRatio, donc la résolution du canvas
     window.addEventListener("resize", draw);
-    // les points sortent dans la fonte de repli tant que la serif n'est pas prête
-    document.fonts?.ready.then(draw);
     return () => {
       mo.disconnect();
       window.removeEventListener("resize", draw);
@@ -146,10 +255,7 @@
 <style>
   canvas {
     display: block;
+    /* seule source de la couleur des points, lue par le script */
     color: var(--ink);
-    /* la trame lit sa fonte ici : une seule source, elle suit la pile serif de
-       la page sans la recopier dans le script */
-    font-family: var(--serif);
-    font-weight: 400;
   }
 </style>
