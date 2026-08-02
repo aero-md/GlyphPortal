@@ -33,7 +33,7 @@
   const GLYPHS: Record<string, string[]> = {
     " ": [".......", ".......", ".......", ".......", ".......", ".......", "......."],
     G: [".......", "..###..", ".#...#.", ".#.....", ".#..##.", "..###..", "......."],
-    L: [".......", ".#.....", ".#.....", ".#.....", ".#.....", ".#####.", "......."],
+    L: [".......", ".#.....", ".#.....", ".#.....", ".#.....", ".####..", "......."],
     Y: [".......", ".#...#.", "..#.#..", "...#...", "...#...", "...#...", "......."],
     P: [".......", ".####..", ".#...#.", ".####..", ".#.....", ".#.....", "......."],
     H: [".......", ".#...#.", ".#...#.", ".#####.", ".#...#.", ".#...#.", "......."],
@@ -73,9 +73,17 @@
   const GAP = 1; // colonnes vides sur la rangée la plus serrée d'une paire
   const SPACE = 3; // chasse d'un blanc, qui n'a pas d'encre à mesurer
 
+  /* Rattrapage, en colonnes. Le calcul ci-dessus cale l'avance sur la rangée où
+     les deux lettres se frôlent le plus — ce qui suppose que ce contact est
+     représentatif. Quand il tient à UNE seule rangée, il ne l'est pas : l'œil
+     ne lit pas la colonne de contact, il lit le vide au-dessus. C'est le cas de
+     « LY », dont le seul point de contact est le pied du L contre le fût du Y ;
+     une colonne de jeu y colle les deux lettres. */
+  const KERN: Record<string, number> = { LY: 1 };
+
   /** `left` / `right` valent -1 sur une rangée sans encre. Coordonnées ramenées
       à la première colonne encrée de la lettre, comme `cells`. */
-  type Glyph = { cells: number[][]; w: number; left: number[]; right: number[] };
+  type Glyph = { ch: string; cells: number[][]; w: number; left: number[]; right: number[] };
   const INK: Record<string, Glyph> = {};
   for (const [ch, g] of Object.entries(GLYPHS)) {
     const cells: number[][] = [];
@@ -95,21 +103,24 @@
     });
     INK[ch] = cells.length
       ? {
+          ch,
           cells: cells.map(([x, y]) => [x - min, y]),
           w: max - min + 1,
           left: left.map((v) => (v < 0 ? -1 : v - min)),
           right: right.map((v) => (v < 0 ? -1 : v - min)),
         }
-      : { cells: [], w: SPACE, left, right };
+      : { ch, cells: [], w: SPACE, left, right };
   }
 
   /** De combien de colonnes avancer entre le début de `a` et celui de `b`. */
   function advance(a: Glyph, b: Glyph): number {
+    const kern = KERN[a.ch + b.ch] ?? 0;
     let tight = -Infinity;
     for (let y = 0; y < M; y++)
       if (a.right[y] >= 0 && b.left[y] >= 0) tight = Math.max(tight, a.right[y] - b.left[y]);
     // deux lettres sans rangée commune n'ont rien à optimiser : chasse de boîte
-    return tight === -Infinity ? a.w + GAP : Math.max(1, tight + 1 + GAP);
+    if (tight === -Infinity) return a.w + GAP + kern;
+    return Math.max(1, tight + 1 + GAP + kern);
   }
 
   /** `cell` est le côté d'une cellule de trame, en px CSS. C'est le bon bouton,

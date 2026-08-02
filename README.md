@@ -196,8 +196,13 @@ qu'à la rangée du bas, le Y n'occupe la sienne qu'à celle du haut, et un « L
 calé sur les boîtes creuse un trou en diagonale. On cherche donc, sur chaque
 rangée où les deux lettres ont de l'encre, à quelle distance elles se frôlent,
 et on cale l'avance sur la rangée la plus serrée — une colonne de jeu. Le Y se
-glisse alors de deux colonnes sous le bras du L, et les huit autres paires de
-`GLYPHCAST` ne bougent pas d'un pixel.
+glisse alors sous le bras du L, et les huit autres paires de `GLYPHCAST` ne
+bougent pas d'un pixel.
+
+Une seule exception, `LY`, à qui on rend une colonne. Le calcul suppose que la
+rangée de contact est représentative de la paire ; quand ce contact tient à
+*une* rangée — ici le pied du L contre le fût du Y — il ne l'est pas, l'œil ne
+lit pas la colonne de contact mais le vide au-dessus.
 
 Le canvas est ensuite cadré sur les points allumés, sinon les rangées laissées
 vides par le disque deviendraient une marge morte et le wordmark ne s'alignerait
