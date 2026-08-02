@@ -1,151 +1,44 @@
 <script lang="ts">
-  /* Wordmark : chaque capitale est une trame 10 × 10 dessinée à la main, et
+  /* Wordmark : chaque capitale est une trame 7 × 7 dessinée à la main, et
      surtout une trame VALIDE — aucun point ne tombe hors du disque. Une lettre
-     est donc théoriquement affichable telle quelle sur une Glyph Matrix 10 × 10,
+     est donc théoriquement affichable telle quelle sur une Glyph Matrix 7 × 7,
      comme les 25 × 25 de l'appli le sont sur un Phone (3). C'est ce qui donne
      au wordmark le droit d'être là : ce n'est pas une évocation de matrice,
      c'en est une. */
 
   /** Côté de la matrice d'une capitale, et son masque — même convention que
       `matrix.ts` : centre au milieu, `d < r`, les coins n'existent pas.
-      80 cellules sur 100. */
-  const M = 10;
+      37 cellules sur 49. */
+  const M = 7;
   const MC = (M - 1) / 2;
   const MR = M / 2;
 
   /* Ce que le disque ouvre réellement, rangée par rangée :
 
-       0 et 9      colonnes 3-6      (4)
-       1, 2, 7, 8  colonnes 1-8      (8)
-       3 à 6       colonnes 0-9      (10)
+       0 et 6      colonnes 2-4      (3)
+       1 et 5      colonnes 1-5      (5)
+       2, 3, 4     colonnes 0-6      (7)
 
-     Les rangées 0 et 9 ne donnent que 4 colonnes : rien à y mettre. Les lettres
-     tiennent donc dans le carré 8 × 8 des rangées 1-8 × colonnes 1-8, qui est
-     le plus grand rectangle inscrit — son coin est à 24,5 du centre pour un
-     rayon au carré de 25, ça passe de justesse. Fûts d'un point, empattements
-     d'un point de part et d'autre du fût : le seul serif que huit rangées
-     autorisent. */
+     Les rangées 0 et 6 ne donnent que 3 colonnes : rien à y mettre. Les lettres
+     tiennent donc dans le carré 5 × 5 des rangées 1-5 × colonnes 1-5, le plus
+     grand rectangle inscrit.
+
+     Et c'est ici que le serif s'arrête. Un empattement, c'est un point qui
+     dépasse du fût sur la rangée extrême. Or les rangées 1 et 5 n'ouvrent que
+     les colonnes 1 à 5 — exactement l'écartement des deux fûts. Il ne reste
+     aucune colonne où dépasser. Ce n'est pas un choix de dessin, c'est le
+     disque qui refuse : à 7 × 7 la trame est linéale, point. */
   const GLYPHS: Record<string, string[]> = {
-    " ": [
-      "..........",
-      "..........",
-      "..........",
-      "..........",
-      "..........",
-      "..........",
-      "..........",
-      "..........",
-      "..........",
-      "..........",
-    ],
-    G: [
-      "..........",
-      "...####...",
-      "..#....#..",
-      ".#......#.",
-      ".#........",
-      ".#...###..",
-      ".#.....#..",
-      "..#....#..",
-      "...####...",
-      "..........",
-    ],
-    L: [
-      "..........",
-      ".###......",
-      "..#.......",
-      "..#.......",
-      "..#.......",
-      "..#.......",
-      "..#.......",
-      "..#....#..",
-      "..######..",
-      "..........",
-    ],
-    Y: [
-      "..........",
-      ".###.###..",
-      "..#...#...",
-      "...#.#....",
-      "....#.....",
-      "....#.....",
-      "....#.....",
-      "....#.....",
-      "...###....",
-      "..........",
-    ],
-    P: [
-      "..........",
-      ".#####....",
-      "..#...#...",
-      "..#...#...",
-      "..####....",
-      "..#.......",
-      "..#.......",
-      "..#.......",
-      ".###......",
-      "..........",
-    ],
-    H: [
-      "..........",
-      ".###..###.",
-      "..#....#..",
-      "..#....#..",
-      "..######..",
-      "..#....#..",
-      "..#....#..",
-      "..#....#..",
-      ".###..###.",
-      "..........",
-    ],
-    C: [
-      "..........",
-      "...####...",
-      "..#....#..",
-      ".#......#.",
-      ".#........",
-      ".#........",
-      ".#......#.",
-      "..#....#..",
-      "...####...",
-      "..........",
-    ],
-    A: [
-      "..........",
-      "....##....",
-      "...#..#...",
-      "...#..#...",
-      "..#....#..",
-      "..######..",
-      "..#....#..",
-      "..#....#..",
-      ".###..###.",
-      "..........",
-    ],
-    S: [
-      "..........",
-      "..#####...",
-      ".#.....#..",
-      ".#........",
-      "..####....",
-      "......##..",
-      ".......#..",
-      ".#.....#..",
-      "..#####...",
-      "..........",
-    ],
-    T: [
-      "..........",
-      ".#######..",
-      "....#.....",
-      "....#.....",
-      "....#.....",
-      "....#.....",
-      "....#.....",
-      "....#.....",
-      "...###....",
-      "..........",
-    ],
+    " ": [".......", ".......", ".......", ".......", ".......", ".......", "......."],
+    G: [".......", "..###..", ".#...#.", ".#.....", ".#..##.", "..###..", "......."],
+    L: [".......", ".#.....", ".#.....", ".#.....", ".#.....", ".#####.", "......."],
+    Y: [".......", ".#...#.", "..#.#..", "...#...", "...#...", "...#...", "......."],
+    P: [".......", ".####..", ".#...#.", ".####..", ".#.....", ".#.....", "......."],
+    H: [".......", ".#...#.", ".#...#.", ".#####.", ".#...#.", ".#...#.", "......."],
+    C: [".......", "..###..", ".#...#.", ".#.....", ".#...#.", "..###..", "......."],
+    A: [".......", "..###..", ".#...#.", ".#####.", ".#...#.", ".#...#.", "......."],
+    S: [".......", "..####.", ".#.....", "..###..", ".....#.", ".####..", "......."],
+    T: [".......", ".#####.", "...#...", "...#...", "...#...", "...#...", "......."],
   };
 
   /* L'invariant « ça tient sur une matrice » ne se voit pas à l'œil : un point
@@ -164,12 +57,13 @@
     }
   }
 
-  /* Chasse propre à chaque lettre, relevée sur ses points allumés, plutôt qu'une
-     avance fixe de 10 colonnes : le P fait 6 colonnes et le H en fait 8, les
-     caler sur la même avance creuserait un trou après le P. L'approche est donc
-     comptée entre les encres, pas entre les matrices. */
-  const GAP = 2; // colonnes vides entre deux lettres
-  const SPACE = 4; // chasse d'un blanc, qui n'a pas d'encre à mesurer
+  /* Chasse propre à chaque lettre, relevée sur ses points allumés, plutôt que
+     l'avance fixe des matrices : caler toutes les lettres sur la même avance
+     creuserait un trou après les étroites. L'approche est donc comptée entre
+     les encres. Une seule colonne : à 5 colonnes de chasse, deux en écarterait
+     les lettres de 40 % de leur largeur et le mot se déliterait. */
+  const GAP = 1; // colonnes vides entre deux lettres
+  const SPACE = 3; // chasse d'un blanc, qui n'a pas d'encre à mesurer
 
   type Glyph = { cells: number[][]; w: number };
   const INK: Record<string, Glyph> = {};
@@ -195,7 +89,7 @@
       diamètre les points se rejoignent, on ne voit plus que des traits et
       l'idée de matrice tombe, ce qui est tout le propos. */
   type Props = { text?: string; cell?: number };
-  let { text = "GLYPHCAST", cell = 3.6 }: Props = $props();
+  let { text = "GLYPHCAST", cell = 5.5 }: Props = $props();
 
   const STEP = 1.28; // pas de la trame, en multiples du diamètre du point
 

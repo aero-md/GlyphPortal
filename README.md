@@ -158,45 +158,47 @@ fond, repères d'imprimerie aux quatre angles, nomenclature parenthétique.
 Geist Mono partout — le wordmark est la seule exception, et il n'appelle
 aucune fonte.
 
-Chaque capitale du wordmark est une **trame 10 × 10 dessinée à la main** — et
-une trame *valide* : aucun point ne tombe hors du disque, avec la même
-convention que `matrix.ts` (centre au milieu, `d < r`, les coins n'existent
-pas). Une lettre est donc théoriquement affichable telle quelle sur une Glyph
-Matrix 10 × 10, comme les 25 × 25 de l'appli le sont sur un Phone (3). C'est ce
-qui donne au wordmark le droit d'être là : ce n'est pas une évocation de
-matrice, c'en est une. L'invariant ne se voit pas à l'œil — un point hors
-disque rend exactement comme un point dedans — donc il est vérifié au
-chargement en dev.
+Chaque capitale du wordmark est une **trame 7 × 7 dessinée à la main** — et une
+trame *valide* : aucun point ne tombe hors du disque, avec la même convention
+que `matrix.ts` (centre au milieu, `d < r`, les coins n'existent pas). Une
+lettre est donc théoriquement affichable telle quelle sur une Glyph Matrix
+7 × 7, comme les 25 × 25 de l'appli le sont sur un Phone (3). C'est ce qui donne
+au wordmark le droit d'être là : ce n'est pas une évocation de matrice, c'en est
+une. L'invariant ne se voit pas à l'œil — un point hors disque rend exactement
+comme un point dedans — donc il est vérifié au chargement en dev.
 
 Ce que le disque ouvre, rangée par rangée :
 
 | Rangées | Colonnes |
 |---|---|
-| 0 et 9 | 3-6 (4) |
-| 1, 2, 7, 8 | 1-8 (8) |
-| 3 à 6 | 0-9 (10) |
+| 0 et 6 | 2-4 (3) |
+| 1 et 5 | 1-5 (5) |
+| 2 à 4 | 0-6 (7) |
 
-Soit 80 cellules sur 100. Les rangées 0 et 9 ne donnent que 4 colonnes : rien à
-y mettre. Les lettres tiennent donc dans le **carré 8 × 8** des rangées 1-8 ×
-colonnes 1-8, le plus grand rectangle inscrit — son coin est à 24,5 du centre
-pour un rayon au carré de 25, ça passe de justesse.
+Soit 37 cellules sur 49. Les rangées 0 et 6 ne donnent que 3 colonnes : rien à y
+mettre. Les lettres tiennent donc dans le **carré 5 × 5** des rangées 1-5 ×
+colonnes 1-5, le plus grand rectangle inscrit.
 
-Elles sont dessinées et pas tramées depuis une fonte : à cette taille un
-empattement n'encre qu'une fraction de sa cellule, il passe ou saute selon le
-sous-pixel où il est tombé, et deux lettres voisines ne reçoivent pas le même
-traitement — d'où des lettres inégales. Dessinées, elles sont régulières par
-construction : fûts d'un point, empattements d'un point de part et d'autre du
-fût. C'est le seul serif que huit rangées autorisent.
+**Et c'est là que le serif s'arrête.** Un empattement, c'est un point qui
+dépasse du fût sur la rangée extrême. Or les rangées 1 et 5 n'ouvrent que les
+colonnes 1 à 5 — exactement l'écartement des deux fûts d'un H. Il ne reste
+aucune colonne où dépasser. Ce n'est pas un choix de dessin, c'est le disque qui
+refuse : à 7 × 7 la trame est linéale, point.
 
-L'approche est comptée entre les **encres**, pas entre les matrices : le P fait
-6 colonnes et le H en fait 8, une avance fixe de 10 creuserait un trou après le
-P. Deux colonnes vides entre deux lettres. Le canvas est ensuite cadré sur les
-points allumés, sinon les rangées laissées vides par le disque deviendraient
-une marge morte et le wordmark ne s'alignerait plus sur le texte posé dessous.
+Les lettres restent dessinées et non tramées depuis une fonte : à cette taille
+un empattement — ou n'importe quel détail — n'encre qu'une fraction de sa
+cellule, il passe ou saute selon le sous-pixel où il est tombé, et deux lettres
+voisines ne reçoivent pas le même traitement.
+
+L'approche est comptée entre les **encres**, pas entre les matrices, et vaut une
+seule colonne : à 5 colonnes de chasse, deux écarteraient les lettres de 40 % de
+leur largeur et le mot se déliterait. Le canvas est ensuite cadré sur les points
+allumés, sinon les rangées laissées vides par le disque deviendraient une marge
+morte et le wordmark ne s'alignerait plus sur le texte posé dessous.
 
 Reste le pas de trame, qui a un plancher : sous ~2 px de diamètre les points se
 rejoignent, on ne voit plus que des traits et l'idée de matrice tombe. D'où une
-cellule à 3,6 px — c'est la ligne éditoriale retirée de l'en-tête qui paie la
+cellule à 5,5 px — c'est la ligne éditoriale retirée de l'en-tête qui paie la
 hauteur.
 
 Thème clair par défaut, bascule en pied de page. Le thème est posé par un
