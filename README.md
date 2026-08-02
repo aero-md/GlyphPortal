@@ -190,15 +190,25 @@ un empattement — ou n'importe quel détail — n'encre qu'une fraction de sa
 cellule, il passe ou saute selon le sous-pixel où il est tombé, et deux lettres
 voisines ne reçoivent pas le même traitement.
 
-L'approche est comptée entre les **encres**, pas entre les matrices, et vaut une
-seule colonne : à 5 colonnes de chasse, deux écarteraient les lettres de 40 % de
-leur largeur et le mot se déliterait. Le canvas est ensuite cadré sur les points
-allumés, sinon les rangées laissées vides par le disque deviendraient une marge
-morte et le wordmark ne s'alignerait plus sur le texte posé dessous.
+L'approche est **optique, relevée rangée par rangée**. Une chasse fixe cale les
+boîtes d'encre et ignore ce qu'il y a dedans : le L n'occupe sa dernière colonne
+qu'à la rangée du bas, le Y n'occupe la sienne qu'à celle du haut, et un « LY »
+calé sur les boîtes creuse un trou en diagonale. On cherche donc, sur chaque
+rangée où les deux lettres ont de l'encre, à quelle distance elles se frôlent,
+et on cale l'avance sur la rangée la plus serrée — une colonne de jeu. Le Y se
+glisse alors de deux colonnes sous le bras du L, et les huit autres paires de
+`GLYPHCAST` ne bougent pas d'un pixel.
 
-Reste le pas de trame, qui a un plancher : sous ~2 px de diamètre les points se
-rejoignent, on ne voit plus que des traits et l'idée de matrice tombe. D'où une
-cellule à 5,5 px — c'est la ligne éditoriale retirée de l'en-tête qui paie la
+Le canvas est ensuite cadré sur les points allumés, sinon les rangées laissées
+vides par le disque deviendraient une marge morte et le wordmark ne s'alignerait
+plus sur le texte posé dessous.
+
+Les points sont des **LEDs `soft`** : mêmes métriques que la préview, via la
+même fonction `ledMetrics`. Le wordmark n'est pas une trame décorative posée à
+côté du rendu, c'est le même objet peint en petit — si la LED change de forme,
+il suit. Reste le pas de trame, qui a un plancher : sous ~3 px la LED tombe sous
+le gap minimum d'un pixel et la trame se referme en traits pleins. D'où une
+cellule à 5,7 px — c'est la ligne éditoriale retirée de l'en-tête qui paie la
 hauteur.
 
 Thème clair par défaut, bascule en pied de page. Le thème est posé par un

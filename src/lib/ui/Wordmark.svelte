@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { ledMetrics } from "../render";
+
   /* Wordmark : chaque capitale est une trame 7 × 7 dessinée à la main, et
      surtout une trame VALIDE — aucun point ne tombe hors du disque. Une lettre
      est donc théoriquement affichable telle quelle sur une Glyph Matrix 7 × 7,
@@ -57,48 +59,71 @@
     }
   }
 
-  /* Chasse propre à chaque lettre, relevée sur ses points allumés, plutôt que
-     l'avance fixe des matrices : caler toutes les lettres sur la même avance
-     creuserait un trou après les étroites. L'approche est donc comptée entre
-     les encres. Une seule colonne : à 5 colonnes de chasse, deux en écarterait
-     les lettres de 40 % de leur largeur et le mot se déliterait. */
-  const GAP = 1; // colonnes vides entre deux lettres
+  /* Approche optique, relevée rangée par rangée, et non une chasse fixe. Une
+     chasse fixe cale les boîtes d'encre et ignore ce qu'il y a dedans : le L
+     n'occupe sa dernière colonne qu'à la rangée du bas et le Y n'occupe la
+     sienne qu'à celle du haut, si bien qu'un « LY » calé sur les boîtes creuse
+     un trou en diagonale entre les deux.
+
+     On cherche donc, sur chaque rangée où les deux lettres ont de l'encre, à
+     quelle distance elles se frôlent, et on cale l'avance sur la rangée la plus
+     serrée. Le Y se glisse alors de deux colonnes sous le bras du L, et les
+     huit autres paires ne bougent pas d'un pixel — preuve que le problème était
+     bien local et pas un réglage général de chasse. */
+  const GAP = 1; // colonnes vides sur la rangée la plus serrée d'une paire
   const SPACE = 3; // chasse d'un blanc, qui n'a pas d'encre à mesurer
 
-  type Glyph = { cells: number[][]; w: number };
+  /** `left` / `right` valent -1 sur une rangée sans encre. Coordonnées ramenées
+      à la première colonne encrée de la lettre, comme `cells`. */
+  type Glyph = { cells: number[][]; w: number; left: number[]; right: number[] };
   const INK: Record<string, Glyph> = {};
   for (const [ch, g] of Object.entries(GLYPHS)) {
     const cells: number[][] = [];
+    const left = new Array<number>(M).fill(-1);
+    const right = new Array<number>(M).fill(-1);
     let min = Infinity;
     let max = -Infinity;
     g.forEach((row, y) => {
       for (let x = 0; x < row.length; x++) {
         if (row[x] !== "#") continue;
         cells.push([x, y]);
+        if (left[y] < 0) left[y] = x;
+        right[y] = x;
         if (x < min) min = x;
         if (x > max) max = x;
       }
     });
     INK[ch] = cells.length
-      ? { cells: cells.map(([x, y]) => [x - min, y]), w: max - min + 1 }
-      : { cells: [], w: SPACE };
+      ? {
+          cells: cells.map(([x, y]) => [x - min, y]),
+          w: max - min + 1,
+          left: left.map((v) => (v < 0 ? -1 : v - min)),
+          right: right.map((v) => (v < 0 ? -1 : v - min)),
+        }
+      : { cells: [], w: SPACE, left, right };
   }
 
-  /** `cell` est le côté d'une cellule de trame, en px CSS — le point en fait
-      `1 / STEP`. C'est le bon bouton, et il a un plancher : sous ~2 px de
-      diamètre les points se rejoignent, on ne voit plus que des traits et
-      l'idée de matrice tombe, ce qui est tout le propos. */
-  type Props = { text?: string; cell?: number };
-  let { text = "GLYPHCAST", cell = 5.5 }: Props = $props();
+  /** De combien de colonnes avancer entre le début de `a` et celui de `b`. */
+  function advance(a: Glyph, b: Glyph): number {
+    let tight = -Infinity;
+    for (let y = 0; y < M; y++)
+      if (a.right[y] >= 0 && b.left[y] >= 0) tight = Math.max(tight, a.right[y] - b.left[y]);
+    // deux lettres sans rangée commune n'ont rien à optimiser : chasse de boîte
+    return tight === -Infinity ? a.w + GAP : Math.max(1, tight + 1 + GAP);
+  }
 
-  const STEP = 1.28; // pas de la trame, en multiples du diamètre du point
+  /** `cell` est le côté d'une cellule de trame, en px CSS. C'est le bon bouton,
+      et il a un plancher : sous ~3 px la LED tombe sous le gap minimum d'un
+      pixel de `ledMetrics` et la trame se referme en traits pleins, ce qui tue
+      tout le propos. */
+  type Props = { text?: string; cell?: number };
+  let { text = "GLYPHCAST", cell = 5.7 }: Props = $props();
 
   let cvs = $state<HTMLCanvasElement>();
 
   function draw() {
     if (!cvs) return;
     const dpr = Math.min(2, window.devicePixelRatio || 1);
-    const dot = cell / STEP;
 
     const word = [...text.toUpperCase()].map((ch) => INK[ch]).filter(Boolean);
     if (!word.length) return;
@@ -108,33 +133,49 @@
        le texte posé dessous. En x le cadrage est acquis, la plume part de 0. */
     const pts: number[][] = [];
     let pen = 0;
+    let prev: Glyph | null = null;
     let y0 = Infinity;
     let y1 = -Infinity;
     for (const g of word) {
+      if (prev) pen += advance(prev, g);
       for (const [x, y] of g.cells) {
         pts.push([pen + x, y]);
         if (y < y0) y0 = y;
         if (y > y1) y1 = y;
       }
-      pen += g.w + GAP;
+      prev = g;
     }
     if (!pts.length) return;
 
-    const w = (pen - GAP) * cell;
+    const w = (pen + prev!.w) * cell;
     const h = (y1 - y0 + 1) * cell;
     cvs.width = Math.round(w * dpr);
     cvs.height = Math.round(h * dpr);
     cvs.style.width = w + "px";
     cvs.style.height = h + "px";
 
+    /* Les points sont des LEDs `soft` : mêmes métriques que la préview, via la
+       même fonction. Le wordmark n'est pas une trame décorative posée à côté du
+       rendu, c'est le même objet peint en petit — si un jour la LED change de
+       forme, il suit sans qu'on y pense. */
+    const { led, pad } = ledMetrics(cell, "soft");
+    const radius = led * 0.24;
+
     const ctx = cvs.getContext("2d")!;
+    const rounded = radius > 0.5 && typeof ctx.roundRect === "function";
     ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, w, h);
     ctx.fillStyle = getComputedStyle(cvs).color;
     for (const [x, y] of pts) {
-      ctx.beginPath();
-      ctx.arc(x * cell + cell / 2, (y - y0) * cell + cell / 2, dot / 2, 0, Math.PI * 2);
-      ctx.fill();
+      const px = x * cell + pad;
+      const py = (y - y0) * cell + pad;
+      if (rounded) {
+        ctx.beginPath();
+        ctx.roundRect(px, py, led, led, radius);
+        ctx.fill();
+      } else {
+        ctx.fillRect(px, py, led, led);
+      }
     }
   }
 
