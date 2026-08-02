@@ -4,7 +4,9 @@ Convertit une image en rendu **Glyph Matrix** pour Nothing Phone (3), avec
 préview posée sur le dos de l'appareil et un rack de réglages pour fine-tuner
 le passage image → LEDs.
 
-Tout se passe dans le navigateur : l'image n'est jamais envoyée nulle part.
+Tout se passe dans le navigateur : l'image n'est jamais envoyée nulle part, et
+l'appli n'émet aucune requête réseau une fois chargée. Seul le chargement va
+chercher Geist Mono chez Google Fonts.
 
 ```
 bun install
@@ -118,7 +120,8 @@ Deux échelles, au choix :
 
 - **Téléphone** — la matrice à sa taille réelle sur la photo du dos : 150 px de
   diamètre pour un appareil rendu à 576 px de large, soit 6 px par LED.
-  Maintenir le Glyph Button compare avec le rendu sans aucun réglage.
+  Maintenir le Glyph Button compare avec le même cadrage et la tonalité au
+  repos.
 - **Grand** — le disque seul sur toute la largeur de la colonne, pour lire LED
   par LED ce que fait un curseur.
 

@@ -15,9 +15,15 @@ Transformer une image arbitraire en une trame de luminosités pilotable par la
 **Glyph Matrix** d'un Nothing Phone (3), avec une préview fidèle et de quoi
 régler finement le passage image → LEDs.
 
-Tout est exécuté dans le navigateur. Aucune image, aucun réglage, aucune
-donnée ne quitte la machine : il n'y a pas de requête réseau après le
-chargement de la page.
+Tout le traitement est exécuté dans le navigateur. Aucune image, aucun réglage,
+aucune trame ne quitte la machine : il n'y a pas une seule requête réseau après
+le chargement de la page.
+
+Une réserve, à l'honnêteté : le **chargement**, lui, va chercher Geist Mono
+chez `fonts.googleapis.com` et `fonts.gstatic.com`. Ça n'expose rien de ce que
+l'utilisateur fait dans l'appli, mais ça envoie son IP et son *User-Agent* à
+Google à chaque visite. La seule façon de tenir la promesse au sens strict est
+d'héberger la fonte avec le reste.
 
 ### Hors périmètre
 
@@ -309,6 +315,15 @@ Le relâchement, la sortie du pointeur et l'annulation du geste par le
 navigateur reviennent tous au rendu courant. Au clavier, `Entrée` / `Espace`
 maintiennent tant que la touche est enfoncée.
 
+Sans image, il n'y a rien à comparer : le bouton est désactivé et le rappel
+« maintenir » n'est pas affiché — une légende qui promet une action que le
+bouton ne rend pas se lit comme un bug.
+
+À noter que tant qu'**aucun réglage tonal n'a été touché**, la référence est
+identique au rendu courant au dither près, et maintenir ne montre donc presque
+rien. C'est correct, pas une panne : la comparaison n'a de contenu qu'une fois
+qu'il y a quelque chose à comparer.
+
 ### 5.4 Préview
 
 Deux axes indépendants.
@@ -412,7 +427,7 @@ rentre pas dans la hauteur laissée par l'en-tête et le pied, son cadre la rogn
 par le bas.
 
 **Colonne unique** (980 px et moins). Défilement de page classique, un seul
-ascenseur. L'en-tête défile — collant il volerait 160 px à la préview — et
+ascenseur. L'en-tête défile — collant il volerait 135 px à la préview — et
 c'est la **colonne de préview qui s'épingle en haut de l'écran**, réduite à la
 bande qui porte le disque, le rack passant dessous.
 
@@ -499,7 +514,8 @@ Vrais après chaque conversion, quels que soient l'image et les réglages :
 2. `values[i] === 0` pour les 136 cellules hors disque.
 3. `0 ≤ values[i] ≤ plafond` pour toutes les cellules.
 4. `lit` ≤ 489 et compte exactement les cellules `> 0`.
-5. Aucune requête réseau n'est émise après le chargement de la page.
+5. Aucune requête réseau n'est émise après le chargement de la page. Le
+   chargement lui-même appelle Google Fonts pour Geist Mono — voir § 1.
 6. Deux `Params` égaux sur la même image produisent des `values` identiques —
    le dithering est déterministe, la trame de Bayer est fixe et le serpentin
    de Floyd-Steinberg parcourt toujours la grille dans le même ordre.
