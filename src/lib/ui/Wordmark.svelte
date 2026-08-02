@@ -1,180 +1,150 @@
 <script lang="ts">
-  /* Wordmark : chaque capitale est une trame 13 × 13 dessinée à la main, et
+  /* Wordmark : chaque capitale est une trame 10 × 10 dessinée à la main, et
      surtout une trame VALIDE — aucun point ne tombe hors du disque. Une lettre
-     est donc théoriquement affichable telle quelle sur une Glyph Matrix 13 × 13,
+     est donc théoriquement affichable telle quelle sur une Glyph Matrix 10 × 10,
      comme les 25 × 25 de l'appli le sont sur un Phone (3). C'est ce qui donne
      au wordmark le droit d'être là : ce n'est pas une évocation de matrice,
-     c'en est une.
-
-     La version précédente tramait une fonte serif rendue hors écran. À cette
-     taille ça ne pardonne pas : un empattement n'encre qu'une fraction de sa
-     cellule, il passe ou saute selon le sous-pixel où il est tombé, et deux
-     lettres voisines ne reçoivent pas le même traitement — d'où des lettres
-     inégales. Dessinées, elles sont régulières par construction : fûts d'un
-     point, empattements d'un point de part et d'autre du fût. C'est le seul
-     serif qu'un disque de 13 autorise. */
+     c'en est une. */
 
   /** Côté de la matrice d'une capitale, et son masque — même convention que
-      `matrix.ts` : centre au milieu, `d < r`, les coins n'existent pas. */
-  const M = 13;
+      `matrix.ts` : centre au milieu, `d < r`, les coins n'existent pas.
+      80 cellules sur 100. */
+  const M = 10;
   const MC = (M - 1) / 2;
   const MR = M / 2;
 
-  /* Le disque n'ouvre que 5 colonnes sur les rangées 0 et 12 : inutilisable
-     pour un empattement. Les lettres vivent donc sur les rangées 1 à 11, où
-     le disque donne 9 colonnes aux extrêmes et 11 au milieu, et n'occupent
-     jamais les colonnes 0 et 12 — ces deux-là sont l'approche, deux colonnes
-     vides entre deux lettres voisines, sans crénage à gérer. */
+  /* Ce que le disque ouvre réellement, rangée par rangée :
+
+       0 et 9      colonnes 3-6      (4)
+       1, 2, 7, 8  colonnes 1-8      (8)
+       3 à 6       colonnes 0-9      (10)
+
+     Les rangées 0 et 9 ne donnent que 4 colonnes : rien à y mettre. Les lettres
+     tiennent donc dans le carré 8 × 8 des rangées 1-8 × colonnes 1-8, qui est
+     le plus grand rectangle inscrit — son coin est à 24,5 du centre pour un
+     rayon au carré de 25, ça passe de justesse. Fûts d'un point, empattements
+     d'un point de part et d'autre du fût : le seul serif que huit rangées
+     autorisent. */
   const GLYPHS: Record<string, string[]> = {
     " ": [
-      ".............",
-      ".............",
-      ".............",
-      ".............",
-      ".............",
-      ".............",
-      ".............",
-      ".............",
-      ".............",
-      ".............",
-      ".............",
-      ".............",
-      ".............",
+      "..........",
+      "..........",
+      "..........",
+      "..........",
+      "..........",
+      "..........",
+      "..........",
+      "..........",
+      "..........",
+      "..........",
     ],
     G: [
-      ".............",
-      "....#####....",
-      "..##.....##..",
-      ".##.......##.",
-      ".#.........#.",
-      ".#...........",
-      ".#....#####..",
-      ".#........#..",
-      ".#........#..",
-      ".##.......#..",
-      "..##.....##..",
-      "....#####....",
-      ".............",
+      "..........",
+      "...####...",
+      "..#....#..",
+      ".#......#.",
+      ".#........",
+      ".#...###..",
+      ".#.....#..",
+      "..#....#..",
+      "...####...",
+      "..........",
     ],
     L: [
-      ".............",
-      "..###........",
-      "...#.........",
-      "...#.........",
-      "...#.........",
-      "...#.........",
-      "...#.........",
-      "...#.........",
-      "...#.........",
-      "...#.........",
-      "...#......#..",
-      "...########..",
-      ".............",
+      "..........",
+      ".###......",
+      "..#.......",
+      "..#.......",
+      "..#.......",
+      "..#.......",
+      "..#.......",
+      "..#....#..",
+      "..######..",
+      "..........",
     ],
     Y: [
-      ".............",
-      "..###...###..",
-      "...#.....#...",
-      "....#...#....",
-      ".....#.#.....",
-      "......#......",
-      "......#......",
-      "......#......",
-      "......#......",
-      "......#......",
-      "......#......",
-      "....#####....",
-      ".............",
+      "..........",
+      ".###.###..",
+      "..#...#...",
+      "...#.#....",
+      "....#.....",
+      "....#.....",
+      "....#.....",
+      "....#.....",
+      "...###....",
+      "..........",
     ],
     P: [
-      ".............",
-      "..########...",
-      "...#.....##..",
-      "...#......#..",
-      "...#......#..",
-      "...#.....##..",
-      "...######....",
-      "...#.........",
-      "...#.........",
-      "...#.........",
-      "...#.........",
-      "..###........",
-      ".............",
+      "..........",
+      ".#####....",
+      "..#...#...",
+      "..#...#...",
+      "..####....",
+      "..#.......",
+      "..#.......",
+      "..#.......",
+      ".###......",
+      "..........",
     ],
     H: [
-      ".............",
-      "..###...###..",
-      "...#.....#...",
-      "...#.....#...",
-      "...#.....#...",
-      "...#.....#...",
-      "...#######...",
-      "...#.....#...",
-      "...#.....#...",
-      "...#.....#...",
-      "...#.....#...",
-      "..###...###..",
-      ".............",
+      "..........",
+      ".###..###.",
+      "..#....#..",
+      "..#....#..",
+      "..######..",
+      "..#....#..",
+      "..#....#..",
+      "..#....#..",
+      ".###..###.",
+      "..........",
     ],
     C: [
-      ".............",
-      "....#####....",
-      "..##.....##..",
-      ".##.......##.",
-      ".#.........#.",
-      ".#...........",
-      ".#...........",
-      ".#...........",
-      ".#.........#.",
-      ".##.......##.",
-      "..##.....##..",
-      "....#####....",
-      ".............",
+      "..........",
+      "...####...",
+      "..#....#..",
+      ".#......#.",
+      ".#........",
+      ".#........",
+      ".#......#.",
+      "..#....#..",
+      "...####...",
+      "..........",
     ],
     A: [
-      ".............",
-      ".....###.....",
-      ".....#.#.....",
-      "....#...#....",
-      "....#...#....",
-      "...#.....#...",
-      "...#######...",
-      "...#.....#...",
-      "..#.......#..",
-      "..#.......#..",
-      "..#.......#..",
-      "..###...###..",
-      ".............",
+      "..........",
+      "....##....",
+      "...#..#...",
+      "...#..#...",
+      "..#....#..",
+      "..######..",
+      "..#....#..",
+      "..#....#..",
+      ".###..###.",
+      "..........",
     ],
     S: [
-      ".............",
-      "...######....",
-      "..##....##...",
-      ".##......#...",
-      ".##..........",
-      "..##.........",
-      "....##.......",
-      "......##.....",
-      "........##...",
-      ".#........#..",
-      "..##....##...",
-      "...######....",
-      ".............",
+      "..........",
+      "..#####...",
+      ".#.....#..",
+      ".#........",
+      "..####....",
+      "......##..",
+      ".......#..",
+      ".#.....#..",
+      "..#####...",
+      "..........",
     ],
     T: [
-      ".............",
-      "..#########..",
-      "......#......",
-      "......#......",
-      "......#......",
-      "......#......",
-      "......#......",
-      "......#......",
-      "......#......",
-      "......#......",
-      "......#......",
-      "....#####....",
-      ".............",
+      "..........",
+      ".#######..",
+      "....#.....",
+      "....#.....",
+      "....#.....",
+      "....#.....",
+      "....#.....",
+      "....#.....",
+      "...###....",
+      "..........",
     ],
   };
 
@@ -194,12 +164,38 @@
     }
   }
 
+  /* Chasse propre à chaque lettre, relevée sur ses points allumés, plutôt qu'une
+     avance fixe de 10 colonnes : le P fait 6 colonnes et le H en fait 8, les
+     caler sur la même avance creuserait un trou après le P. L'approche est donc
+     comptée entre les encres, pas entre les matrices. */
+  const GAP = 2; // colonnes vides entre deux lettres
+  const SPACE = 4; // chasse d'un blanc, qui n'a pas d'encre à mesurer
+
+  type Glyph = { cells: number[][]; w: number };
+  const INK: Record<string, Glyph> = {};
+  for (const [ch, g] of Object.entries(GLYPHS)) {
+    const cells: number[][] = [];
+    let min = Infinity;
+    let max = -Infinity;
+    g.forEach((row, y) => {
+      for (let x = 0; x < row.length; x++) {
+        if (row[x] !== "#") continue;
+        cells.push([x, y]);
+        if (x < min) min = x;
+        if (x > max) max = x;
+      }
+    });
+    INK[ch] = cells.length
+      ? { cells: cells.map(([x, y]) => [x - min, y]), w: max - min + 1 }
+      : { cells: [], w: SPACE };
+  }
+
   /** `cell` est le côté d'une cellule de trame, en px CSS — le point en fait
       `1 / STEP`. C'est le bon bouton, et il a un plancher : sous ~2 px de
       diamètre les points se rejoignent, on ne voit plus que des traits et
       l'idée de matrice tombe, ce qui est tout le propos. */
   type Props = { text?: string; cell?: number };
-  let { text = "GLYPHCAST", cell = 2.6 }: Props = $props();
+  let { text = "GLYPHCAST", cell = 3.6 }: Props = $props();
 
   const STEP = 1.28; // pas de la trame, en multiples du diamètre du point
 
@@ -210,33 +206,27 @@
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     const dot = cell / STEP;
 
-    const word = [...text.toUpperCase()].map((ch) => GLYPHS[ch]).filter(Boolean);
+    const word = [...text.toUpperCase()].map((ch) => INK[ch]).filter(Boolean);
     if (!word.length) return;
 
-    /* On relève les points allumés et leur boîte : les rangées et colonnes que
-       le disque laisse vides seraient sinon une marge morte, et le wordmark ne
-       s'alignerait plus sur le texte posé dessous. */
+    /* Les rangées que le disque laisse vides seraient une marge morte : on
+       cadre sur les points allumés, sinon le wordmark ne s'alignerait plus sur
+       le texte posé dessous. En x le cadrage est acquis, la plume part de 0. */
     const pts: number[][] = [];
-    let x0 = Infinity;
-    let x1 = -Infinity;
+    let pen = 0;
     let y0 = Infinity;
     let y1 = -Infinity;
-    word.forEach((g, i) => {
-      for (let y = 0; y < M; y++) {
-        for (let x = 0; x < M; x++) {
-          if (g[y][x] !== "#") continue;
-          const gx = i * M + x;
-          pts.push([gx, y]);
-          if (gx < x0) x0 = gx;
-          if (gx > x1) x1 = gx;
-          if (y < y0) y0 = y;
-          if (y > y1) y1 = y;
-        }
+    for (const g of word) {
+      for (const [x, y] of g.cells) {
+        pts.push([pen + x, y]);
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
       }
-    });
+      pen += g.w + GAP;
+    }
     if (!pts.length) return;
 
-    const w = (x1 - x0 + 1) * cell;
+    const w = (pen - GAP) * cell;
     const h = (y1 - y0 + 1) * cell;
     cvs.width = Math.round(w * dpr);
     cvs.height = Math.round(h * dpr);
@@ -249,7 +239,7 @@
     ctx.fillStyle = getComputedStyle(cvs).color;
     for (const [x, y] of pts) {
       ctx.beginPath();
-      ctx.arc((x - x0) * cell + cell / 2, (y - y0) * cell + cell / 2, dot / 2, 0, Math.PI * 2);
+      ctx.arc(x * cell + cell / 2, (y - y0) * cell + cell / 2, dot / 2, 0, Math.PI * 2);
       ctx.fill();
     }
   }

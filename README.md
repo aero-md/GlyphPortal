@@ -158,34 +158,45 @@ fond, repères d'imprimerie aux quatre angles, nomenclature parenthétique.
 Geist Mono partout — le wordmark est la seule exception, et il n'appelle
 aucune fonte.
 
-Chaque capitale du wordmark est une **trame 13 × 13 dessinée à la main** — et
+Chaque capitale du wordmark est une **trame 10 × 10 dessinée à la main** — et
 une trame *valide* : aucun point ne tombe hors du disque, avec la même
 convention que `matrix.ts` (centre au milieu, `d < r`, les coins n'existent
 pas). Une lettre est donc théoriquement affichable telle quelle sur une Glyph
-Matrix 13 × 13, comme les 25 × 25 de l'appli le sont sur un Phone (3). C'est ce
+Matrix 10 × 10, comme les 25 × 25 de l'appli le sont sur un Phone (3). C'est ce
 qui donne au wordmark le droit d'être là : ce n'est pas une évocation de
 matrice, c'en est une. L'invariant ne se voit pas à l'œil — un point hors
 disque rend exactement comme un point dedans — donc il est vérifié au
 chargement en dev.
 
-La version précédente tramait une serif rendue hors écran : à cette taille un
+Ce que le disque ouvre, rangée par rangée :
+
+| Rangées | Colonnes |
+|---|---|
+| 0 et 9 | 3-6 (4) |
+| 1, 2, 7, 8 | 1-8 (8) |
+| 3 à 6 | 0-9 (10) |
+
+Soit 80 cellules sur 100. Les rangées 0 et 9 ne donnent que 4 colonnes : rien à
+y mettre. Les lettres tiennent donc dans le **carré 8 × 8** des rangées 1-8 ×
+colonnes 1-8, le plus grand rectangle inscrit — son coin est à 24,5 du centre
+pour un rayon au carré de 25, ça passe de justesse.
+
+Elles sont dessinées et pas tramées depuis une fonte : à cette taille un
 empattement n'encre qu'une fraction de sa cellule, il passe ou saute selon le
 sous-pixel où il est tombé, et deux lettres voisines ne reçoivent pas le même
 traitement — d'où des lettres inégales. Dessinées, elles sont régulières par
 construction : fûts d'un point, empattements d'un point de part et d'autre du
-fût. C'est le seul serif qu'un disque de 13 autorise.
+fût. C'est le seul serif que huit rangées autorisent.
 
-Le disque n'ouvre que 5 colonnes sur les rangées 0 et 12 : inutilisable pour un
-empattement. Les lettres vivent donc sur les rangées 1 à 11, où le disque donne
-9 colonnes aux extrêmes et 11 au milieu, et n'occupent jamais les colonnes 0 et
-12 — ces deux-là sont l'approche, deux colonnes vides entre deux lettres, avance
-fixe, pas de crénage. Le canvas est ensuite cadré sur les points allumés, sinon
-les rangées et colonnes laissées vides par le disque deviendraient une marge
-morte et le wordmark ne s'alignerait plus sur le texte posé dessous.
+L'approche est comptée entre les **encres**, pas entre les matrices : le P fait
+6 colonnes et le H en fait 8, une avance fixe de 10 creuserait un trou après le
+P. Deux colonnes vides entre deux lettres. Le canvas est ensuite cadré sur les
+points allumés, sinon les rangées laissées vides par le disque deviendraient
+une marge morte et le wordmark ne s'alignerait plus sur le texte posé dessous.
 
 Reste le pas de trame, qui a un plancher : sous ~2 px de diamètre les points se
 rejoignent, on ne voit plus que des traits et l'idée de matrice tombe. D'où une
-cellule à 2,6 px — c'est la ligne éditoriale retirée de l'en-tête qui paie la
+cellule à 3,6 px — c'est la ligne éditoriale retirée de l'en-tête qui paie la
 hauteur.
 
 Thème clair par défaut, bascule en pied de page. Le thème est posé par un
