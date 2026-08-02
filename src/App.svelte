@@ -216,8 +216,11 @@
 <div class="page" class:dragging>
   <header>
     <Wordmark text="GLYPHCAST" />
+    <!-- registre « plaque d'instrument » : la cible d'abord, constantes vives,
+         puis ce que fait l'outil. Les capitales viennent de `.meta`. -->
     <p class="sub meta">
-      Convertit une image en trame de LEDs pour la Glyph Matrix d'un Nothing Phone (3)
+      Glyph Matrix {SIZE}×{SIZE} · Nothing Phone (3) · Stylisez une image en la projetant sur
+      la Glyph Matrix
     </p>
   </header>
 
