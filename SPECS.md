@@ -260,8 +260,15 @@ diverger donnerait un curseur qui ment, le pouce épinglé au maximum sur une
 valeur plus grande.
 
 Chaque curseur affiche une pastille rouge quand sa valeur s'écarte de son
-repos, et un clic sur son libellé l'y ramène. **Repos** remet tous les
-réglages aux défauts, **Recadrer** remet les seuls réglages de cadrage.
+repos, et un clic sur son libellé l'y ramène. **Recadrer** remet les seuls
+réglages de cadrage.
+
+Il n'y a **pas** de remise à zéro globale. Elle a existé, posée dans la carte
+`[06] Export` entre les boutons de téléchargement : un bouton qui efface vingt
+minutes de cadrage à un pixel des boutons qui exportent le résultat. Aucun des
+deux voisinages n'était sauvable — ni le libellé, ni la place. Le retour au
+repos se fait donc curseur par curseur, ce qui est de toute façon le geste
+qu'on veut neuf fois sur dix : on annule *un* réglage, pas tout le travail.
 
 #### Presets du mixeur de canaux
 

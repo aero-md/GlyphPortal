@@ -147,11 +147,6 @@
     params.wB = b;
   }
 
-  function resetAll() {
-    params = { ...DEFAULTS };
-    flash("Réglages au repos");
-  }
-
   /** Étale l'histogramme sur toute la plage : les gates se posent sur les
       extrêmes réellement présents dans l'image, pas sur 0 et 1 théoriques. */
   function autoLevels() {
@@ -403,7 +398,6 @@
             <input type="file" accept="application/json,.json" onchange={importJson} />
             Recharger .json
           </label>
-          <button type="button" onclick={resetAll}>Repos</button>
         </div>
         <pre class="code" aria-label="IntArray Kotlin">{kotlin}</pre>
       </Card>
