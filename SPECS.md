@@ -236,9 +236,26 @@ un fichier image que le navigateur ne sait pas décoder l'est aussi. Le
 `objectURL` précédent est révoqué au chargement du suivant, jamais avant que
 le nouveau soit décodé.
 
-Sans image, la matrice est éteinte, tous les exports sont désactivés et un
-message explique les trois voies de chargement. Aucun contenu de démonstration
-n'est affiché.
+Sans image, la matrice est éteinte, un message explique les trois voies de
+chargement, et **il n'y a qu'un seul geste possible dans toute la page** :
+
+| Élément | État sans image |
+|---|---|
+| Zone de dépôt `[01]` | seul aplat de couleur de la page, jaune Nothing |
+| Cartes `[02]` à `[05]` | contenu `inert` et grisé à 32 % |
+| Exports `[06]` | boutons `disabled` |
+| Glyph Button | `disabled`, sans légende |
+| Recharger `.json` | **actif** — il ne restaure que des curseurs |
+| Échelle et style de préview | **actifs** — ils règlent le regard, pas l'image |
+
+Le verrouillage passe par `inert` sur le corps de carte, pas par un `disabled`
+sur chaque contrôle : ça sort aussi la carte de l'ordre de tabulation, et il n'y
+a pas quinze occasions d'en oublier un. Les en-têtes `[nn]` restent nets — la
+structure numérotée doit rester lisible même éteinte, c'est elle qui annonce ce
+qui attend l'image.
+
+Aucun contenu de démonstration n'est affiché : la page ne montre jamais un
+résultat que l'utilisateur n'a pas produit.
 
 ### 5.2 Réglages
 

@@ -217,7 +217,7 @@
   <header>
     <Wordmark text="GLYPHCAST" />
     <p class="sub meta">
-      Glyph Matrix {SIZE}×{SIZE} — Nothing Phone (3) · monochrome · {LED_COUNT} LEDs dans le disque
+      Convertit une image en trame de LEDs pour la Glyph Matrix d'un Nothing Phone (3)
     </p>
   </header>
 
@@ -263,7 +263,9 @@
       style="--fade-t:{fadeTop}px;--fade-b:{fadeBot}px"
     >
       <Card ref="01" title="Source" stat={hasImg ? `${srcW}×${srcH}` : "aucune"}>
-        <label class="drop" class:armed={dragging}>
+        <!-- tant qu'il n'y a rien à convertir, c'est le seul geste possible :
+             il porte le jaune, tout le reste est éteint -->
+        <label class="drop" class:cta={!hasImg} class:armed={dragging}>
           <input type="file" accept="image/*" onchange={pickFile} />
           <span class="drop-t">{hasImg ? fileName : "Choisir une image"}</span>
           <span class="drop-s label">Glisser-déposer · Coller · Parcourir</span>
@@ -273,7 +275,7 @@
         </p>
       </Card>
 
-      <Card ref="02" title="Cadrage" stat="{Math.round(params.zoom * 100)} %">
+      <Card ref="02" title="Cadrage" stat="{Math.round(params.zoom * 100)} %" locked={!hasImg}>
         <Slider label="Zoom" bind:value={params.zoom} range={R.zoom} reset={DEFAULTS.zoom} format={pct} />
         <Slider label="Décalage X" bind:value={params.offsetX} range={R.offsetX} reset={0} format={signed} />
         <Slider label="Décalage Y" bind:value={params.offsetY} range={R.offsetY} reset={0} format={signed} />
@@ -307,7 +309,7 @@
         </div>
       </Card>
 
-      <Card ref="03" title="Mixeur de canaux" stat="monochrome">
+      <Card ref="03" title="Mixeur de canaux" stat="monochrome" locked={!hasImg}>
         <p class="note">
           La matrice n'a pas de couleur : ces poids décident de la part de chaque canal dans la
           luminance. C'est un filtre coloré de photo noir et blanc — monter le rouge éclaircit les
@@ -323,7 +325,7 @@
         </div>
       </Card>
 
-      <Card ref="04" title="Tonalité" stat={params.invert ? "inversé" : "direct"}>
+      <Card ref="04" title="Tonalité" stat={params.invert ? "inversé" : "direct"} locked={!hasImg}>
         <Slider
           label="Exposition"
           bind:value={params.exposure}
@@ -345,7 +347,7 @@
         </div>
       </Card>
 
-      <Card ref="05" title="Sortie LED" stat="{params.levels} paliers">
+      <Card ref="05" title="Sortie LED" stat="{params.levels} paliers" locked={!hasImg}>
         <Slider
           label="Paliers de luminosité"
           bind:value={params.levels}
@@ -542,6 +544,30 @@
   .drop.armed {
     background: var(--hover);
     border-color: var(--accent);
+  }
+
+  /* Seul aplat de couleur de toute la page, et il ne dure pas : dès qu'une
+     image est chargée la zone repasse en filet neutre. Le jaune ne décore pas,
+     il désigne le seul geste possible — c'est aussi pour ça qu'il n'y en a
+     qu'un. Encre en dur, le jaune ne bouge pas avec le thème. */
+  .drop.cta {
+    background: var(--nothing);
+    border-color: var(--nothing);
+  }
+
+  .drop.cta:hover,
+  .drop.cta.armed {
+    background: var(--nothing-deep);
+    border-color: var(--ink);
+  }
+
+  .drop.cta .drop-t {
+    color: #14161a;
+    font-weight: 500;
+  }
+
+  .drop.cta .drop-s {
+    color: rgba(20, 22, 26, 0.62);
   }
 
   .drop input {

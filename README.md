@@ -21,7 +21,9 @@ Le détail fonctionnel — formules, bornes, invariants, schéma JSON — est da
 ## Fonctions
 
 - **Charger une image** par glisser-déposer n'importe où sur la page, par
-  collage (`Ctrl+V`) ou par sélecteur de fichier.
+  collage (`Ctrl+V`) ou par sélecteur de fichier. Tant qu'il n'y a pas d'image,
+  c'est la seule chose cliquable : les réglages sont éteints et la zone de dépôt
+  est le seul élément coloré de la page.
 - **Cadrer** : zoom, décalage X/Y, rotation au degré, rotations rapides ± 90°.
 - **Doser les canaux** R/G/B — la matrice étant monochrome, ces poids agissent
   comme un filtre coloré de photo noir et blanc. Six presets, dont un filtre
@@ -161,6 +163,14 @@ LEDs, filets de 1 px, un seul accent rouge en ponctuation, grille de points en
 fond, repères d'imprimerie aux quatre angles, sections numérotées entre
 crochets. Geist Mono partout — le wordmark est la seule exception, et il
 n'appelle aucune fonte.
+
+Une seconde couleur, le **jaune Nothing**, et un seul emploi : la zone de dépôt
+tant qu'aucune image n'est chargée. C'est le seul aplat de couleur de la page et
+il ne dure pas — dès qu'il y a une image, la zone repasse en filet neutre et le
+jaune disparaît. Il ne décore rien, il désigne le seul geste possible ; le
+diluer ailleurs lui retirerait sa fonction. Tout le reste du rack est éteint
+pendant ce temps, si bien qu'un visiteur qui ne connaît ni l'appli ni l'appareil
+n'a matériellement rien d'autre à cliquer.
 
 Chaque capitale du wordmark est une **trame 7 × 7 dessinée à la main** — et une
 trame *valide* : aucun point ne tombe hors du disque, avec la même convention

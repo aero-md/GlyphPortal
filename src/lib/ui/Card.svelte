@@ -9,10 +9,16 @@
     title: string;
     /** Valeur d'état affichée à droite du titre (compteur, mode actif…). */
     stat?: string;
+    /** Grise et neutralise le contenu — un réglage qui n'a rien à régler.
+        `inert` plutôt qu'un `disabled` sur chaque contrôle : ça sort aussi la
+        carte de l'ordre de tabulation, ce que quinze `disabled` ne feraient
+        qu'à condition de n'en oublier aucun. L'en-tête reste net, la structure
+        numérotée doit rester lisible même verrouillée. */
+    locked?: boolean;
     children: Snippet;
   };
 
-  let { ref, title, stat, children }: Props = $props();
+  let { ref, title, stat, locked = false, children }: Props = $props();
 </script>
 
 <section class="card">
@@ -21,7 +27,7 @@
     <h2>{title}</h2>
     {#if stat}<span class="stat">{stat}</span>{/if}
   </header>
-  <div class="body">
+  <div class="body" class:locked inert={locked}>
     {@render children()}
   </div>
 </section>
@@ -69,5 +75,11 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+  }
+
+  /* assez pâle pour se lire comme éteint, assez lisible pour qu'on voie quels
+     réglages attendent — c'est aussi ce qui donne envie de charger l'image */
+  .body.locked {
+    opacity: 0.32;
   }
 </style>
