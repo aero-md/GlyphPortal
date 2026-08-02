@@ -92,14 +92,21 @@ a:focus-visible {
 }
 
 /* --- repères d'imprimerie aux quatre angles --- */
+/* Le bras est de longueur IMPAIRE, et le trait est décalé d'un demi-pixel
+   depuis le centre : `left: 50%` sur une boîte de 13 px poserait le trait de
+   1 px à 6,5 px, donc à cheval sur deux pixels écran, et la croix sortait en
+   deux colonnes grises au lieu d'un filet net — la seule chose floue d'une
+   page qui ne trace que des hairlines. */
 .reg {
+  --arm: 13px;
   position: fixed;
-  width: 13px;
-  height: 13px;
-  opacity: 0.4;
+  width: var(--arm);
+  height: var(--arm);
   pointer-events: none;
   z-index: 1;
-  color: var(--ink);
+  /* un jeton de la page plutôt qu'une opacité : même densité que les autres
+     traits fins, et pas de groupe de composition à traverser */
+  color: var(--faint);
 }
 
 .reg::before,
@@ -110,14 +117,14 @@ a:focus-visible {
 }
 
 .reg::before {
-  left: 50%;
+  left: calc(50% - 0.5px);
   top: 0;
   width: 1px;
   height: 100%;
 }
 
 .reg::after {
-  top: 50%;
+  top: calc(50% - 0.5px);
   left: 0;
   height: 1px;
   width: 100%;

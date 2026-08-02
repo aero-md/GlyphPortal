@@ -224,7 +224,6 @@
       <Wordmark text="GLYPHCAST" />
       <span class="model">(1a)</span>
     </div>
-    <p class="lede serif">Une image, {LED_COUNT} diodes.</p>
     <p class="sub meta">
       Glyph Matrix {SIZE}×{SIZE} — Nothing Phone (3) · monochrome · {LED_COUNT} LEDs dans le disque
     </p>
@@ -469,14 +468,8 @@
     padding-bottom: 2px;
   }
 
-  .lede {
-    margin: 0.7rem 0 0.25rem;
-    font-size: 26px;
-    line-height: 1.2;
-  }
-
   .sub {
-    margin: 0;
+    margin: 0.7rem 0 0;
   }
 
   /* --- corps --- */
