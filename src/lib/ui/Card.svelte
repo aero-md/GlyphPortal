@@ -15,13 +15,16 @@
         qu'à condition de n'en oublier aucun. L'en-tête reste net, la structure
         numérotée doit rester lisible même verrouillée. */
     locked?: boolean;
+    /** Encadre la carte en jaune Nothing — la seule qui ait quelque chose à
+        faire tant que le reste est éteint. */
+    cta?: boolean;
     children: Snippet;
   };
 
-  let { ref, title, stat, locked = false, children }: Props = $props();
+  let { ref, title, stat, locked = false, cta = false, children }: Props = $props();
 </script>
 
-<section class="card">
+<section class="card" class:cta>
   <header>
     <span class="ref">[{ref}]</span>
     <h2>{title}</h2>
@@ -36,6 +39,18 @@
   .card {
     border: 1px solid var(--line);
     background: var(--bg);
+  }
+
+  /* L'accent rouge, celui de la référence `[nn]` juste au-dessus — un second
+     ton aurait mis deux couleurs à trois centimètres l'une de l'autre pour
+     dire la même chose.
+
+     Deux pixels obtenus par un filet de bordure plus une ombre interne :
+     passer la bordure à 2 px décalerait la carte d'un pixel au chargement de
+     l'image, et toute la colonne avec. */
+  .card.cta {
+    border-color: var(--accent);
+    box-shadow: inset 0 0 0 1px var(--accent);
   }
 
   header {

@@ -20,16 +20,6 @@
   color-scheme: light;
 }
 
-/* Jaune Nothing, hors des deux thèmes : c'est une couleur de marque, elle ne
-   s'éclaircit ni ne s'assombrit. Un seul emploi dans toute la page, l'appel à
-   charger une image — le diluer ailleurs lui retirerait sa fonction.
-   Valeur approchée du jaune de l'Ear (a), à corriger si on a le nuancier. */
-:root,
-:root[data-theme="dark"] {
-  --nothing: #ffed00;
-  --nothing-deep: #ecd900;
-}
-
 :root[data-theme="dark"] {
   --bg: #0e1013;
   --ink: #e8e9ea;

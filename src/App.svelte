@@ -262,14 +262,27 @@
       onscroll={syncRack}
       style="--fade-t:{fadeTop}px;--fade-b:{fadeBot}px"
     >
-      <Card ref="01" title="Source" stat={hasImg ? `${srcW}×${srcH}` : "aucune"}>
-        <!-- tant qu'il n'y a rien à convertir, c'est le seul geste possible :
-             il porte le jaune, tout le reste est éteint -->
-        <label class="drop" class:cta={!hasImg} class:armed={dragging}>
+      <!-- tant qu'il n'y a rien à convertir, c'est la seule carte qui ait
+           quelque chose à faire : elle porte le jaune, tout le reste est éteint -->
+      <Card
+        ref="01"
+        title="Source"
+        stat={hasImg ? `${srcW}×${srcH}` : "aucune"}
+        cta={!hasImg}
+      >
+        <label class="drop" class:armed={dragging}>
           <input type="file" accept="image/*" onchange={pickFile} />
-          <span class="drop-t">{hasImg ? fileName : "Choisir une image"}</span>
+          <span class="drop-t">{hasImg ? fileName : "Importer une image"}</span>
           <span class="drop-s label">Glisser-déposer · Coller · Parcourir</span>
         </label>
+        <div class="btns">
+          <!-- une session n'apporte que des réglages : sa place est ici, à
+               l'entrée, et pas dans la carte qui produit les fichiers -->
+          <label class="filebtn">
+            <input type="file" accept="application/json,.json" onchange={importJson} />
+            Importer un .json
+          </label>
+        </div>
         <p class="note">
           L'image est traitée en local, dans le navigateur. Rien n'est envoyé nulle part.
         </p>
@@ -396,10 +409,6 @@
           <button type="button" onclick={copyKotlin} disabled={!hasImg}>Copier IntArray</button>
           <button type="button" onclick={() => downloadKotlin(frame)} disabled={!hasImg}>.kt</button>
           <button type="button" onclick={() => downloadJson(frame, params)} disabled={!hasImg}>.json</button>
-          <label class="filebtn">
-            <input type="file" accept="application/json,.json" onchange={importJson} />
-            Recharger .json
-          </label>
         </div>
         <pre class="code" aria-label="IntArray Kotlin">{kotlin}</pre>
       </Card>
@@ -547,24 +556,6 @@
   .drop.armed {
     background: var(--hover);
     border-color: var(--accent);
-  }
-
-  /* Le jaune ne prend que l'encadré, et il ne dure pas : dès qu'une image est
-     chargée la zone repasse en filet neutre. Deux pixels au lieu d'un — c'est
-     le seul endroit de la page qui déroge au filet de 1 px, et il le faut : un
-     trait jaune d'un pixel sur le fond clair ne se voit pas. */
-  .drop.cta {
-    border-color: var(--nothing);
-    border-width: 2px;
-    /* la bordure gagne un pixel de chaque côté, le padding le rend : la boîte
-       ne saute pas au chargement de l'image */
-    padding: calc(0.9rem - 1px) calc(0.75rem - 1px);
-  }
-
-  .drop.cta:hover,
-  .drop.cta.armed {
-    background: var(--hover);
-    border-color: var(--nothing-deep);
   }
 
   .drop input {

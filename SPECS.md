@@ -241,12 +241,17 @@ chargement, et **il n'y a qu'un seul geste possible dans toute la page** :
 
 | Élément | État sans image |
 |---|---|
-| Zone de dépôt `[01]` | encadré en jaune Nothing, seule couleur de la page |
+| Carte `[01] Source` | encadrée d'accent, seule carte en couleur |
 | Cartes `[02]` à `[05]` | contenu `inert` et grisé à 32 % |
 | Exports `[06]` | boutons `disabled` |
 | Glyph Button | `disabled`, sans légende |
-| Recharger `.json` | **actif** — il ne restaure que des curseurs |
+| Importer un `.json` | **actif** — il ne restaure que des curseurs |
 | Échelle et style de préview | **actifs** — ils règlent le regard, pas l'image |
+
+L'import de session est dans `[01] Source` et non dans `[06] Export` : un
+`.json` est une **entrée**, il n'apporte que des réglages. Le mettre parmi les
+boutons qui produisent des fichiers mélangeait les deux sens de la carte, et le
+laissait par ailleurs actif au milieu de quatre boutons désactivés.
 
 Le verrouillage passe par `inert` sur le corps de carte, pas par un `disabled`
 sur chaque contrôle : ça sort aussi la carte de l'ordre de tabulation, et il n'y

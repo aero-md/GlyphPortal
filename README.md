@@ -20,10 +20,10 @@ Le détail fonctionnel — formules, bornes, invariants, schéma JSON — est da
 
 ## Fonctions
 
-- **Charger une image** par glisser-déposer n'importe où sur la page, par
+- **Importer une image** par glisser-déposer n'importe où sur la page, par
   collage (`Ctrl+V`) ou par sélecteur de fichier. Tant qu'il n'y a pas d'image,
-  c'est la seule chose cliquable : les réglages sont éteints et la zone de dépôt
-  est le seul élément coloré de la page.
+  la carte `[01] Source` est la seule chose cliquable : elle est encadrée
+  d'accent, tous les réglages sont éteints.
 - **Cadrer** : zoom, décalage X/Y, rotation au degré, rotations rapides ± 90°.
 - **Doser les canaux** R/G/B — la matrice étant monochrome, ces poids agissent
   comme un filtre coloré de photo noir et blanc. Six presets, dont un filtre
@@ -164,20 +164,18 @@ fond, repères d'imprimerie aux quatre angles, sections numérotées entre
 crochets. Geist Mono partout — le wordmark est la seule exception, et il
 n'appelle aucune fonte.
 
-Une seconde couleur, le **jaune Nothing**, et un seul emploi : l'encadré de la
-zone de dépôt tant qu'aucune image n'est chargée. Il ne dure pas — dès qu'il y a
-une image, l'encadré repasse en filet neutre et le jaune disparaît. Il ne décore
-rien, il désigne le seul geste possible ; le diluer ailleurs lui retirerait sa
-fonction. Tout le reste du rack est éteint pendant ce temps, si bien qu'un
-visiteur qui ne connaît ni l'appli ni l'appareil n'a matériellement rien d'autre
-à cliquer.
+L'accent rouge sert une seconde fois : **la carte `[01] Source` est encadrée**
+tant qu'aucune image n'est chargée, et redevient un filet neutre dès qu'il y en
+a une. Un jaune Nothing avait été essayé là — il tombait à trois centimètres de
+la référence `[01]`, elle-même rouge, deux couleurs pour dire la même chose. Une
+DA à un seul accent n'en a pas besoin d'un second.
 
-C'est le seul trait de la page à faire 2 px et non 1. Le jaune ne tient pas en
-filet fin sur le fond clair : il ne fait que **1,06 : 1** de contraste de
-luminance contre `#eff0f1`, contre 15,8 : 1 sur le fond sombre. Ce qui le rend
-lisible en clair, c'est l'écart de teinte et l'épaisseur, pas la clarté — un œil
-qui ne perçoit que la luminance le verra à peine. C'est le verrouillage du reste
-du rack qui porte réellement le message, le jaune ne fait que le confirmer.
+Le cadre fait 2 px, obtenus par un filet de bordure plus une ombre interne :
+passer la bordure à 2 px décalerait la carte d'un pixel au chargement de
+l'image, et toute la colonne avec.
+
+Ce cadre ne porte pas le message tout seul — c'est le verrouillage du reste du
+rack qui le porte. Il le confirme.
 
 Chaque capitale du wordmark est une **trame 7 × 7 dessinée à la main** — et une
 trame *valide* : aucun point ne tombe hors du disque, avec la même convention
