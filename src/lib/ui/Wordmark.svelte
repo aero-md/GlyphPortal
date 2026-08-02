@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { ledMetrics } from "../render";
-
   /* Wordmark : chaque capitale est une trame 7 × 7 dessinée à la main, et
      surtout une trame VALIDE — aucun point ne tombe hors du disque. Une lettre
      est donc théoriquement affichable telle quelle sur une Glyph Matrix 7 × 7,
@@ -123,12 +121,19 @@
     return Math.max(1, tight + 1 + GAP + kern);
   }
 
-  /** `cell` est le côté d'une cellule de trame, en px CSS. C'est le bon bouton,
-      et il a un plancher : sous ~3 px la LED tombe sous le gap minimum d'un
-      pixel de `ledMetrics` et la trame se referme en traits pleins, ce qui tue
-      tout le propos. */
+  /** `cell` est le côté d'une cellule de trame, en px CSS — le point en fait
+      `1 / STEP`. C'est le bon bouton, et il a un plancher : sous ~2 px de
+      diamètre les points se rejoignent, on ne voit plus que des traits et
+      l'idée de matrice tombe, ce qui est tout le propos. */
   type Props = { text?: string; cell?: number };
   let { text = "GLYPHCAST", cell = 5.7 }: Props = $props();
+
+  /* Le point est rond, là où la LED `soft` de la préview est un carré aux
+     angles adoucis. C'est voulu : dans cette DA le cercle est réservé aux
+     points et aux LEDs, et à 4 px un carré arrondi se lit comme un carré — la
+     trame durcit et le titre attrape le même poids que les blocs de réglages
+     posés dessous, alors qu'il doit rester la seule chose douce de la page. */
+  const STEP = 1.28; // pas de la trame, en multiples du diamètre du point
 
   let cvs = $state<HTMLCanvasElement>();
 
@@ -165,28 +170,15 @@
     cvs.style.width = w + "px";
     cvs.style.height = h + "px";
 
-    /* Les points sont des LEDs `soft` : mêmes métriques que la préview, via la
-       même fonction. Le wordmark n'est pas une trame décorative posée à côté du
-       rendu, c'est le même objet peint en petit — si un jour la LED change de
-       forme, il suit sans qu'on y pense. */
-    const { led, pad } = ledMetrics(cell, "soft");
-    const radius = led * 0.24;
-
+    const dot = cell / STEP;
     const ctx = cvs.getContext("2d")!;
-    const rounded = radius > 0.5 && typeof ctx.roundRect === "function";
     ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, w, h);
     ctx.fillStyle = getComputedStyle(cvs).color;
     for (const [x, y] of pts) {
-      const px = x * cell + pad;
-      const py = (y - y0) * cell + pad;
-      if (rounded) {
-        ctx.beginPath();
-        ctx.roundRect(px, py, led, led, radius);
-        ctx.fill();
-      } else {
-        ctx.fillRect(px, py, led, led);
-      }
+      ctx.beginPath();
+      ctx.arc(x * cell + cell / 2, (y - y0) * cell + cell / 2, dot / 2, 0, Math.PI * 2);
+      ctx.fill();
     }
   }
 

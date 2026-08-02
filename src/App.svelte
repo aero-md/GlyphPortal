@@ -220,10 +220,7 @@
 
 <div class="page" class:dragging>
   <header>
-    <div class="brand">
-      <Wordmark text="GLYPHCAST" />
-      <span class="model">(1a)</span>
-    </div>
+    <Wordmark text="GLYPHCAST" />
     <p class="sub meta">
       Glyph Matrix {SIZE}×{SIZE} — Nothing Phone (3) · monochrome · {LED_COUNT} LEDs dans le disque
     </p>
@@ -453,19 +450,6 @@
     border-bottom: 1px solid var(--line);
     padding: 1.6rem 0 1rem;
     margin-bottom: 1.6rem;
-  }
-
-  .brand {
-    display: flex;
-    align-items: flex-end;
-    gap: 0.6rem;
-  }
-
-  .model {
-    font-size: 11px;
-    letter-spacing: 0.16em;
-    color: var(--faint);
-    padding-bottom: 2px;
   }
 
   .sub {

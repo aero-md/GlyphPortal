@@ -154,9 +154,9 @@ sur un même gris — d'où la rampe quasi linéaire.
 
 Langage Nothing : angles vifs partout, le cercle est réservé aux points et aux
 LEDs, filets de 1 px, un seul accent rouge en ponctuation, grille de points en
-fond, repères d'imprimerie aux quatre angles, nomenclature parenthétique.
-Geist Mono partout — le wordmark est la seule exception, et il n'appelle
-aucune fonte.
+fond, repères d'imprimerie aux quatre angles, sections numérotées entre
+crochets. Geist Mono partout — le wordmark est la seule exception, et il
+n'appelle aucune fonte.
 
 Chaque capitale du wordmark est une **trame 7 × 7 dessinée à la main** — et une
 trame *valide* : aucun point ne tombe hors du disque, avec la même convention
@@ -208,11 +208,14 @@ Le canvas est ensuite cadré sur les points allumés, sinon les rangées laissé
 vides par le disque deviendraient une marge morte et le wordmark ne s'alignerait
 plus sur le texte posé dessous.
 
-Les points sont des **LEDs `soft`** : mêmes métriques que la préview, via la
-même fonction `ledMetrics`. Le wordmark n'est pas une trame décorative posée à
-côté du rendu, c'est le même objet peint en petit — si la LED change de forme,
-il suit. Reste le pas de trame, qui a un plancher : sous ~3 px la LED tombe sous
-le gap minimum d'un pixel et la trame se referme en traits pleins. D'où une
+Les points sont **ronds**, là où la LED `soft` de la préview est un carré aux
+angles adoucis : dans cette DA le cercle est réservé aux points et aux LEDs, et
+à 4 px un carré arrondi se lit comme un carré — la trame durcit et le titre
+attrape le même poids que les blocs de réglages posés dessous, alors qu'il doit
+rester la seule chose douce de la page.
+
+Reste le pas de trame, qui a un plancher : sous ~2 px de diamètre les points se
+rejoignent, on ne voit plus que des traits et l'idée de matrice tombe. D'où une
 cellule à 5,7 px — c'est la ligne éditoriale retirée de l'en-tête qui paie la
 hauteur.
 
