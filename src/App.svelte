@@ -193,6 +193,10 @@
     }
   }
 
+  /* Millésime lu à l'exécution, pas écrit en dur : un pied de page figé sur
+     l'année de la dernière compilation vieillit tout seul. */
+  const YEAR = new Date().getFullYear();
+
   const pct = (v: number) => `${Math.round(v * 100)} %`;
   const signed = (v: number) => (v >= 0 ? "+" : "") + v.toFixed(2);
 </script>
@@ -224,9 +228,12 @@
          la chasse de la fonte — donc rien à grossir en CSS — et c'est le seul
          séparateur rond, ce qui est la règle de la page : le cercle est réservé
          aux points et aux LEDs. -->
-    <p class="sub meta">
-      Glyph Matrix • Nothing Phone (3) • Stylisez une image en la projetant sur la Glyph Matrix
-    </p>
+    <div class="h-row">
+      <p class="sub meta">
+        Nothing Phone (3) • Stylisez une image en la projetant sur la Glyph Matrix
+      </p>
+      <ThemeToggle />
+    </div>
   </header>
 
   <main>
@@ -429,7 +436,9 @@
       <span class="meta">
         Row-major {SIZE}×{SIZE}, valeurs 0-255, masque circulaire r = 12,5 → {LED_COUNT} LEDs.
       </span>
-      <ThemeToggle />
+      <a class="sig" href="https://github.com/aero-md" target="_blank" rel="noopener noreferrer">
+        © {YEAR} aero-md
+      </a>
     </div>
     {#if notice}<p class="notice accent">{notice}</p>{/if}
   </footer>
@@ -465,8 +474,22 @@
     margin-bottom: 1.6rem;
   }
 
+  /* La bascule de thème est calée sur la ligne du sous-titre, pas sur le
+     wordmark : même construction que la ligne du pied, où elle vivait avant.
+     La marge est portée par la rangée et non par le `<p>` — sur un élément de
+     flex elle décalerait le texte à l'intérieur de la rangée, et la bascule se
+     centrerait sur une hauteur qui inclut le vide. */
+  .h-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 0.7rem;
+  }
+
   .sub {
-    margin: 0.7rem 0 0;
+    margin: 0;
+    min-width: 0;
   }
 
 
@@ -698,6 +721,22 @@
     text-transform: none;
     letter-spacing: 0.04em;
     line-height: 1.6;
+  }
+
+  /* Même signature que redsunshome, même lien : c'est la même main. */
+  .sig {
+    flex: none;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--faint);
+    white-space: nowrap;
+    transition: color 0.12s;
+  }
+
+  .sig:hover,
+  .sig:focus-visible {
+    color: var(--ink);
   }
 
   .notice {
