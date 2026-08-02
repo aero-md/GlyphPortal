@@ -58,8 +58,9 @@ Kotlin), pas de retouche locale.
 | LEDs pilotables | **489** |
 | Couleur | aucune — luminosité seule, 0-255 par LED |
 
-Géométrie et calage de la photo repris de [`GlyphLapse`](../GlyphLapse) —
-`SPECS.md` et `SPECS-PREVIEW.md`. Le disque est à 79,53 % / 15,36 % du cadre
+Géométrie et calage de la photo repris de
+[`glyphlapse`](https://github.com/aero-md/glyphlapse) — `SPECS.md` et
+`SPECS-PREVIEW.md`. Le disque est à 79,53 % / 15,36 % du cadre
 photo, diamètre 26,04 % ; le Glyph Button à 84,53 % / 74,82 %. Toutes les
 positions sont en pourcentage, jamais en pixels : c'est ce qui garde le calage
 quand la préview est redimensionnée.
