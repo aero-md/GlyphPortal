@@ -12,14 +12,9 @@
 export type Toy = {
   /** Segment d'URL sous glyph.suns.red, et nom du dossier au déploiement. */
   slug: string;
-  /**
-   * Nom du toy. **Il n'est pas affiché** : la tuile ne porte qu'une préview et
-   * une ligne de description. Il reste ici parce qu'un lien dont tout le contenu
-   * visible est une description et un disque n'a pas de nom accessible — c'est
-   * lui qui le donne, via `aria-label`.
-   */
+  /** Nom affiché, en capitales — c'est un wordmark, pas une phrase. */
   name: string;
-  /** Ce que fait le toy, en une ligne. Le seul texte visible de la tuile. */
+  /** Ce que fait le toy, en une ligne. Sous-titre de la tuile. */
   line: string;
   /** Dépôt GitHub. */
   repo: string;
