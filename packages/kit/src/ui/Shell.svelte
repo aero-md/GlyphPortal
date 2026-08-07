@@ -1,6 +1,6 @@
 <script lang="ts">
   /* La coquille de page, commune à toutes les préviews du portail.
-     Trame de points, repères d'angle, en-tête, deux colonnes, pied.
+     Repères d'angle, en-tête, deux colonnes, pied.
 
      Elle existe parce que Sonoglyph l'avait recopiée à la main depuis
      GlyphCast : deux copies déjà divergentes d'une mise en page qui n'a rien de
@@ -32,6 +32,14 @@
     dragging?: boolean;
     /** Lien de retour vers le sommaire. Faux sur le sommaire lui-même. */
     home?: boolean;
+    /**
+     * Dépôt vers lequel pointe la signature du pied.
+     *
+     * Celui du **toy**, pas celui de la préview : quelqu'un qui clique depuis
+     * `/glyphslot/` cherche GlyphSlot, pas le monorepo qui héberge sa page. Les
+     * deux se confondent pour GlyphCast, qui n'existe que sur le web.
+     */
+    repo?: string;
     preview: Snippet;
     rack: Snippet;
   };
@@ -44,6 +52,7 @@
     notice = "",
     dragging = false,
     home = true,
+    repo = "https://github.com/aero-md",
     preview,
     rack,
   }: Props = $props();
@@ -83,7 +92,6 @@
   const YEAR = new Date().getFullYear();
 </script>
 
-<div class="dots"></div>
 <span class="reg tl"></span>
 <span class="reg tr"></span>
 <span class="reg bl"></span>
@@ -125,7 +133,7 @@
     <div class="f-row">
       {#if stamp}<span class="ref">[{stamp}]</span>{/if}
       {#if note}<span class="meta">{note}</span>{/if}
-      <a class="sig" href="https://github.com/aero-md" target="_blank" rel="noopener noreferrer">
+      <a class="sig" href={repo} target="_blank" rel="noopener noreferrer">
         © {YEAR} aero-md
       </a>
     </div>
@@ -232,9 +240,9 @@
   }
 
   /* Le seul élément qui défile. Le fondu est un masque et non un aplat posé
-     par-dessus : la trame de points reste visible dans la bande, comme sur le
-     bas de la photo du téléphone. Les bornes viennent du script — à 0 le
-     dégradé est plat et n'enlève rien. */
+     par-dessus : le fond reste intact dans la bande, comme sur le bas de la
+     photo du téléphone. Les bornes viennent du script — à 0 le dégradé est plat
+     et n'enlève rien. */
   .rack {
     flex: 1 1 auto;
     display: flex;

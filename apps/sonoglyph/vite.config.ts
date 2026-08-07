@@ -12,5 +12,21 @@ export default defineConfig({
   // le proxy ne parlerait plus. En temps normal on n'ouvre pas cette adresse
   // directement : les liens du portail sont absolus, et ils n'existent que sur
   // http://localhost:5180.
-  server: { port: 5182, strictPort: true },
+  server: {
+    port: 5182,
+    strictPort: true,
+    // Le HMR parle **directement** a ce port, sans passer par le proxy du
+    // portail. Relayee, la websocket ne s'etablit pas sous Bun : le socket d'un
+    // upgrade y est incomplet, la poignee de main echoue, et Vite finit la
+    // reponse par un socket.destroySoon() qui n'existe pas - ce qui tuait le
+    // processus au bout de quelques minutes. En sortant du proxy, la connexion
+    // s'etablit et le chemin fautif n'est plus emprunte.
+    hmr: { host: "localhost", port: 5182, protocol: "ws" },
+    // La page est servie par le portail (5180) et la websocket vise ce port-ci :
+    // c'est une connexion cross-origine, que Vite refuse par defaut pour empecher
+    // le detournement de websocket depuis un site tiers. On autorise la seule
+    // origine legitime, celle du portail - pas `true`, qui ouvrirait a n'importe
+    // quelle page ouverte dans le navigateur.
+    cors: { origin: "http://localhost:5180" },
+  },
 });

@@ -112,6 +112,14 @@ partent avec lui.
 | glyphlapse | 5183 | `/glyphlapse/` |
 | glyphslot | 5184 | `/glyphslot/` |
 
+**Le proxy relaie le HTTP, pas la websocket.** Le HMR de chaque app parle
+directement à son propre port (`server.hmr`), et l'app autorise l'origine du
+portail (`server.cors`) — sans quoi Vite refuse la connexion, à juste titre :
+une websocket cross-origine acceptée sans condition est une porte d'entrée. La
+websocket relayée, elle, ne s'établit pas sous Bun, et Vite finit alors la
+réponse par un `socket.destroySoon()` qui n'existe pas dans le socket d'un
+`upgrade` — ce qui tuait le processus, donc les cinq serveurs.
+
 Les ports sont en `strictPort` : une collision fait échouer le démarrage au lieu
 de glisser silencieusement sur le port suivant, où le proxy ne trouverait plus
 personne.

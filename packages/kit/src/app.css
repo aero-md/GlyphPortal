@@ -19,7 +19,6 @@
   --line-strong: rgba(20, 22, 26, 0.3);
   --hover: rgba(255, 255, 255, 0.72);
   --accent: #d11a11;
-  --dot: rgba(20, 22, 26, 0.16);
 
   color-scheme: light;
 }
@@ -33,7 +32,6 @@
   --line-strong: rgba(232, 233, 234, 0.28);
   --hover: rgba(232, 233, 234, 0.05);
   --accent: #ff3b2e;
-  --dot: rgba(232, 233, 234, 0.14);
 
   color-scheme: dark;
 }
@@ -85,17 +83,6 @@ a:focus-visible {
   outline-offset: 2px;
 }
 
-/* --- grille de points : le liant, présente sur toute la page --- */
-.dots {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  color: var(--dot);
-  background-image: radial-gradient(currentColor 1px, transparent 1.3px);
-  background-size: 44px 44px;
-}
-
 /* --- repères d'imprimerie aux quatre angles --- */
 /* Le bras est de longueur IMPAIRE, et le trait est décalé d'un demi-pixel
    depuis le centre : `left: 50%` sur une boîte de 13 px poserait le trait de
@@ -136,23 +123,26 @@ a:focus-visible {
 }
 
 .reg.tl {
-  left: 14px;
-  top: 14px;
+  left: 40px;
+  top: 40px;
 }
 .reg.tr {
-  right: 14px;
-  top: 14px;
+  right: 40px;
+  top: 40px;
 }
 .reg.bl {
-  left: 14px;
-  bottom: 14px;
+  left: 40px;
+  bottom: 40px;
 }
 .reg.br {
-  right: 14px;
-  bottom: 14px;
+  right: 40px;
+  bottom: 40px;
 }
 
-@media (max-width: 900px) {
+/* Sous 1250 px la page vient toucher les repères : ils passeraient derrière le
+   contenu au lieu de le cadrer. On les retire plutôt que de les recoller au
+   bord. */
+@media (max-width: 1249px) {
   .reg {
     display: none;
   }

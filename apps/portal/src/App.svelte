@@ -2,7 +2,7 @@
   /* Le sommaire. Il ne rend aucune matrice — c'est la seule page du domaine
      dans ce cas — donc il n'emprunte pas la coquille `Shell`, qui est bâtie
      autour de deux colonnes dont une porte un téléphone. Il reprend en revanche
-     tout le reste : la trame de points, les repères d'angle, le wordmark, la
+     tout le reste : les repères d'angle, le wordmark, la
      bascule de thème, les étages typographiques.
 
      Une ligne par toy, numérotée comme les cartes de réglage des préviews : le
@@ -11,11 +11,9 @@
   import Wordmark from "@glyph/kit/Wordmark.svelte";
   import { TOYS } from "./toys";
 
-  const YEAR = new Date().getFullYear();
   const num = (i: number) => String(i + 1).padStart(2, "0");
 </script>
 
-<div class="dots"></div>
 <span class="reg tl"></span>
 <span class="reg tr"></span>
 <span class="reg bl"></span>
@@ -48,25 +46,12 @@
         </li>
       {/each}
     </ul>
-
-    <p class="note">
-      Chaque préview reproduit la Glyph Matrix à sa position et à son échelle réelles sur une photo
-      du dos de l'appareil. Tout tourne en local, dans le navigateur : rien n'est envoyé nulle part.
-    </p>
   </main>
-
-  <footer>
-    <div class="f-row">
-      <span class="ref">[glyph.suns.red]</span>
-      <span class="meta">
-        Grille row-major masquée par un disque centré — 25×25 → 489 LEDs sur un Phone (3), 13×13 →
-        137 sur un (4a) Pro.
-      </span>
-      <a class="sig" href="https://github.com/aero-md" target="_blank" rel="noopener noreferrer">
-        © {YEAR} aero-md
-      </a>
-    </div>
-  </footer>
+  <!-- Pas de pied. Ce qu'il portait — la construction de la grille, le compte de
+       LEDs, la note sur le rendu local — ne veut rien dire tant qu'on n'a pas de
+       matrice sous les yeux, et chaque préview le rappelle dans le sien. La
+       signature vit là-bas aussi, où elle mène au dépôt du toy concerné. Un
+       sommaire n'a que des entrées. -->
 </div>
 
 <style>
@@ -181,52 +166,6 @@
      dépôt. Ce qui change, c'est ce qu'elle promet. */
   .soon .name {
     color: var(--dim);
-  }
-
-  /* Mesure calée sur la ligne de pied, pas sur les rangées : à 11 px de mono
-     une ligne pleine largeur ferait 170 caractères, qu'on ne relit pas. */
-  .note {
-    margin: 1.6rem 0 0;
-    max-width: 88ch;
-    font-size: 11px;
-    line-height: 1.7;
-    color: var(--faint);
-  }
-
-  footer {
-    flex: none;
-    margin-top: 2.4rem;
-    border-top: 1px solid var(--line);
-    padding: 1rem 0 0;
-  }
-
-  .f-row {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-
-  .f-row .meta {
-    flex: 1 1 320px;
-    text-transform: none;
-    letter-spacing: 0.04em;
-    line-height: 1.6;
-  }
-
-  .sig {
-    flex: none;
-    font-size: 10px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--faint);
-    white-space: nowrap;
-    transition: color 0.12s;
-  }
-
-  .sig:hover,
-  .sig:focus-visible {
-    color: var(--ink);
   }
 
   /* Sous 720 px la ligne se casse : le libellé d'action passe sous le corps

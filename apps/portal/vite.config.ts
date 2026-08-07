@@ -11,8 +11,12 @@ import { defineConfig } from "vite";
  * sommaire pointe sur `/glyphcast/`, le bouton « ◂ Index » de chaque préview
  * pointe sur `/`, et aucune des deux cibles n'existe sur le port du voisin.
  *
- * `ws: true` fait passer le HMR : le client Vite de chaque app ouvre sa
- * websocket sur l'origine où il a été chargé, donc ici.
+ * **Le HTTP seulement, pas la websocket.** Relayer le HMR ne marche pas sous
+ * Bun : le socket d'un `upgrade` y est incomplet, la poignée de main échoue, et
+ * Vite termine la réponse par un `socket.destroySoon()` qui n'existe pas — ce
+ * qui tuait le processus, donc les cinq serveurs, au bout de quelques minutes.
+ * Chaque app pointe donc son client HMR sur son propre port (`server.hmr`), et
+ * la websocket ne passe plus par ici.
  */
 const APPS = {
   glyphcast: 5181,
@@ -32,7 +36,7 @@ export default defineConfig({
     proxy: Object.fromEntries(
       Object.entries(APPS).map(([slug, port]) => [
         `/${slug}`,
-        { target: `http://localhost:${port}`, ws: true },
+        { target: `http://localhost:${port}` },
       ]),
     ),
   },

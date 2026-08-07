@@ -192,6 +192,7 @@
   note="Row-major {device.size}×{device.size}, valeurs 0-255, masque circulaire r = {String(
     device.radius,
   ).replace('.', ',')} → {device.ledCount} LEDs."
+  repo="https://github.com/aero-md/glyph-portal"
   {notice}
   {dragging}
 >

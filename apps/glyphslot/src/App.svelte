@@ -158,6 +158,7 @@
   note="Row-major {device.size}×{device.size}, valeurs 0-255, masque circulaire r = {String(
     device.radius,
   ).replace('.', ',')} → {device.ledCount} LEDs. Trois rouleaux de 7 colonnes, payline de 7 lignes."
+  repo="https://github.com/aero-md/glyphslot"
   {notice}
 >
   {#snippet preview()}
