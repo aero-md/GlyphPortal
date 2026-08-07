@@ -229,6 +229,7 @@
   title="GLYPHLAPSE"
   sub="{device.name} • Le temps qui passe, décomposé sur la Glyph Matrix"
   stamp={VERSION}
+  {device}
   repo="https://github.com/aero-md/glyphlapse"
   {notice}
 >

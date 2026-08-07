@@ -155,6 +155,7 @@
   title="GLYPHSLOT"
   sub="{device.name} • Une machine à sous pixélisée"
   stamp={VERSION}
+  {device}
   repo="https://github.com/aero-md/glyphslot"
   {notice}
 >

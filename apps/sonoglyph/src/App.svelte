@@ -155,6 +155,7 @@
   title="SONOGLYPH"
   sub="{device.name} • Deux Glyph Toys qui lisent le niveau sonore"
   stamp={VERSION}
+  {device}
   repo="https://github.com/aero-md/sonoglyph"
   {notice}
 >

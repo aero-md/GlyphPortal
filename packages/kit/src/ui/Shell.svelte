@@ -14,6 +14,7 @@
      et c'est la préview, réduite à la bande qui porte le disque, qui s'épingle
      en haut. */
   import type { Snippet } from "svelte";
+  import type { Device } from "../matrix/devices";
   import ThemeToggle from "./ThemeToggle.svelte";
   import Wordmark from "./Wordmark.svelte";
 
@@ -24,6 +25,17 @@
     sub: string;
     /** Mention de gauche au pied de page, entre crochets. Souvent la version. */
     stamp?: string;
+    /**
+     * Appareil affiché — pour la ligne de spécifications du pied.
+     *
+     * Elle est construite ici et non passée en texte par chaque app : la grille,
+     * le masque et le compte de LEDs ne dépendent que de l'appareil, et les
+     * quatre préviews en écrivaient quatre copies du même gabarit. Ce qui
+     * variait d'une copie à l'autre, c'était la queue de phrase propre au toy —
+     * la plage de dB, la découpe des rouleaux — qui décrivait le toy sans dire
+     * un mot de la matrice, et que le rack disait déjà mieux.
+     */
+    device?: Device;
     /** Message éphémère, en accent, sous la ligne de pied. */
     notice?: string;
     /** Cadre en accent : un fichier survole la page. */
@@ -46,6 +58,7 @@
     title,
     sub,
     stamp,
+    device,
     notice = "",
     dragging = false,
     home = true,
@@ -87,6 +100,16 @@
   /* Millésime lu à l'exécution, pas écrit en dur : un pied de page figé sur
      l'année de la dernière compilation vieillit tout seul. */
   const YEAR = new Date().getFullYear();
+
+  /* Ce que la matrice est, pas ce que le toy en fait. Le rayon en virgule
+     décimale — la page est en français, et c'est la seule fraction qu'elle
+     affiche hors des curseurs. */
+  const spec = $derived(
+    device
+      ? `Row-major ${device.size}×${device.size}, valeurs 0-255, masque circulaire ` +
+        `r = ${String(device.radius).replace(".", ",")} → ${device.ledCount} LEDs.`
+      : "",
+  );
 </script>
 
 <span class="reg tl"></span>
@@ -126,13 +149,10 @@
     </div>
   </main>
 
-  <!-- Le pied ne porte plus que la version et la signature. La ligne technique
-       qui s'intercalait — géométrie de la grille, plage d'échelle, découpe des
-       rouleaux — répétait le rack pour les uns et n'intéressait personne pour
-       les autres. -->
   <footer>
     <div class="f-row">
       {#if stamp}<span class="ref">[{stamp}]</span>{/if}
+      {#if spec}<span class="meta">{spec}</span>{/if}
       <a class="sig" href={repo} target="_blank" rel="noopener noreferrer">
         © {YEAR} aero-md
       </a>
@@ -280,14 +300,22 @@
     padding: 1rem 0 1.2rem;
   }
 
-  /* Deux mentions aux deux bouts. `space-between` et non une gouttière : sans la
-     ligne technique qui les écartait, la signature se collerait à la version. */
+  /* `space-between` en plus de la gouttière : la ligne de specs écarte déjà les
+     deux mentions, mais elle est facultative — sans elle la signature se
+     collerait à la version. */
   .f-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
     flex-wrap: wrap;
+  }
+
+  .f-row .meta {
+    flex: 1 1 320px;
+    text-transform: none;
+    letter-spacing: 0.04em;
+    line-height: 1.6;
   }
 
   /* Même signature que redsunshome, même lien : c'est la même main. */
