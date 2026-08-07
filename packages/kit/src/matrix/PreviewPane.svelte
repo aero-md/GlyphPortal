@@ -28,12 +28,23 @@
     device: Device;
     mode?: PreviewMode;
     style?: LedStyle;
-    /** Restreindre le choix d'appareil — un toy 13 × 13 seul, par exemple. */
+    /** Restreindre le choix d'appareil — un toy 25 × 25 seul, par exemple. */
     devices?: Device[];
-    /** Sélecteurs propres au toy, ajoutés au bout de la rangée. */
+    /**
+     * Sélecteurs propres au toy, posés **en tête** de la rangée.
+     *
+     * L'ordre suit une règle : d'abord ce qui change ce qui tourne sur
+     * l'appareil, ensuite ce qui ne change que la façon de le regarder. Le choix
+     * du toy passe donc avant celui de l'appareil, qui passe avant l'échelle et
+     * le rendu des LED.
+     */
     controls?: Snippet;
     /** Note sous la matrice — consigne d'usage, état vide. */
     note?: Snippet;
+    /** Libellé de ce que fera l'appui long sur le toy courant. */
+    action?: string;
+    /** Reçoit l'appui long — la seule commande qu'un Glyph Toy reçoive. */
+    onlongpress?: () => void;
   };
 
   let {
@@ -45,6 +56,8 @@
     devices = DEVICES,
     controls,
     note,
+    action,
+    onlongpress,
   }: Props = $props();
 
   /* Largeur de la colonne, pour que le mode « grand » occupe exactement la
@@ -54,9 +67,11 @@
 
 <div class="pane" bind:clientWidth={colW}>
   <div class="scale">
-    <!-- L'appareil vient en premier : c'est le seul de ces trois réglages qui
-         change ce qui sort de l'outil, les deux autres ne changent que ce qu'on
-         en voit. Un seul appareil disponible, et le sélecteur disparaît. -->
+    {@render controls?.()}
+    <!-- L'appareil vient avant l'échelle et le rendu : c'est le seul des trois
+         qui change ce qui sort de l'outil, les deux autres ne changent que ce
+         qu'on en voit. Un seul appareil disponible, et le sélecteur disparaît —
+         un choix entre une option n'est pas un choix. -->
     {#if devices.length > 1}
       <Seg
         label="Appareil"
@@ -81,10 +96,9 @@
         { v: "soft" as LedStyle, t: "Soft" },
       ]}
     />
-    {@render controls?.()}
   </div>
 
-  <Preview {frame} {mode} {style} {compare} width={colW} />
+  <Preview {frame} {mode} {style} {compare} {action} {onlongpress} {devices} width={colW} />
 
   {@render note?.()}
 </div>

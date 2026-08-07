@@ -39,7 +39,7 @@ export const TOYS: Toy[] = [
     line: "Le son du micro sur la matrice",
     detail: "Visualiseur de spectre et VU-mètre à aiguille, en temps réel.",
     repo: "https://github.com/aero-md/sonoglyph",
-    ready: false,
+    ready: true,
   },
   {
     slug: "glyphlapse",

@@ -28,6 +28,13 @@
         "@glyph/kit": "workspace:*",
       },
     },
+    "apps/sonoglyph": {
+      "name": "@glyph/app-sonoglyph",
+      "version": "1.0.0",
+      "dependencies": {
+        "@glyph/kit": "workspace:*",
+      },
+    },
     "packages/kit": {
       "name": "@glyph/kit",
       "version": "1.0.0",
@@ -37,6 +44,8 @@
     "@glyph/app-glyphcast": ["@glyph/app-glyphcast@workspace:apps/glyphcast"],
 
     "@glyph/app-portal": ["@glyph/app-portal@workspace:apps/portal"],
+
+    "@glyph/app-sonoglyph": ["@glyph/app-sonoglyph@workspace:apps/sonoglyph"],
 
     "@glyph/kit": ["@glyph/kit@workspace:packages/kit"],
 

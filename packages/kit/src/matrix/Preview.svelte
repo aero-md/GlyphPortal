@@ -14,9 +14,9 @@
      `frame.device`. Une trame et son cadre ne peuvent donc pas se désaccorder
      pendant une bascule d'appareil. */
   import { onMount } from "svelte";
-  import { DEVICES, previewBand, type Disc } from "./devices";
+  import { DEVICES, previewBand, type Device, type Disc } from "./devices";
   import type { Frame } from "./frame";
-  import { DISC_BG, paint, screenGrid, type Grid, type LedStyle } from "./render";
+  import { DISC_BG, paint, screenGrid, type PixelGrid, type LedStyle } from "./render";
 
   /* Colonne unique : la préview est épinglée en haut de l'écran et le rack
      défile dessous, pour qu'on voie l'effet d'un curseur pendant qu'on le
@@ -51,6 +51,9 @@
   const COMFY = 1080;
   const LANDSCAPE = 5 / 4;
 
+  /** Durée d'appui à partir de laquelle le système déclenche « change ». */
+  const LONG_PRESS_MS = 450;
+
   type Props = {
     frame: Frame;
     mode?: PreviewMode;
@@ -59,9 +62,24 @@
     compare?: Frame | null;
     /** Largeur disponible en px CSS, pour caler la grille du mode « grand ». */
     width?: number;
+    /** Libellé de ce que fera l'appui long sur le toy courant. */
+    action?: string;
+    /** Reçoit l'appui long — la seule commande qu'un Glyph Toy reçoive. */
+    onlongpress?: () => void;
+    /** Les appareils entre lesquels l'app laisse basculer — pour le préchargement. */
+    devices?: Device[];
   };
 
-  let { frame, mode = "phone", style = "sharp", compare = null, width = 550 }: Props = $props();
+  let {
+    frame,
+    mode = "phone",
+    style = "sharp",
+    compare = null,
+    width = 550,
+    action = "Appui long",
+    onlongpress,
+    devices = DEVICES,
+  }: Props = $props();
 
   let cvs = $state<HTMLCanvasElement>();
   let phoneEl = $state<HTMLElement>();
@@ -90,8 +108,12 @@
     /* Les dos des autres appareils sont préchargés une fois la page montée :
        sans ça, la première bascule laisse un trou le temps du téléchargement, et
        une bascule qui clignote n'a pas l'air instantanée. Après le montage et
-       pas avant — le premier rendu ne doit rien attendre. */
-    for (const dev of DEVICES) new Image().src = dev.photo.src;
+       pas avant — le premier rendu ne doit rien attendre.
+
+       Ceux que l'app propose, et pas le catalogue entier : une préview dont les
+       toys ne tiennent que sur une matrice 25 × 25 allait chercher les 70 Ko du
+       dos d'un (4a) Pro vers lequel elle ne bascule jamais. */
+    for (const d of devices) new Image().src = d.photo.src;
 
     return () => window.removeEventListener("resize", sync);
   });
@@ -151,7 +173,7 @@
      offert : là, contrairement au téléphone, il est réellement dessiné et vit
      dans une colonne de largeur finie. Le mode téléphone, lui, a besoin de
      l'arrondi vers le haut — c'est ce qui lui donne sa cellule. */
-  const grid = $derived<Grid>(
+  const grid = $derived<PixelGrid>(
     mode === "phone"
       ? screenGrid(dev, size * dev.disc.pct, dpr)
       : screenGrid(dev, discSize, dpr, true),
@@ -265,8 +287,32 @@
       paint(ctx, held && compare ? compare : frame, g, { style, grand: mode === "large" });
   });
 
+  /* --- ce que fait le Glyph Button ---
+
+     Il porte l'une ou l'autre de deux fonctions, jamais les deux :
+
+     - « press » — l'**appui long**, seule commande que le système transmette à
+       un Glyph Toy. Il faut le maintenir 450 ms, comme sur l'appareil, et un
+       relâchement trop tôt ne fait rien : c'est le comportement qu'on simule.
+     - « hold » — le maintien A/B. Ce n'est pas une fonction de l'appareil mais
+       de l'outil : GlyphCast n'a pas d'entrée à simuler, et le bouton est le
+       seul endroit crédible où poser « montre-moi le rendu sans réglages ».
+
+     `onlongpress` l'emporte quand les deux sont fournis : la fonction réelle de
+     l'appareil passe avant la commodité d'un outil.
+
+     Le rôle se décide sur la **présence** de `onlongpress`, jamais sur la valeur
+     de `compare` : celle-ci vaut `null` tant qu'aucune image n'est chargée, et
+     un rôle qui en dépendrait ferait apparaître la barre au premier chargement
+     — donc sauter la mise en page sous le doigt. Ce qui dépend de la valeur,
+     c'est `armed` : la fonction existe toujours, elle n'est pas toujours
+     disponible. */
+  const role = $derived(onlongpress ? "press" : "hold");
+  const armed = $derived(role === "press" || !!compare);
+
+  /* --- maintien A/B --- */
   function hold(on: boolean) {
-    if (!compare) return;
+    if (role !== "hold" || !armed) return;
     held = on;
   }
 
@@ -280,6 +326,81 @@
     onclick: (e: MouseEvent) => e.preventDefault(),
     oncontextmenu: (e: Event) => e.preventDefault(),
   };
+
+  /* --- appui long ---
+     `pressed` dit qu'un doigt est posé, `fired` que le seuil est franchi. Les
+     distinguer permet de faire la différence entre « relâché trop tôt » — qui
+     mérite un rappel — et un `pointercancel`, qui n'est pas une erreur de
+     l'utilisateur et doit rester silencieux. */
+  let pressed = $state(false);
+  let tooShort = $state(false);
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  let fired = false;
+
+  function pressStart() {
+    if (pressed || role !== "press") return;
+    pressed = true;
+    fired = false;
+    tooShort = false;
+    timer = setTimeout(() => {
+      fired = true;
+      navigator.vibrate?.(12);
+      onlongpress?.();
+    }, LONG_PRESS_MS);
+  }
+
+  function pressEnd(cancelled = false) {
+    if (!pressed) return;
+    pressed = false;
+    if (timer) clearTimeout(timer);
+    timer = null;
+    // relâché avant le seuil : le système n'aurait rien envoyé au toy, on le dit
+    if (!fired && !cancelled) {
+      tooShort = true;
+      setTimeout(() => (tooShort = false), 1900);
+    }
+  }
+
+  const pressHandlers = {
+    onpointerdown: () => pressStart(),
+    onpointerup: () => pressEnd(),
+    onpointerleave: () => pressEnd(true),
+    onpointercancel: () => pressEnd(true),
+    onkeydown: (e: KeyboardEvent) => {
+      if ((e.key === "Enter" || e.key === " ") && !e.repeat) pressStart();
+    },
+    onkeyup: () => pressEnd(),
+    onclick: (e: MouseEvent) => e.preventDefault(),
+    oncontextmenu: (e: Event) => e.preventDefault(),
+  };
+
+  const handlers = $derived(role === "press" ? pressHandlers : holdHandlers);
+  const active = $derived(role === "press" ? pressed : held);
+
+  const label = $derived(
+    role === "press"
+      ? "Glyph Button — maintenir pour simuler l'appui long"
+      : "Glyph Button — maintenir pour comparer avec le rendu sans réglages",
+  );
+
+  /* Légende du bouton, et texte de la barre de repli. Rien à promettre quand le
+     bouton ne fait rien : une légende annoncerait une action qu'il ne rend pas. */
+  const hintText = $derived(
+    role === "press" ? (tooShort ? "Maintenir →" : action) : held ? "Rendu brut" : "Maintenir",
+  );
+
+  /* La barre de repli remplace le Glyph Button quand il n'y en a pas à l'écran.
+     Les deux rôles n'ont pas le même besoin, et c'est ce qui décide :
+
+     - « press » est la **seule entrée du toy**. Elle doit rester atteignable
+       partout, donc aussi en mode grand, où aucun dos n'est affiché.
+     - « hold » est un confort de préview. En mode grand — qui ne prétend pas
+       émuler l'appareil mais lire la matrice LED par LED — la comparaison au
+       rendu brut n'a rien à dire, et la barre n'ajoutait qu'une ligne de chrome
+       sous un disque déjà contraint en hauteur. */
+  const barre = $derived(
+    role === "press" ? mode === "large" || !dev.button : mode === "phone" && !dev.button,
+  );
 </script>
 
 <figure class="device">
@@ -309,22 +430,22 @@
         {#if dev.button}
           <button
             class="glyphbtn"
-            class:is-held={held}
-            disabled={!compare}
+            class:is-held={active}
+            disabled={!armed}
             style={at(dev.button)}
-            aria-label="Glyph Button — maintenir pour comparer avec le rendu sans réglages"
-            {...holdHandlers}
+            aria-label={label}
+            {...handlers}
           ></button>
 
-          <!-- pas de légende quand il n'y a rien à comparer : elle promettrait
-               une action que le bouton désactivé ne rend pas -->
-          {#if compare}
+          <!-- pas de légende quand le bouton ne fait rien : elle promettrait
+               une action qu'un bouton désactivé ne rend pas -->
+          {#if armed}
             <span
               class="hint"
-              class:on={held}
+              class:on={active || tooShort}
               style="left:{hintX * 100}%;top:{dev.button.top * 100}%"
             >
-              {held ? "Rendu brut" : "Maintenir"}
+              {hintText}
             </span>
           {/if}
         {/if}
@@ -353,17 +474,11 @@
     {/if}
   </div>
 
-  <!-- L'A/B en barre : uniquement pour un appareil qui n'a pas de Glyph Button
-       sur lequel poser la fonction, et uniquement en mode téléphone.
-
-       Pas en mode grand. Ce mode ne prétend pas émuler l'appareil, il sert à
-       lire LED par LED ce que fait un réglage — la comparaison avec le rendu
-       brut se fait sur le téléphone, où elle veut dire quelque chose. La barre
-       n'y ajoutait qu'une ligne de chrome sous un disque déjà contraint en
-       hauteur. -->
-  {#if mode === "phone" && !dev.button}
-    <button class="ab" class:is-held={held} disabled={!compare} {...holdHandlers}>
-      {held ? "Rendu brut" : "Maintenir : avant / après"}
+  <!-- Repli quand aucun Glyph Button n'est à l'écran pour porter la fonction —
+       voir `barre`, qui n'applique pas la même règle aux deux rôles. -->
+  {#if barre}
+    <button class="ab" class:is-held={active} disabled={!armed} {...handlers}>
+      {role === "press" ? (pressed ? "…" : hintText) : held ? "Rendu brut" : "Maintenir : avant / après"}
     </button>
   {/if}
 

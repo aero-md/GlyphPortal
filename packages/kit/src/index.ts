@@ -21,6 +21,12 @@
  */
 
 export { buildGeometry, type Geometry } from "./matrix/matrix";
+/* `Grid` est la surface d'écriture d'un toy ; `PixelGrid`, plus bas, est la
+   métrique du rendu à l'écran — combien de pixels physiques par LED. Les deux
+   s'appelaient `Grid`, ce qui ne pouvait pas cohabiter dans un même barrel et,
+   surtout, laissait croire qu'elles avaient un rapport. */
+export { Grid, discMap, type DiscMap } from "./matrix/draw";
+export { F3, F5, charWidth, textWidth, type Font } from "./matrix/fonts";
 export {
   DEFAULT_DEVICE,
   DEVICES,
@@ -37,7 +43,7 @@ export {
   ledMetrics,
   paint,
   screenGrid,
-  type Grid,
+  type PixelGrid,
   type LedStyle,
   type PaintOpts,
 } from "./matrix/render";

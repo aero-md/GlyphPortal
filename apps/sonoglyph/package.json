@@ -1,0 +1,18 @@
+{
+  "name": "@glyph/app-sonoglyph",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Préview des deux Glyph Toys de Sonoglyph — visualiseur de spectre et VU-mètre.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json",
+    "verify": "bun run src/lib/verify.ts"
+  },
+  "dependencies": {
+    "@glyph/kit": "workspace:*"
+  }
+}

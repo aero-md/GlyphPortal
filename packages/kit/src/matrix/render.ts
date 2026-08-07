@@ -15,7 +15,7 @@
 import type { Device } from "./devices";
 import type { Frame } from "./frame";
 
-export type Grid = {
+export type PixelGrid = {
   /** Pixels de backing par LED — toujours entier. */
   cell: number;
   /** Côté du carré de LEDs, en pixels de backing. */
@@ -105,7 +105,7 @@ function cellFor(d: Device, discPx: number, grand = false): number {
   return ecart(haut) < ecart(bas) ? haut : bas;
 }
 
-function grid(d: Device, cell: number, dpr: number, grand: boolean): Grid {
+function grid(d: Device, cell: number, dpr: number, grand: boolean): PixelGrid {
   const size = d.size * cell;
   const disc = (d.size + 2 * cerneVise(d, grand)) * cell;
   return { cell, size, cssSize: size / dpr, disc, discCss: disc / dpr };
@@ -129,7 +129,7 @@ export function screenGrid(
   discCss: number,
   dpr = window.devicePixelRatio || 1,
   grand = false,
-): Grid {
+): PixelGrid {
   return grid(d, cellFor(d, discCss * dpr, grand), dpr, grand);
 }
 
@@ -142,7 +142,7 @@ export function screenGrid(
  * Le PNG dessine son propre disque : il prend donc le cerne décoratif, comme le
  * mode grand, et non la cote du hublot de la photo.
  */
-export function exportGrid(d: Device, target = 600): Grid {
+export function exportGrid(d: Device, target = 600): PixelGrid {
   return grid(d, cellFor(d, target, true), 1, true);
 }
 
@@ -223,7 +223,7 @@ export function ledMetrics(
 export function paint(
   ctx: CanvasRenderingContext2D,
   frame: Frame,
-  g: Grid,
+  g: PixelGrid,
   opts: PaintOpts = {},
 ): void {
   const { style = "sharp", background = null, grand = false } = opts;
