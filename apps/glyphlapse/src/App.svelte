@@ -229,9 +229,6 @@
   title="GLYPHLAPSE"
   sub="{device.name} • Le temps qui passe, décomposé sur la Glyph Matrix"
   stamp={VERSION}
-  note="Row-major {device.size}×{device.size}, valeurs 0-255, masque circulaire r = {String(
-    device.radius,
-  ).replace('.', ',')} → {device.ledCount} LEDs. Décomposition calendaire, pas une durée en secondes."
   repo="https://github.com/aero-md/glyphlapse"
   {notice}
 >

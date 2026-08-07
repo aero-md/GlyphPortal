@@ -517,14 +517,12 @@
     </button>
   {/if}
 
-  <figcaption>
-    <span class="k">LED allumées</span>
-    <span class="v">[{String(frame.lit).padStart(3, "0")} / {dev.ledCount}]</span>
-    <span class="k">Moyenne</span>
-    <span class="v">{Math.round(frame.mean * 100)} %</span>
-    <span class="k">Échelle</span>
-    <span class="v">{grid.cell} px / LED</span>
-  </figcaption>
+  <!-- Pas de légende de lectures. Le compte de LED, la luminosité moyenne et
+       l'échelle en px/LED décrivaient la trame sans jamais servir à la régler :
+       on les lisait une fois, puis on regardait le disque. Elles occupaient une
+       ligne juste sous lui, pile là où l'œil fait l'aller-retour vers le rack.
+       `frame.lit` et `frame.mean` restent dans le contrat — c'est le toy Android
+       qui les définit, pas cette page. -->
 </figure>
 
 <style>
@@ -719,30 +717,6 @@
     color: var(--bg);
   }
 
-  figcaption {
-    flex: none;
-    display: flex;
-    align-items: baseline;
-    gap: 0.5rem 0.9rem;
-    flex-wrap: wrap;
-    justify-content: center;
-    font-size: 10px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-  }
-
-  figcaption .k {
-    color: var(--faint);
-  }
-
-  figcaption .k::after {
-    content: " :";
-  }
-
-  figcaption .v {
-    color: var(--ink);
-  }
-
   /* Bande calculée dans le script — voir previewBand / SHARE. Le fondu y est
      plus court : sur une colonne de téléphone, 56 px mordraient sur le bas du
      disque.
@@ -761,19 +735,6 @@
     .stage {
       --fade: 28px;
       height: var(--band);
-    }
-
-    /* Les lectures sautent. Elles décrivent la trame, elles ne servent pas à la
-       régler — et en colonne unique elles sont posées entre la matrice et le
-       rack, c'est-à-dire pile là où se joue le va-et-vient de l'œil pendant
-       qu'on manipule un curseur. Les 30 px qu'elles occupaient (ligne + gouttière)
-       reviennent à la bande de préview, qui est plafonnée à 40 % de la hauteur
-       d'écran et n'a rien de trop.
-
-       Le compte de LED reste lisible au pied de page, et l'échelle en px/LED ne
-       veut de toute façon pas dire grand-chose sur un écran de téléphone. */
-    figcaption {
-      display: none;
     }
   }
 </style>

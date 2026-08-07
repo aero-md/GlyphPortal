@@ -155,9 +155,6 @@
   title="SONOGLYPH"
   sub="{device.name} • Deux Glyph Toys qui lisent le niveau sonore"
   stamp={VERSION}
-  note="Row-major {device.size}×{device.size}, valeurs 0-255, masque circulaire r = {String(
-    device.radius,
-  ).replace('.', ',')} → {device.ledCount} LEDs. Échelle {MIN_DB}–{MAX_DB} dB(A)."
   repo="https://github.com/aero-md/sonoglyph"
   {notice}
 >

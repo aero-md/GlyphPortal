@@ -12,6 +12,11 @@
   --mono: "Geist Mono", ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace;
 
   --bg: #eff0f1;
+  /* Surface posée sur le fond — les tuiles du sommaire. Assez proche pour ne
+     pas faire panneau, assez distincte pour qu'une tuile se détoure sans filet :
+     c'est ce qui remplace la bordure, pas ce qui s'y ajoute. */
+  --bg-2: #e3e3e3;
+  --bg-2-hover: #d7d8d9;
   --ink: #14161a;
   --dim: rgba(20, 22, 26, 0.52);
   --faint: rgba(20, 22, 26, 0.34);
@@ -25,6 +30,11 @@
 
 :root[data-theme="dark"] {
   --bg: #0e1013;
+  /* Le pendant sombre est plus **clair** que le fond, pas plus foncé : sous
+     #0e1013 il n'y a presque plus de place, et une surface qui s'enfonce y
+     devient un trou noir. */
+  --bg-2: #191c20;
+  --bg-2-hover: #222629;
   --ink: #e8e9ea;
   --dim: rgba(232, 233, 234, 0.52);
   --faint: rgba(232, 233, 234, 0.32);
