@@ -7,9 +7,7 @@
   "type": "module",
   "workspaces": ["packages/*", "apps/*"],
   "scripts": {
-    "dev": "echo \"Choisis une app : bun run dev:portal | dev:glyphcast | dev:sonoglyph | dev:glyphlapse | dev:glyphslot\" && exit 1",
-    "dev:portal": "bun run --cwd apps/portal dev",
-    "dev:glyphcast": "bun run --cwd apps/glyphcast dev",
+    "dev": "bun run --filter './apps/*' dev",
     "build": "bun run --filter './apps/*' build",
     "check": "bun run --filter './apps/*' check"
   },

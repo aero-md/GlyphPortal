@@ -86,14 +86,34 @@ Une app se réduit donc à son moteur, ses réglages, et deux composants :
 
 ```powershell
 bun install
-bun run dev:portal      # le sommaire
-bun run dev:glyphcast   # une préview
-bun run check           # svelte-check + tsc sur toutes les apps
+bun run dev     # les cinq apps -> http://localhost:5180
+bun run check   # svelte-check + tsc sur toutes les apps
 ```
 
+Les cinq serveurs Vite montent en parallèle, chacun sur un port fixe, et **le
+serveur du portail proxyfie les quatre autres**. Tout répond donc sur
+`localhost:5180`, exactement comme en production : le sommaire mène aux
+préviews, le bouton « ◂ Index » ramène au sommaire. Sans ce proxy chaque app
+vivrait sur une origine différente et tous les liens du portail casseraient,
+puisqu'ils sont absolus.
+
+| App | Port | Adresse via le portail |
+|---|---:|---|
+| portal | 5180 | `/` |
+| glyphcast | 5181 | `/glyphcast/` |
+| sonoglyph | 5182 | `/sonoglyph/` |
+| glyphlapse | 5183 | `/glyphlapse/` |
+| glyphslot | 5184 | `/glyphslot/` |
+
+Les ports sont en `strictPort` : une collision fait échouer le démarrage au lieu
+de glisser silencieusement sur le port suivant, où le proxy ne trouverait plus
+personne. Si ça arrive, c'est en général un serveur Vite orphelin d'une session
+précédente — le processus qui écoute est un `node`, enfant du `bun` qui l'a
+lancé, et il survit à la fermeture de son parent.
+
 Les paquets de `packages/` ne sont pas compilés : ils sont consommés en source
-par Vite, via les liens de workspace. Une modification du noyau se voit
-immédiatement dans l'app en cours, sans étape de build intermédiaire.
+par Vite, via les liens de workspace. Une modification du noyau part en HMR dans
+l'app ouverte, sans étape de build intermédiaire et sans rechargement.
 
 ## Déploiement
 
