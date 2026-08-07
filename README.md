@@ -90,12 +90,19 @@ bun run dev     # les cinq apps -> http://localhost:5180
 bun run check   # svelte-check + tsc sur toutes les apps
 ```
 
-Les cinq serveurs Vite montent en parallèle, chacun sur un port fixe, et **le
-serveur du portail proxyfie les quatre autres**. Tout répond donc sur
-`localhost:5180`, exactement comme en production : le sommaire mène aux
-préviews, le bouton « ◂ Index » ramène au sommaire. Sans ce proxy chaque app
-vivrait sur une origine différente et tous les liens du portail casseraient,
-puisqu'ils sont absolus.
+Les cinq serveurs Vite montent **dans un seul processus** (`scripts/dev.ts`),
+chacun sur un port fixe, et **le serveur du portail proxyfie les quatre
+autres**. Tout répond donc sur `localhost:5180`, exactement comme en
+production : le sommaire mène aux préviews, le bouton « ◂ Index » ramène au
+sommaire. Sans ce proxy chaque app vivrait sur une origine différente et tous
+les liens du portail casseraient, puisqu'ils sont absolus.
+
+Le processus unique n'est pas un détail de confort. Lancer les cinq par
+`bun run --filter` exécutait chaque `vite` dans un `node` enfant, et sous
+Windows tuer le parent ne propage rien : les cinq continuaient d'écouter après
+un Ctrl+C, et le lancement suivant se cognait à `strictPort`. Ici les serveurs
+n'ont pas de processus à eux — quoi qu'il arrive au processus, les ports
+partent avec lui.
 
 | App | Port | Adresse via le portail |
 |---|---:|---|
@@ -107,9 +114,13 @@ puisqu'ils sont absolus.
 
 Les ports sont en `strictPort` : une collision fait échouer le démarrage au lieu
 de glisser silencieusement sur le port suivant, où le proxy ne trouverait plus
-personne. Si ça arrive, c'est en général un serveur Vite orphelin d'une session
-précédente — le processus qui écoute est un `node`, enfant du `bun` qui l'a
-lancé, et il survit à la fermeture de son parent.
+personne.
+
+Une seule URL est imprimée, celle du portail. Les terminaux et éditeurs qui
+guettent les adresses locales ouvraient sinon un onglet par ligne, pour un site
+qui n'a qu'une porte d'entrée. Pour la même raison, `bun run dev` n'accepte plus
+de drapeau destiné à Vite : un `--open` égaré ouvrait cinq onglets à chaque
+lancement, et il n'a plus de chemin jusqu'à lui.
 
 Les paquets de `packages/` ne sont pas compilés : ils sont consommés en source
 par Vite, via les liens de workspace. Une modification du noyau part en HMR dans
