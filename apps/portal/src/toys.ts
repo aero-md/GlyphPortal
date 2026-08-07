@@ -55,6 +55,7 @@ export const TOYS: Toy[] = [
     line: "Une machine à sous dans le hublot",
     detail: "Trois rouleaux, cinématique complète, appui long sur le Glyph Button.",
     repo: "https://github.com/aero-md/glyphslot",
-    ready: false,
+    ready: true,
   },
 ];
+

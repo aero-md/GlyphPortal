@@ -28,6 +28,13 @@
         "@glyph/kit": "workspace:*",
       },
     },
+    "apps/glyphslot": {
+      "name": "@glyph/app-glyphslot",
+      "version": "1.0.0",
+      "dependencies": {
+        "@glyph/kit": "workspace:*",
+      },
+    },
     "apps/portal": {
       "name": "@glyph/app-portal",
       "version": "1.0.0",
@@ -51,6 +58,8 @@
     "@glyph/app-glyphcast": ["@glyph/app-glyphcast@workspace:apps/glyphcast"],
 
     "@glyph/app-glyphlapse": ["@glyph/app-glyphlapse@workspace:apps/glyphlapse"],
+
+    "@glyph/app-glyphslot": ["@glyph/app-glyphslot@workspace:apps/glyphslot"],
 
     "@glyph/app-portal": ["@glyph/app-portal@workspace:apps/portal"],
 
