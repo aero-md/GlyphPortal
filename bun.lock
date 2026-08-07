@@ -21,6 +21,13 @@
         "@glyph/kit": "workspace:*",
       },
     },
+    "apps/glyphlapse": {
+      "name": "@glyph/app-glyphlapse",
+      "version": "1.0.0",
+      "dependencies": {
+        "@glyph/kit": "workspace:*",
+      },
+    },
     "apps/portal": {
       "name": "@glyph/app-portal",
       "version": "1.0.0",
@@ -42,6 +49,8 @@
   },
   "packages": {
     "@glyph/app-glyphcast": ["@glyph/app-glyphcast@workspace:apps/glyphcast"],
+
+    "@glyph/app-glyphlapse": ["@glyph/app-glyphlapse@workspace:apps/glyphlapse"],
 
     "@glyph/app-portal": ["@glyph/app-portal@workspace:apps/portal"],
 

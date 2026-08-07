@@ -47,7 +47,7 @@ export const TOYS: Toy[] = [
     line: "Le temps qui passe, décomposé",
     detail: "Sablier, anneau des secondes et décomposition calendaire de l'année en cours.",
     repo: "https://github.com/aero-md/glyphlapse",
-    ready: false,
+    ready: true,
   },
   {
     slug: "glyphslot",

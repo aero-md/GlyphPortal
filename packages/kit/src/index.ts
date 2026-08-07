@@ -26,7 +26,7 @@ export { buildGeometry, type Geometry } from "./matrix/matrix";
    s'appelaient `Grid`, ce qui ne pouvait pas cohabiter dans un même barrel et,
    surtout, laissait croire qu'elles avaient un rapport. */
 export { Grid, discMap, type DiscMap } from "./matrix/draw";
-export { F3, F5, charWidth, textWidth, type Font } from "./matrix/fonts";
+export { F3, F5, charWidth, extend, textWidth, type Font } from "./matrix/fonts";
 export {
   DEFAULT_DEVICE,
   DEVICES,

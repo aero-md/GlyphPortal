@@ -2,6 +2,25 @@
 
 export type Font = { height: number; glyphs: Record<string, string[]> };
 
+/**
+ * Une police enrichie des glyphes d'un toy.
+ *
+ * Les deux jeux ci-dessous sont ceux que Sonoglyph et GlyphLapse ont en commun
+ * — les dix chiffres au point près, plus quelques capitales. Là où ils
+ * divergeaient, ils divergeaient **pour de bonnes raisons** : le tiret de
+ * Sonoglyph fait cinq colonnes parce qu'il sert à écrire « --- », celui de
+ * GlyphLapse en fait trois parce qu'il sert à écrire « J-123 ». Fusionner les
+ * deux aurait changé l'allure de l'un des toys sans que personne ne l'ait
+ * demandé.
+ *
+ * Un toy ajoute donc ce qu'il lui faut, et surcharge ce qu'il dessine
+ * autrement. Ce qui est partagé l'est parce qu'il est identique, pas parce
+ * qu'on a tranché à sa place.
+ */
+export function extend(base: Font, glyphs: Record<string, string[]>): Font {
+  return { height: base.height, glyphs: { ...base.glyphs, ...glyphs } };
+}
+
 export function charWidth(f: Font, c: string): number {
   return f.glyphs[c]?.[0].length ?? 0;
 }

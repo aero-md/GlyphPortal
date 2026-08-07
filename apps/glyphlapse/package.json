@@ -1,0 +1,17 @@
+{
+  "name": "@glyph/app-glyphlapse",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Préview du Glyph Toy GlyphLapse — le temps qui passe, décomposé.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json"
+  },
+  "dependencies": {
+    "@glyph/kit": "workspace:*"
+  }
+}
