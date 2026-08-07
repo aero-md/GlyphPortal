@@ -47,6 +47,13 @@
   let ledStyle = $state<LedStyle>("sharp");
   let notice = $state("");
 
+  /* Le Glyph Button de la photo passe sous la coupe dès que le cadre est rogné
+     — colonne unique, ou fenêtre trop courte pour montrer le bas du dos. Comme
+     l'appui long est la seule commande du toy, le rack en offre alors un repli.
+     La valeur vient de la préview, qui mesure : un seuil de largeur écrit ici se
+     tromperait au premier changement de photo. */
+  let buttonReachable = $state(true);
+
   let frame = $state<Frame>(frameOf(device, new Float32Array(device.cells)));
   let readout = $state<Breakdown>(breakdown(lapses[0].ref, Date.now()));
 
@@ -236,6 +243,7 @@
       bind:style={ledStyle}
       action="Lapse suivant"
       onlongpress={longPress}
+      bind:buttonReachable
     />
   {/snippet}
 
@@ -251,14 +259,21 @@
         <button type="button" class:on={current.enabled} disabled={active === 0} onclick={toggleEnabled}>
           {current.enabled ? "Activé — dans la rotation" : "Désactivé"}
         </button>
+        <!-- Repli : le Glyph Button de la photo est hors champ, et l'appui long
+             est la seule commande du toy. Il n'apparaît pas quand le bouton est
+             là — un doublon permanent apprendrait la mauvaise interaction. -->
+        {#if !buttonReachable}
+          <button type="button" onclick={longPress}>Simuler l'appui long</button>
+        {/if}
       </div>
       <p class="note">
         L'appui long sur le Glyph Button passe au lapse activé suivant. Le lapse <b>I</b> ne se
         désactive pas : un toy sans aucun lapse actif n'aurait rien à afficher.
       </p>
       <p class="note">
-        Sélectionner un onglet bascule le toy, comme dans l'app de réglages — il n'y a pas de
-        prévisualisation sans application, parce que le toy n'a pas cette notion.
+        L'onglet sélectionné <b>est</b> celui que le toy affiche : il n'y a pas d'un côté le
+        lapse qu'on règle et de l'autre celui qui tourne. C'est le comportement de l'app de
+        réglages, où choisir un onglet bascule le toy.
       </p>
     </Card>
 

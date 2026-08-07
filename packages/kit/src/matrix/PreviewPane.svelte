@@ -45,6 +45,12 @@
     action?: string;
     /** Reçoit l'appui long — la seule commande qu'un Glyph Toy reçoive. */
     onlongpress?: () => void;
+    /**
+     * Sortant : le Glyph Button de la photo est-il atteignable ? Faux quand le
+     * cadre est rogné au-dessus de lui — voir `Preview`. Une app qui pose une
+     * commande sur l'appui long s'y lie pour offrir un repli dans son rack.
+     */
+    buttonReachable?: boolean;
   };
 
   let {
@@ -58,6 +64,7 @@
     note,
     action,
     onlongpress,
+    buttonReachable = $bindable(true),
   }: Props = $props();
 
   /* Largeur de la colonne, pour que le mode « grand » occupe exactement la
@@ -98,7 +105,17 @@
     />
   </div>
 
-  <Preview {frame} {mode} {style} {compare} {action} {onlongpress} {devices} width={colW} />
+  <Preview
+    {frame}
+    {mode}
+    {style}
+    {compare}
+    {action}
+    {onlongpress}
+    {devices}
+    bind:buttonReachable
+    width={colW}
+  />
 
   {@render note?.()}
 </div>

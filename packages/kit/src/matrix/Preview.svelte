@@ -68,6 +68,12 @@
     onlongpress?: () => void;
     /** Les appareils entre lesquels l'app laisse basculer — pour le préchargement. */
     devices?: Device[];
+    /**
+     * Sortant, en lecture seule pour l'appelant : le Glyph Button est-il visible
+     * et cliquable ? Faux dès que le cadre est rogné au-dessus de lui. Une app
+     * s'en sert pour reposer l'appui long dans son rack.
+     */
+    buttonReachable?: boolean;
   };
 
   let {
@@ -79,6 +85,7 @@
     action = "Appui long",
     onlongpress,
     devices = DEVICES,
+    buttonReachable = $bindable(true),
   }: Props = $props();
 
   let cvs = $state<HTMLCanvasElement>();
@@ -188,6 +195,34 @@
   /* deux pixels de mou : les deux hauteurs s'égalisent pile quand ça rentre, et
      l'arrondi à l'entier ferait apparaître le fondu sur un cheveu */
   const clipped = $derived(stageH > 0 && naturalH - stageH > 2);
+
+  /**
+   * Le Glyph Button est-il **atteignable** ?
+   *
+   * Le rognage se fait par le bas et le bouton est en bas : dès que le cadre est
+   * comprimé — colonne unique, où la préview est réduite à la bande du disque,
+   * ou simplement fenêtre courte — il passe sous la coupe. Il n'est alors ni
+   * visible ni cliquable.
+   *
+   * L'appui long étant la **seule** commande qu'un Glyph Toy reçoive, une app
+   * doit pouvoir la reposer ailleurs quand ça arrive. D'où cette propriété,
+   * remontée plutôt que devinée côté app : elle suit la mesure réelle du cadre,
+   * et non un seuil de largeur ou de hauteur écrit en dur qui se déciderait sur
+   * un appareil et se tromperait sur l'autre.
+   *
+   * `dev.button.pct` est une fraction de la **largeur** du cadre, `top` une
+   * fraction de sa hauteur — d'où le passage par l'`aspect` pour les comparer.
+   */
+  const buttonBottom = $derived(
+    dev.button ? size * (dev.button.top / dev.aspect + dev.button.pct / 2) : 0,
+  );
+
+  $effect(() => {
+    /* Tant que le cadre n'a pas été mesuré on répond « oui » : afficher un repli
+       pour le retirer à l'image suivante ferait sauter la mise en page. */
+    const ok = mode === "phone" && !!dev.button && (stageH <= 0 || buttonBottom <= stageH);
+    if (ok !== buttonReachable) buttonReachable = ok;
+  });
 
   /* La légende se pose à gauche du Glyph Button : le seul appareil qui en porte
      un l'a à droite du dos. La cote vient du profil et non du CSS ; le jour où
