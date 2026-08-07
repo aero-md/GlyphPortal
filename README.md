@@ -28,12 +28,16 @@ Ici il n'y en a qu'une, dans `packages/kit`.
 
 ```
 packages/kit/        @glyph/kit — le noyau
-  src/matrix/        géométrie, calibrage, rendu, Preview, PreviewPane
+  src/matrix/        géométrie, calibrage, rendu au pixel, Grid, polices,
+                     Preview, PreviewPane
   src/ui/            Shell, Card, Seg, Slider, ThemeToggle, Wordmark, thème
   src/app.css        jetons de thème, trame de fond, étages typographiques
 
 apps/portal/         le sommaire, servi à la racine du domaine
-apps/glyphcast/      /glyphcast — image → Glyph Matrix
+apps/glyphcast/      /glyphcast   — image → Glyph Matrix
+apps/sonoglyph/      /sonoglyph   — spectre et VU-mètre, au micro
+apps/glyphlapse/     /glyphlapse  — le temps qui passe, décomposé
+apps/glyphslot/      /glyphslot   — machine à sous
 
 deploy.ps1           build de tout + un seul tarball vers le Pi
 deploy/              le bloc Caddy correspondant
@@ -56,8 +60,16 @@ type Frame = {
 ```
 
 Le reste — calage sur la photo, arrondi de la cellule au pixel physique, taille
-de LED par appareil, rendu, coquille de page — ne le regarde pas. Une app se
-réduit donc à son moteur, ses réglages, et deux composants :
+de LED par appareil, rendu, coquille de page — ne le regarde pas.
+
+Pour l'**écrire**, cette trame, le kit fournit `Grid` (une surface en
+luminosités, composition en maximum, masque du disque appliqué à l'écriture),
+`discMap` (anneau trié par angle, contour, rayon disponible par direction) et
+deux polices bitmap. Tout est dérivé d'une `Geometry` : un toy écrit pour la
+matrice du (3) tourne tel quel sur celle du (4a) Pro, à lui de décider si le
+résultat reste lisible.
+
+Une app se réduit donc à son moteur, ses réglages, et deux composants :
 
 ```svelte
 <Shell title="…" sub="…">
