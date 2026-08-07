@@ -1,0 +1,23 @@
+{
+  "name": "@glyph/kit",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Noyau commun aux préviews de Glyph Toys — géométrie de la matrice, rendu, coquille de page.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./app.css": "./src/app.css",
+    "./Shell.svelte": "./src/ui/Shell.svelte",
+    "./Card.svelte": "./src/ui/Card.svelte",
+    "./Seg.svelte": "./src/ui/Seg.svelte",
+    "./Slider.svelte": "./src/ui/Slider.svelte",
+    "./ThemeToggle.svelte": "./src/ui/ThemeToggle.svelte",
+    "./Wordmark.svelte": "./src/ui/Wordmark.svelte",
+    "./Preview.svelte": "./src/matrix/Preview.svelte",
+    "./PreviewPane.svelte": "./src/matrix/PreviewPane.svelte"
+  },
+  "scripts": {
+    "check": "svelte-check --tsconfig ./tsconfig.json"
+  }
+}

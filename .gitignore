@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.staging/
+*.local
+.DS_Store
+.vite/

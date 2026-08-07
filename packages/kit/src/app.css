@@ -1,0 +1,250 @@
+/* glyph.suns.red — direction « instrument technique ».
+   Angles vifs partout, le cercle est réservé aux points et aux LEDs.
+   Un seul accent rouge, employé comme ponctuation.
+
+   Feuille commune à toutes les préviews du portail : jetons de thème, trame de
+   fond, repères d'angle, étages typographiques, et l'habillage des commandes de
+   carte. Tout ce qui est propre à un toy reste dans son app. */
+
+:root {
+  /* une seule fonte : le wordmark est dessiné point par point, plus rien
+     n'appelle de serif système */
+  --mono: "Geist Mono", ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace;
+
+  --bg: #eff0f1;
+  --ink: #14161a;
+  --dim: rgba(20, 22, 26, 0.52);
+  --faint: rgba(20, 22, 26, 0.34);
+  --line: rgba(20, 22, 26, 0.16);
+  --line-strong: rgba(20, 22, 26, 0.3);
+  --hover: rgba(255, 255, 255, 0.72);
+  --accent: #d11a11;
+  --dot: rgba(20, 22, 26, 0.16);
+
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #0e1013;
+  --ink: #e8e9ea;
+  --dim: rgba(232, 233, 234, 0.52);
+  --faint: rgba(232, 233, 234, 0.32);
+  --line: rgba(232, 233, 234, 0.14);
+  --line-strong: rgba(232, 233, 234, 0.28);
+  --hover: rgba(232, 233, 234, 0.05);
+  --accent: #ff3b2e;
+  --dot: rgba(232, 233, 234, 0.14);
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* les boutons n'héritent pas de font-family : sans ça ils repassent en Arial */
+button,
+input,
+select,
+textarea {
+  font-family: var(--mono);
+  font-size: inherit;
+  color: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover,
+a:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* --- grille de points : le liant, présente sur toute la page --- */
+.dots {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  color: var(--dot);
+  background-image: radial-gradient(currentColor 1px, transparent 1.3px);
+  background-size: 44px 44px;
+}
+
+/* --- repères d'imprimerie aux quatre angles --- */
+/* Le bras est de longueur IMPAIRE, et le trait est décalé d'un demi-pixel
+   depuis le centre : `left: 50%` sur une boîte de 13 px poserait le trait de
+   1 px à 6,5 px, donc à cheval sur deux pixels écran, et la croix sortait en
+   deux colonnes grises au lieu d'un filet net — la seule chose floue d'une
+   page qui ne trace que des hairlines. */
+.reg {
+  --arm: 13px;
+  position: fixed;
+  width: var(--arm);
+  height: var(--arm);
+  pointer-events: none;
+  z-index: 1;
+  /* un jeton de la page plutôt qu'une opacité : même densité que les autres
+     traits fins, et pas de groupe de composition à traverser */
+  color: var(--faint);
+}
+
+.reg::before,
+.reg::after {
+  content: "";
+  position: absolute;
+  background: currentColor;
+}
+
+.reg::before {
+  left: calc(50% - 0.5px);
+  top: 0;
+  width: 1px;
+  height: 100%;
+}
+
+.reg::after {
+  top: calc(50% - 0.5px);
+  left: 0;
+  height: 1px;
+  width: 100%;
+}
+
+.reg.tl {
+  left: 14px;
+  top: 14px;
+}
+.reg.tr {
+  right: 14px;
+  top: 14px;
+}
+.reg.bl {
+  left: 14px;
+  bottom: 14px;
+}
+.reg.br {
+  right: 14px;
+  bottom: 14px;
+}
+
+@media (max-width: 900px) {
+  .reg {
+    display: none;
+  }
+}
+
+/* --- étages typographiques --- */
+.label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.meta {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.ref {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--faint);
+}
+
+.accent {
+  color: var(--accent);
+}
+
+/* --- commandes de carte --- */
+/* Non scopées : ce sont les mêmes boutons dans toutes les préviews, et les
+   passer en composant pour trois déclarations coûterait plus que ça ne rend.
+   Même habillage que `Seg` et `ThemeToggle`, à dessein — rien dans cette page
+   ne doit avoir l'air d'un widget de framework. */
+.btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.btns button {
+  position: relative;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--dim);
+  border-radius: 0;
+  padding: 0.34rem 0.6rem;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s,
+    border-color 0.12s;
+}
+
+.btns button:not(:disabled):hover {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+.btns button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* État retenu, inversé en plein encre : il se lit à la forme et pas seulement
+   à la couleur. */
+.btns button.on {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+
+/* --- prose de carte --- */
+.note {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.65;
+  color: var(--dim);
+}
+
+.code {
+  margin: 0;
+  border: 1px solid var(--line);
+  padding: 0.6rem;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--dim);
+  max-height: 190px;
+  overflow: auto;
+  white-space: pre;
+}

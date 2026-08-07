@@ -1,0 +1,17 @@
+{
+  "name": "@glyph/app-portal",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Sommaire de glyph.suns.red — une entrée par préview de Glyph Toy.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json"
+  },
+  "dependencies": {
+    "@glyph/kit": "workspace:*"
+  }
+}
