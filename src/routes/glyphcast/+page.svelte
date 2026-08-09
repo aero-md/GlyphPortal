@@ -195,7 +195,7 @@
   sub="Stylisez une image en la projetant sur la Glyph Matrix"
   stamp={VERSION}
   {device}
-  repo="https://github.com/aero-md/glyph-portal"
+  repo="https://github.com/aero-md/GlyphPortal"
   {notice}
   {dragging}
 >

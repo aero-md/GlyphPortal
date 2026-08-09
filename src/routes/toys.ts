@@ -80,7 +80,12 @@ export const TOYS: Toy[] = [
     slug: "glyphcast",
     name: "GLYPHCAST",
     line: "Outil de convertion d'une image en rendu Glyph Matrix",
-    repo: "https://github.com/aero-md/glyphcast",
+    /* Le dépôt du portail, et non un dépôt à lui : GlyphCast est un outil web,
+       pas un toy embarqué, et son code vit dans celui-ci — c'est d'ailleurs ce
+       dépôt-là qui s'appelait `glyphcast` avant de prendre tout le domaine. Les
+       trois autres entrées pointent bien sur des dépôts distincts, ceux des
+       APK Android. */
+    repo: "https://github.com/aero-md/GlyphPortal",
     ready: true,
     /* Deux dessins fixes sortis de GlyphCast lui-même, la même image projetée
        sur les deux matrices — 489 LEDs sur le (3), 137 sur le (4a) Pro. La

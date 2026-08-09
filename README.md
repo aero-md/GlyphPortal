@@ -1,4 +1,4 @@
-# glyph-portal
+# GlyphPortal
 
 Le code de **[glyph.suns.red](https://glyph.suns.red)** : un sommaire et les
 préviews web des Glyph Toys pour Nothing Phone.
