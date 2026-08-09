@@ -22,29 +22,52 @@ un diamètre de 26,04 %, valeurs relevées à l'œil ; glyphcast à 79,688 % /
 15,433 % pour 26,49 %, mesurées dans les pixels de la photo. Trois copies, dont
 deux fausses, et rien pour le signaler.
 
-Ici il n'y en a qu'une, dans `packages/kit`.
+Ici il n'y en a qu'une, dans `src/lib`.
+
+## Une seule app, pas cinq
+
+Le rapprochement s'est d'abord fait en monorepo : cinq apps Vite dans `apps/`,
+un paquet partagé dans `packages/`, liés par les workspaces de Bun. C'était le
+chemin qui touchait le moins de code à chaque étape du portage, pas un choix de
+structure — et il se payait cher. Cinq `vite.config.ts`, quinze `tsconfig`, cinq
+`index.html`, un `base: "/<slug>/"` par app à tenir en accord avec son dossier
+de déploiement, et un lanceur maison de 67 lignes montant cinq serveurs de dev
+derrière un sixième qui les proxyfiait. Du routage réimplémenté à la main, en
+moins bien : chaque saut d'une préview à l'autre était un rechargement complet.
+
+Le dossier d'une route **est** son URL, il n'y a plus rien à tenir en accord. Le
+découpage du JS par route vient du bundler, et la navigation entre les toys ne
+recharge plus la page.
 
 ## Arborescence
 
 ```
-packages/kit/        @glyph/kit — le noyau
-  src/matrix/        géométrie, calibrage, rendu au pixel, Grid, polices,
-                     Preview, PreviewPane
-  src/ui/            Shell, Card, Seg, Slider, ThemeToggle, thème
-  src/app.css        jetons de thème, trame de fond, étages typographiques
+src/lib/             le noyau, sous l'alias $lib
+  matrix/            géométrie, calibrage, rendu au pixel, Grid, polices,
+                     Preview, PreviewPane, ToyPreview, design & lottie
+  ui/                Shell, Card, Seg, Slider, ThemeToggle, thème
+  app.css            jetons de thème, trame de fond, étages typographiques
 
-apps/portal/         le sommaire, servi à la racine du domaine
-apps/glyphcast/      /glyphcast   — image → Glyph Matrix
-apps/sonoglyph/      /sonoglyph   — spectre et VU-mètre, au micro
-apps/glyphlapse/     /glyphlapse  — le temps qui passe, décomposé
-apps/glyphslot/      /glyphslot   — machine à sous
+src/routes/
+  +layout.svelte     la feuille de style, montée une fois
+  +layout.ts         pré-rendu, pas de SSR, barre finale imposée
+  +page.svelte       le sommaire, servi à la racine du domaine
+  toys.ts            le catalogue : une entrée par tuile
+  glyphcast/         /glyphcast/   — image → Glyph Matrix
+  sonoglyph/         /sonoglyph/   — spectre et VU-mètre, au micro
+  glyphlapse/        /glyphlapse/  — le temps qui passe, décomposé
+  glyphslot/         /glyphslot/   — machine à sous
 
-deploy.ps1           build de tout + un seul tarball vers le Pi
+src/app.html         le `<head>` commun : polices, favicon, script de thème
+static/              favicon, worklet du micro, boucles des vignettes
+scripts/             fabrication de la boucle de mini-prévisu de GlyphSlot
+deploy.ps1           check + build + un seul tarball vers le Pi
 deploy/              le bloc Caddy correspondant
 ```
 
-Chaque app est un build Vite indépendant avec son propre `base`. Le déploiement
-les empile dans l'arborescence que Caddy sert.
+Le moteur d'un toy vit dans `lib/` **sous sa route** et non dans `src/lib` : il
+ne sert qu'à elle. Ce qui monte dans `$lib` est ce que plusieurs préviews
+partagent, et c'est la seule chose qui justifie qu'un noyau existe.
 
 ## Le contrat d'un toy
 
@@ -69,10 +92,10 @@ deux polices bitmap. Tout est dérivé d'une `Geometry` : un toy écrit pour la
 matrice du (3) tourne tel quel sur celle du (4a) Pro, à lui de décider si le
 résultat reste lisible.
 
-Une app se réduit donc à son moteur, ses réglages, et deux composants :
+Une route se réduit donc à son moteur, ses réglages, et deux composants :
 
 ```svelte
-<Shell title="…" sub="…">
+<Shell title="…" sub="…" {device} repo="…">
   {#snippet preview()}
     <PreviewPane {frame} bind:device bind:mode bind:style />
   {/snippet}
@@ -82,81 +105,64 @@ Une app se réduit donc à son moteur, ses réglages, et deux composants :
 </Shell>
 ```
 
+`device` sert au pied de page, qui écrit de lui-même les caractéristiques de la
+matrice affichée — taille, plage de valeurs, rayon du masque, compte de LEDs —
+et suit donc le sélecteur d'appareil.
+
 ## Développement
 
 ```powershell
 bun install
-bun run dev     # les cinq apps -> http://localhost:5180
-bun run check   # svelte-check + tsc sur toutes les apps
+bun run dev     # http://localhost:5180
+bun run check   # svelte-kit sync + svelte-check
 ```
 
-Les cinq serveurs Vite montent **dans un seul processus** (`scripts/dev.ts`),
-chacun sur un port fixe, et **le serveur du portail proxyfie les quatre
-autres**. Tout répond donc sur `localhost:5180`, exactement comme en
-production : le sommaire mène aux préviews, le bouton « ◂ Index » ramène au
-sommaire. Sans ce proxy chaque app vivrait sur une origine différente et tous
-les liens du portail casseraient, puisqu'ils sont absolus.
+Le `<head>` est commun aux cinq pages (`src/app.html`) ; chaque route y ajoute
+son titre et sa description par un `<svelte:head>`. Le thème est posé sur
+`<html>` par un script inline **avant le premier paint** — un effet s'exécute
+après, et un visiteur en sombre prendrait un flash clair à chaque chargement.
+Ces lignes sont la copie de `THEME_BOOT` dans `$lib/ui/theme.ts`, un `<head>` ne
+pouvant pas importer de TypeScript ; il n'en existe qu'une, contre cinq du temps
+des `index.html` séparés.
 
-Le processus unique n'est pas un détail de confort. Lancer les cinq par
-`bun run --filter` exécutait chaque `vite` dans un `node` enfant, et sous
-Windows tuer le parent ne propage rien : les cinq continuaient d'écouter après
-un Ctrl+C, et le lancement suivant se cognait à `strictPort`. Ici les serveurs
-n'ont pas de processus à eux — quoi qu'il arrive au processus, les ports
-partent avec lui.
+Le site est **pré-rendu sans SSR**, et les deux moitiés de cette phrase comptent.
+Le pré-rendu écrit les cinq pages au build : il n'y a pas de serveur Node
+derrière, seulement Caddy et des fichiers. Le SSR est coupé parce que les quatre
+préviews sont du canvas — leur contenu n'existe qu'une fois la boucle
+d'affichage lancée — et parce que la bascule de thème lit le DOM à son
+initialisation. Le HTML livré est donc la coquille que servaient déjà les cinq
+builds Vite.
 
-| App | Port | Adresse via le portail |
-|---|---:|---|
-| portal | 5180 | `/` |
-| glyphcast | 5181 | `/glyphcast/` |
-| sonoglyph | 5182 | `/sonoglyph/` |
-| glyphlapse | 5183 | `/glyphlapse/` |
-| glyphslot | 5184 | `/glyphslot/` |
-
-**Le proxy relaie le HTTP, pas la websocket.** Le HMR de chaque app parle
-directement à son propre port (`server.hmr`), et l'app autorise l'origine du
-portail (`server.cors`) — sans quoi Vite refuse la connexion, à juste titre :
-une websocket cross-origine acceptée sans condition est une porte d'entrée. La
-websocket relayée, elle, ne s'établit pas sous Bun, et Vite finit alors la
-réponse par un `socket.destroySoon()` qui n'existe pas dans le socket d'un
-`upgrade` — ce qui tuait le processus, donc les cinq serveurs.
-
-Les ports sont en `strictPort` : une collision fait échouer le démarrage au lieu
-de glisser silencieusement sur le port suivant, où le proxy ne trouverait plus
-personne.
-
-Une seule URL est imprimée, celle du portail. Les terminaux et éditeurs qui
-guettent les adresses locales ouvraient sinon un onglet par ligne, pour un site
-qui n'a qu'une porte d'entrée. Pour la même raison, `bun run dev` n'accepte plus
-de drapeau destiné à Vite : un `--open` égaré ouvrait cinq onglets à chaque
-lancement, et il n'a plus de chemin jusqu'à lui.
-
-Les paquets de `packages/` ne sont pas compilés : ils sont consommés en source
-par Vite, via les liens de workspace. Une modification du noyau part en HMR dans
-l'app ouverte, sans étape de build intermédiaire et sans rechargement.
+Les URL gardent leur **barre finale** (`trailingSlash` dans `+layout.ts`) : le
+pré-rendu écrit `glyphcast/index.html` et non `glyphcast.html`, ce qui garde
+valables les adresses de la version précédente.
 
 ## Déploiement
 
 ```powershell
 .\deploy.ps1              # check + build + tarball + extraction sur le Pi
-.\deploy.ps1 -StageOnly   # assemble .staging/ et s'arrête — pour vérifier avant d'envoyer
+.\deploy.ps1 -SkipBuild   # envoie build/ tel quel
 ```
 
 La cible est `/srv/glyph` sur le Raspberry Pi, servie par Caddy derrière un
 tunnel Cloudflare. **La racine du domaine a changé de contenu** : elle servait
 GlyphCast, elle sert maintenant le sommaire, et GlyphCast a déménagé sous
 `/glyphcast/`. Le bloc Caddy est à remplacer en même temps — voir
-[`deploy/Caddyfile.snippet`](deploy/Caddyfile.snippet).
+[`deploy/Caddyfile.snippet`](deploy/Caddyfile.snippet). Il a changé une seconde
+fois depuis : les assets hachés sont sous `/_app/immutable/` et non plus sous
+`/assets/`, donc un bloc laissé tel quel annule le cache long sur tout le site.
 
 ## Ajouter une préview
 
-1. `apps/<slug>/` sur le modèle de `apps/glyphcast` — `base: "/<slug>/"` dans le
-   `vite.config.ts`.
-2. Le moteur du toy produit une `Frame` ; `Shell` et `PreviewPane` font le reste.
-3. L'entrée dans `apps/portal/src/toys.ts`, `ready: true`.
-4. L'entrée dans `$Apps` de `deploy.ps1`.
+1. `src/routes/<slug>/+page.svelte`, sur le modèle de `src/routes/glyphcast`.
+   Le moteur du toy dans `src/routes/<slug>/lib/`.
+2. Il produit une `Frame` ; `Shell` et `PreviewPane` font le reste.
+3. L'entrée dans `src/routes/toys.ts`, `ready: true`.
+4. Le slug dans `$Routes` de `deploy.ps1`.
 
-Les points 3 et 4 vont ensemble : `ready: true` sans entrée dans `$Apps` donne
-un lien vers un 404.
+Le point 4 n'est pas de la paperasse : le pré-rendu est silencieux quand une
+page n'est pas atteignable, elle sort simplement du build. `$Routes` est ce qui
+fait échouer le deploy avant l'envoi plutôt qu'en ligne.
 
 ## Licence
 

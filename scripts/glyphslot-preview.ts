@@ -33,16 +33,24 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const OUT = path.join(ROOT, "apps/portal/public/preview/glyphslot.json");
+const OUT = path.join(ROOT, "static/preview/glyphslot.json");
 
-/* Le moteur du toy importe `@glyph/kit`, dont le catalogue d'appareils importe
-   les photos de dos. C'est une importation d'asset Vite, que Bun ne sait pas
-   résoudre — et dont on n'a que faire ici, puisqu'on ne rend aucune photo. Le
-   greffon la remplace par une chaîne vide. Il doit être posé **avant** le
-   premier `import` du moteur, d'où les imports dynamiques plus bas. */
+/* Deux choses que Bun ne sait pas faire et que Vite fait pour la page.
+   Le greffon doit être posé **avant** le premier `import` du moteur, d'où les
+   imports dynamiques plus bas.
+
+   1. `$lib` est un alias de SvelteKit, résolu par son greffon Vite. Hors du
+      bundler il ne veut rien dire, et le moteur du toy l'emploie à travers ses
+      propres dépendances.
+   2. Le catalogue d'appareils importe les photos de dos. C'est une importation
+      d'asset Vite, dont on n'a que faire ici puisqu'on ne rend aucune photo :
+      elle est remplacée par une chaîne vide. */
 Bun.plugin({
-  name: "stub-assets",
+  name: "hors-vite",
   setup(build) {
+    build.onResolve({ filter: /^\$lib(\/|$)/ }, (args) => ({
+      path: path.join(ROOT, "src/lib", args.path.slice("$lib".length)),
+    }));
     build.onLoad({ filter: /\.(webp|png|jpe?g|svg)$/ }, () => ({
       contents: 'export default "";',
       loader: "js",
@@ -50,13 +58,10 @@ Bun.plugin({
   },
 });
 
-/* Chemin relatif et non `@glyph/kit` : la racine du dépôt ne déclare pas le
-   paquet dans ses dépendances, ce sont les apps qui le font. Le moteur du toy,
-   lui, l'importe par son nom depuis `apps/glyphslot/`, où il est bien déclaré. */
-const { DEFAULT_DEVICE } = await import("../packages/kit/src/index");
-const { SlotRenderer } = await import("../apps/glyphslot/src/lib/render");
+const { DEFAULT_DEVICE } = await import("../src/lib/index");
+const { SlotRenderer } = await import("../src/routes/glyphslot/lib/render");
 const { RESULT_DUR, makePlan, offsetAt, targetOffset } = await import(
-  "../apps/glyphslot/src/lib/slot"
+  "../src/routes/glyphslot/lib/slot"
 );
 type Plan = ReturnType<typeof makePlan>;
 

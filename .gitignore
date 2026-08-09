@@ -1,6 +1,6 @@
 node_modules/
-dist/
-.staging/
+build/
+.svelte-kit/
 *.local
 .DS_Store
 .vite/

@@ -1,20 +1,24 @@
 {
   "name": "glyph-portal",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "glyph.suns.red — portail des préviews web des Glyph Toys.",
   "license": "MIT",
   "type": "module",
-  "workspaces": ["packages/*", "apps/*"],
   "scripts": {
-    "dev": "bun run scripts/dev.ts",
-    "build": "bun run --filter './apps/*' build",
-    "check": "bun run --filter './apps/*' check",
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "preview:glyphslot": "bun run scripts/glyphslot-preview.ts"
   },
+  "dependencies": {
+    "lottie-web": "^5.13.0"
+  },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^7.2.0",
-    "@tsconfig/svelte": "^5.0.8",
+    "@sveltejs/adapter-static": "^3.0.10",
+    "@sveltejs/kit": "^2.70.2",
+    "@sveltejs/vite-plugin-svelte": "^7.3.0",
     "@types/node": "^24.13.3",
     "svelte": "^5.56.8",
     "svelte-check": "^4.7.3",
