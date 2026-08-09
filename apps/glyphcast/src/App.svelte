@@ -160,7 +160,7 @@
     input.value = "";
     if (!file) return;
     try {
-      // une session porte l'appareil sur lequel elle a été calculée : la relire
+      // un fichier porte l'appareil sur lequel il a été calculé : le relire
       // sur l'autre grille redonnerait d'autres valeurs sous les mêmes réglages
       const s = parseSession(await file.text());
       device = s.device;
@@ -186,8 +186,8 @@
 />
 
 <Shell
-  title="GLYPHCAST"
-  sub="{device.name} • Stylisez une image en la projetant sur la Glyph Matrix"
+  title="Glyphcast"
+  sub="Stylisez une image en la projetant sur la Glyph Matrix"
   stamp={VERSION}
   {device}
   repo="https://github.com/aero-md/glyph-portal"
@@ -357,6 +357,15 @@
         <button type="button" onclick={() => downloadKotlin(frame)} disabled={!hasImg}>.kt</button>
         <button type="button" onclick={() => downloadJson(frame, params)} disabled={!hasImg}>.json</button>
       </div>
+      <p class="note">
+        Le <b>.json</b> est un dessin au format du <a
+          href="https://glyphmuseum.com/developers"
+          target="_blank"
+          rel="noopener noreferrer">Glyph Museum</a
+        > — une trame, {device.ledCount} consignes de LED. Il porte en plus les réglages de cette
+        page, sous une clé que les autres lecteurs ignorent : le même fichier s'ouvre là-bas et se
+        recharge ici avec tous ses curseurs.
+      </p>
       <pre class="code" aria-label="IntArray Kotlin">{kotlin}</pre>
     </Card>
   {/snippet}

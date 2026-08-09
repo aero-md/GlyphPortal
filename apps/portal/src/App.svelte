@@ -12,9 +12,37 @@
      Une tuile par toy, numérotée comme les cartes de réglage des préviews : le
      sommaire se lit comme un rack, ce qui est exactement ce qu'il est. */
   import ThemeToggle from "@glyph/kit/ThemeToggle.svelte";
+  import ToyPreview from "@glyph/kit/ToyPreview.svelte";
   import { TOYS } from "./toys";
 
+  /* Encombrement de la mini-prévisu, en px CSS. Déclaré ici et passé au
+     composant plutôt que laissé à son défaut : c'est la mise en page de la tuile
+     qui en décide.
+
+     C'est un plafond : le disque obtenu tombe un peu en dessous, la cellule
+     étant un nombre entier de pixels. Le mou reste dans la boîte, donc la
+     hauteur de la tuile ne bouge ni avec l'appareil ni avec la densité de
+     l'écran.
+
+     159 et non un compte rond : c'est la valeur qui, sur un (3) en densité 1,
+     pose exactement le placement réglé à l'inspecteur — cellule de 5 px, champ
+     de 125, cerne de 8, disque de 141 centré à 9 px et canvas à 17. Un compte
+     rond aurait laissé le disque plus petit ou décentré d'un demi-pixel. */
+  const DISC = 159;
+
   const num = (i: number) => String(i + 1).padStart(2, "0");
+
+  /* Une boucle par tuile, tirée au sort parmi celles que le toy propose.
+     Résolu **une fois**, au montage de la page, et non dans le balisage : un
+     `$derived` ou un appel dans le `{#each}` se réévaluerait à chaque rendu, et
+     la mini-prévisu changerait d'appareil sous le curseur au premier survol. Ce
+     tirage-là doit tenir tant que la page est ouverte. */
+  const tuiles = TOYS.map((toy) => ({
+    ...toy,
+    preview: Array.isArray(toy.preview)
+      ? toy.preview[Math.floor(Math.random() * toy.preview.length)]
+      : toy.preview,
+  }));
 </script>
 
 <span class="reg tl"></span>
@@ -37,7 +65,7 @@
 
   <main>
     <ul class="grid">
-      {#each TOYS as toy, i (toy.slug)}
+      {#each tuiles as toy, i (toy.slug)}
         <li>
           <a class="tile" class:soon={!toy.ready} href={toy.ready ? `/${toy.slug}/` : toy.repo}>
             <!-- Numéro et nom sur la même ligne de base, sous-titre dessous, le
@@ -57,10 +85,20 @@
                 {/if}
               </span>
             </span>
-            <!-- Emplacement de la préview. Disque noir en attendant : c'est la
-                 forme et l'encombrement définitifs, la tuile est déjà à sa
-                 hauteur finale. -->
-            <span class="disc" aria-hidden="true"></span>
+            <!-- La préview, quand le toy a exporté sa boucle. Sans `src` le même
+                 composant rend sa matrice éteinte : même forme, même
+                 encombrement, même cerne, donc la tuile garde sa hauteur dans
+                 les deux cas et la grille ne bouge pas quand une boucle arrive.
+
+                 Le même composant et non un disque en CSS à côté : les deux
+                 devaient tomber sur le même diamètre, et le diamètre se déduit
+                 maintenant de la grille — une feuille de style ne peut pas le
+                 connaître.
+
+                 Décorative dans les deux cas — pas de `label`. Ce que la tuile
+                 désigne est déjà écrit à côté, en toutes lettres ; le lecteur
+                 d'écran annoncerait le nom du toy deux fois de suite. -->
+            <ToyPreview src={toy.preview} size={DISC} />
           </a>
         </li>
       {/each}
@@ -203,16 +241,6 @@
     color: var(--faint);
   }
 
-  .disc {
-    flex: none;
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    /* Fixe et non dérivé du thème : c'est la surface d'un appareil, pas celle
-       de la page. Le dos d'un Nothing Phone est noir dans les deux thèmes. */
-    background: #0a0b0d;
-  }
-
   /* Sous 1200 px, une par ligne, et la tuile prend la largeur — jusqu'à 800 px,
      au-delà desquels le titre et le disque se retrouveraient aux deux bouts
      d'un ruban vide. Deux colonnes de tuiles étirées ne rentrent pas ici : à
@@ -233,7 +261,6 @@
        120 px au sous-titre, qui se casse en cinq lignes. Ils s'empilent, et le
        disque garde sa taille : c'est la préview, c'est ce qu'on vient voir. */
     .tile {
-      flex-direction: column;
       align-items: flex-start;
       gap: 1.2rem;
       padding: 1.6rem;

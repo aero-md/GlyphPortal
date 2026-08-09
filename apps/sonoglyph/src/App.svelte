@@ -152,8 +152,8 @@
 </script>
 
 <Shell
-  title="SONOGLYPH"
-  sub="{device.name} • Deux Glyph Toys qui lisent le niveau sonore"
+  title="Sonoglyph"
+  sub="Deux Glyph Toys qui lisent le niveau sonore"
   stamp={VERSION}
   {device}
   repo="https://github.com/aero-md/sonoglyph"
@@ -185,6 +185,22 @@
   {/snippet}
 
   {#snippet rack()}
+    <!-- [00] parce que c'est ce qui vient avant tout le reste : la page est une
+         préview, le toy est un APK qui s'installe sur le téléphone. Ici il n'y
+         a rien à télécharger — le dire vaut mieux que de laisser chercher. -->
+    <Card ref="00" title="Glyph toy" stat="archivé">
+      <p class="note">
+        Glyph toy pour {device.name}. Cette page en est la préview dans le navigateur.
+      </p>
+      <p class="note">
+        Le projet a été abandonné et archivé pour raison de contraintes techniques, mais le
+        code est toujours consultable
+        <a href="https://github.com/aero-md/sonoglyph" target="_blank" rel="noopener noreferrer">
+          sur GitHub</a
+        >.
+      </p>
+    </Card>
+
     <Card ref="01" title="Toy affiché" stat={toy === "spectre" ? "spectre" : "aiguille"}>
       {#if toy === "spectre"}
         <Seg label="Style" bind:value={style} options={STYLES} />
@@ -205,13 +221,6 @@
           à l'entier.
         </p>
       {/if}
-      <div class="btns">
-        <button type="button" onclick={longPress}>Appui long — {action}</button>
-      </div>
-      <p class="note">
-        L'appui long est la seule commande qu'un Glyph Toy reçoit. Sur la photo, maintenir
-        le Glyph Button pendant 450 ms fait la même chose.
-      </p>
     </Card>
 
     <Card
@@ -332,6 +341,12 @@
   .note b {
     color: var(--ink);
     font-weight: 500;
+  }
+
+  /* Le lien de la carte [00] : en pleine encre pour se détacher de la prose
+     grise qui le porte, sinon rien ne dit qu'il se clique. */
+  .note a {
+    color: var(--ink);
   }
 
   /* Deux colonnes, libellé à gauche et valeur à droite, alignées sur une grille

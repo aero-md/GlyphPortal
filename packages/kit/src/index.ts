@@ -37,6 +37,22 @@ export {
   type Disc,
 } from "./matrix/devices";
 export { emptyFrame, frameOf, toBytes, type Frame } from "./matrix/frame";
+/* Le format de dessin du Glyph Museum — le seul format d'échange public d'une
+   matrice, en lecture comme en écriture. Voir `matrix/design.ts`. */
+export {
+  DEFAULT_FRAME_MS,
+  DESIGN_V,
+  carryMeta,
+  designSampler,
+  deviceForDesign,
+  isDesign,
+  toDesign,
+  toDesignFrame,
+  type Design,
+  type DesignFrame,
+  type DesignMeta,
+} from "./matrix/design";
+export { lottieSampler, type MatrixSampler } from "./matrix/lottieFrame";
 export {
   DISC_BG,
   exportGrid,
@@ -47,4 +63,8 @@ export {
   type LedStyle,
   type PaintOpts,
 } from "./matrix/render";
+/* Le rendu de la vignette du sommaire, tenu à l'écart de celui de la grande
+   préview — les deux dessinent l'appareil mais n'ont pas les mêmes contraintes,
+   et les avoir partagés les a déjà fait se marcher dessus. Voir `matrix/thumb.ts`. */
+export { THUMB_BG, paintThumb, thumbGrid, type ThumbGrid } from "./matrix/thumb";
 export { readTheme, toggleTheme, type Theme } from "./ui/theme";

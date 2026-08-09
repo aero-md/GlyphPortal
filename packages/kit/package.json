@@ -13,11 +13,14 @@
     "./Seg.svelte": "./src/ui/Seg.svelte",
     "./Slider.svelte": "./src/ui/Slider.svelte",
     "./ThemeToggle.svelte": "./src/ui/ThemeToggle.svelte",
-    "./Wordmark.svelte": "./src/ui/Wordmark.svelte",
     "./Preview.svelte": "./src/matrix/Preview.svelte",
-    "./PreviewPane.svelte": "./src/matrix/PreviewPane.svelte"
+    "./PreviewPane.svelte": "./src/matrix/PreviewPane.svelte",
+    "./ToyPreview.svelte": "./src/matrix/ToyPreview.svelte"
   },
   "scripts": {
     "check": "svelte-check --tsconfig ./tsconfig.json"
+  },
+  "dependencies": {
+    "lottie-web": "^5.13.0"
   }
 }

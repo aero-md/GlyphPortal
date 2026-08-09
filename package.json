@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "bun run scripts/dev.ts",
     "build": "bun run --filter './apps/*' build",
-    "check": "bun run --filter './apps/*' check"
+    "check": "bun run --filter './apps/*' check",
+    "preview:glyphslot": "bun run scripts/glyphslot-preview.ts"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.2.0",

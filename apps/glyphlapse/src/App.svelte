@@ -226,8 +226,8 @@
 </script>
 
 <Shell
-  title="GLYPHLAPSE"
-  sub="{device.name} • Le temps qui passe, décomposé sur la Glyph Matrix"
+  title="Glyphlapse"
+  sub="Une visualisation du temps qui passe"
   stamp={VERSION}
   {device}
   repo="https://github.com/aero-md/glyphlapse"
@@ -247,6 +247,23 @@
   {/snippet}
 
   {#snippet rack()}
+    <!-- [00] parce que c'est ce qui vient avant tout le reste : la page est une
+         préview, le toy est un APK qui s'installe sur le téléphone. Sans cette
+         carte, rien ne dit où il se récupère. -->
+    <Card ref="00" title="Glyph toy" stat={device.name}>
+      <p class="note">
+        Glyph toy pour {device.name}. Cette page en est la préview dans le navigateur — le toy
+        lui-même se publie en APK sur GitHub.
+      </p>
+      <div class="btns">
+        <a
+          href="https://github.com/aero-md/glyphlapse/releases"
+          target="_blank"
+          rel="noopener noreferrer">Télécharger</a
+        >
+      </div>
+    </Card>
+
     <Card ref="01" title="Lapse affiché" stat="{ROMAN[active]} · {enabledCount} / {LAPSE_COUNT} activés">
       <Seg
         label="Lapse"

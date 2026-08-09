@@ -16,10 +16,9 @@
   import type { Snippet } from "svelte";
   import type { Device } from "../matrix/devices";
   import ThemeToggle from "./ThemeToggle.svelte";
-  import Wordmark from "./Wordmark.svelte";
 
   type Props = {
-    /** Texte du wordmark — dessiné point par point, capitales uniquement. */
+    /** Nom de la préview, en tête de la ligne de sous-titre. */
     title: string;
     /** Ligne de sous-titre, registre « plaque d'instrument ». */
     sub: string;
@@ -119,17 +118,16 @@
 
 <div class="page" class:dragging>
   <header>
-    <Wordmark text={title} />
-    <!-- Registre « plaque d'instrument » : la cible, puis ce que fait l'outil.
+    <!-- Registre « plaque d'instrument » : le nom, puis ce que fait l'outil.
          Séparateur : la puce, pas le point médian. Elle est dans Geist Mono à la
          chasse de la fonte — donc rien à grossir en CSS — et c'est le seul
          séparateur rond, ce qui est la règle de la page : le cercle est réservé
          aux points et aux LEDs. -->
     <div class="h-row">
-      <p class="sub meta">{sub}</p>
+      <p class="sub meta"><span class="name">{title}</span> • {sub}</p>
       <div class="h-tools">
         {#if home}
-          <a class="home" href="/">◂ Index</a>
+          <a class="home" href="/">◂ Accueil</a>
         {/if}
         <ThemeToggle />
       </div>
@@ -188,26 +186,38 @@
   header {
     flex: none;
     border-bottom: 1px solid var(--line);
-    padding: 1.6rem 0 1rem;
+    padding: 2rem 0 1rem;
     margin-bottom: 1.6rem;
   }
 
-  /* La bascule de thème est calée sur la ligne du sous-titre, pas sur le
-     wordmark : même construction que la ligne du pied. La marge est portée par
-     la rangée et non par le `<p>` — sur un élément de flex elle décalerait le
-     texte à l'intérieur de la rangée, et la bascule se centrerait sur une
-     hauteur qui inclut le vide. */
+  /* La bascule de thème est calée sur la ligne du sous-titre : même
+     construction que la ligne du pied. */
   .h-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    margin-top: 0.7rem;
   }
 
   .sub {
     margin: 0;
     min-width: 0;
+    /* Le nom est deux fois plus haut que la ligne qui le porte : sans
+       interligne à 1, le `<p>` réserverait la hauteur du 1,5rem multipliée par
+       l'interligne du corps et l'en-tête gagnerait une bande de vide. */
+    line-height: 1;
+  }
+
+  /* Le seul mot de la page qui ne soit pas à chasse fixe — donc pas d'espacement
+     de lettres ni de capitales forcées : c'est la serif qui fait le titre, pas
+     l'habillage `.meta` qu'il faut ici défaire. */
+  .name {
+    font-family: var(--serif);
+    font-size: 1.5rem;
+    font-weight: 500;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--ink);
   }
 
   .h-tools {

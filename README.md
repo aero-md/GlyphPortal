@@ -30,7 +30,7 @@ Ici il n'y en a qu'une, dans `packages/kit`.
 packages/kit/        @glyph/kit — le noyau
   src/matrix/        géométrie, calibrage, rendu au pixel, Grid, polices,
                      Preview, PreviewPane
-  src/ui/            Shell, Card, Seg, Slider, ThemeToggle, Wordmark, thème
+  src/ui/            Shell, Card, Seg, Slider, ThemeToggle, thème
   src/app.css        jetons de thème, trame de fond, étages typographiques
 
 apps/portal/         le sommaire, servi à la racine du domaine

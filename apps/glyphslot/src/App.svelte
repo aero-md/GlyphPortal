@@ -152,8 +152,8 @@
 </script>
 
 <Shell
-  title="GLYPHSLOT"
-  sub="{device.name} • Une machine à sous pixélisée"
+  title="Glyphslot"
+  sub="Une machine à sous pixélisée"
   stamp={VERSION}
   {device}
   repo="https://github.com/aero-md/glyphslot"
@@ -172,6 +172,23 @@
   {/snippet}
 
   {#snippet rack()}
+    <!-- [00] parce que c'est ce qui vient avant tout le reste : la page est une
+         préview, le toy est un APK qui s'installe sur le téléphone. Sans cette
+         carte, rien ne dit où il se récupère. -->
+    <Card ref="00" title="Glyph toy" stat={device.name}>
+      <p class="note">
+        Glyph toy pour {device.name}. Cette page en est la préview dans le navigateur — le toy
+        lui-même se publie en APK sur GitHub.
+      </p>
+      <div class="btns">
+        <a
+          href="https://github.com/aero-md/glyphslot/releases"
+          target="_blank"
+          rel="noopener noreferrer">Télécharger</a
+        >
+      </div>
+    </Card>
+
     <Card ref="01" title="Lancer" stat={busy ? "en cours" : "au repos"} cta={!busy}>
       <div class="bar" aria-hidden="true"><span style="width:{progress * 100}%"></span></div>
       <p class="status" class:accent={status.includes("JACKPOT")}>{status}</p>

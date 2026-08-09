@@ -7,9 +7,12 @@
    carte. Tout ce qui est propre à un toy reste dans son app. */
 
 :root {
-  /* une seule fonte : le wordmark est dessiné point par point, plus rien
-     n'appelle de serif système */
+  /* La mono porte toute la page. La serif n'a qu'un emploi — le nom de la
+     préview en tête de la ligne de sous-titre — et c'est justement pour ça
+     qu'elle marque : c'est le seul mot de la page qui ne soit pas à chasse
+     fixe. */
   --mono: "Geist Mono", ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace;
+  --serif: Charter, "Bitstream Charter", "Sitka Text", "Iowan Old Style", Georgia, serif;
 
   --bg: #eff0f1;
   /* Surface posée sur le fond — les tuiles du sommaire. Assez proche pour ne
@@ -194,7 +197,11 @@ a:focus-visible {
   gap: 4px;
 }
 
-.btns button {
+/* Le lien est habillé comme le bouton : en section [00] la commande est un
+   téléchargement, donc une ancre — mais rien ne justifie qu'elle se présente
+   autrement que les autres commandes de carte. */
+.btns button,
+.btns a {
   position: relative;
   border: 1px solid var(--line-strong);
   background: transparent;
@@ -211,9 +218,13 @@ a:focus-visible {
     border-color 0.12s;
 }
 
-.btns button:not(:disabled):hover {
+.btns button:not(:disabled):hover,
+.btns a:hover,
+.btns a:focus-visible {
   color: var(--ink);
   border-color: var(--ink);
+  /* le soulignement global des liens ferait déborder le trait de l'encadré */
+  text-decoration: none;
 }
 
 .btns button:disabled {
