@@ -194,8 +194,13 @@
          préview, le toy est un APK qui s'installe sur le téléphone. Ici il n'y
          a rien à télécharger — le dire vaut mieux que de laisser chercher. -->
     <Card ref="00" title="Glyph toy" stat="archivé">
+      <!-- Pas de « se télécharge en APK » ici, contrairement aux deux autres
+           toys : il n'y a rien à télécharger, et le paragraphe suivant dit
+           pourquoi. Promettre un APK au-dessus d'une carte marquée « archivé »
+           enverrait chercher une release qui n'existe pas. -->
       <p class="note">
-        Glyph toy pour {device.name}. Cette page en est la préview dans le navigateur.
+        <b>SONOGLYPH</b> est une application Android pour {device.name}. Cette page en reproduit
+        le fonctionnement dans le navigateur.
       </p>
       <p class="note">
         Le projet a été abandonné et archivé pour raison de contraintes techniques, mais le

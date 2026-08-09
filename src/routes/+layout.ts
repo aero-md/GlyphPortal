@@ -1,8 +1,9 @@
 /**
  * Réglages valables pour les cinq pages.
  *
- * `prerender` : tout est calculé au build et part en fichiers sur le Pi. C'est
- * ce que faisaient déjà les cinq builds Vite, en cinq fois.
+ * `prerender` : tout est calculé au build et part en fichiers statiques. Il n'y
+ * a aucun serveur d'application derrière, donc ce qui n'est pas écrit au build
+ * n'existe pas en ligne.
  *
  * `ssr` désactivé, et c'est un choix, pas un oubli. Les quatre préviews sont des
  * canvas : leur contenu n'existe qu'une fois le premier `requestAnimationFrame`
@@ -22,10 +23,10 @@ export const ssr = false;
 /**
  * Les URL gardent leur barre finale — `/glyphcast/` et non `/glyphcast`.
  *
- * Ce n'est pas une préférence d'écriture : c'est ce que servait déjà le
- * monorepo, où chaque app était un dossier portant son `index.html`. Sans ce
- * réglage, le pré-rendu écrit `glyphcast.html` à plat, `/glyphcast/` ne
- * correspond plus à rien, et Caddy renvoie ces visiteurs-là au sommaire —
+ * Ce n'est pas une préférence d'écriture : chaque route est servie comme un
+ * dossier portant son `index.html`. Sans ce réglage, le pré-rendu écrit
+ * `glyphcast.html` à plat, `/glyphcast/` ne correspond plus à rien, et un
+ * serveur de fichiers renvoie ces visiteurs-là à l'index racine —
  * silencieusement, avec un code 200. Tout lien existant vers une préview
  * tomberait à côté.
  */

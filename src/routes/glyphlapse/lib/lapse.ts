@@ -125,20 +125,37 @@ export type Lapse = {
 export const LAPSE_COUNT = 3;
 
 /**
- * Défauts, miroir de `Config.defaultRef` : début d'année pour I et II,
- * 31 décembre 23:59 pour III — donc en mode « jusqu'à ».
+ * Les trois lapses de départ.
  *
- * Seule entorse : le lapse I ouvre sur le sablier, pour le donner à voir
- * d'entrée. Côté toy le défaut reste l'anneau.
+ * Ils étaient tous les trois en Dense sur le début ou la fin de l'année en
+ * cours : trois entrées qui affichaient à peu près la même chose de la même
+ * façon, donc trois fois rien à voir. Ceux-ci montrent **trois écarts d'ordres
+ * différents dans trois formats différents**, ce qui est ce qu'on demande à un
+ * jeu de défauts — donner à voir l'étendue de ce que le toy sait faire sans
+ * toucher un réglage.
+ *
+ *     I    fin d'année, en Jours + sablier    un décompte, J-n qui descend
+ *     II   18 avril 2026 23 h, en Cycle       une date au hasard, unité par unité
+ *     III  1ᵉʳ janvier 2000, en Dense         un très long écart, granularité complète
+ *
+ * **Les trois sont actifs**, là où seul le I l'était. C'est la rotation de
+ * l'appui long qui en dépend : c'est la seule commande que le système envoie au
+ * toy, et avec un seul lapse actif elle ne fait rien. C'est aussi ce que montre
+ * la mini-prévisu du sommaire, qui tourne sur ces trois-là — les deux sont
+ * générés depuis cette fonction, il n'y a donc pas deux vérités à tenir
+ * d'accord.
+ *
+ * **I est dérivé de l'année en cours, les deux autres sont absolus.** C'est
+ * délibéré : « fin d'année » est un décompte qui n'a d'intérêt que sur l'année
+ * qu'on vit, alors que l'an 2000 est un repère fixe — et le 18 avril est une date
+ * arbitraire, qui n'a de sens que collée à son année.
  */
 export function defaultLapses(now = new Date()): Lapse[] {
   const y = now.getFullYear();
-  const startOfYear = new Date(y, 0, 1).getTime();
-  const endOfYear = new Date(y, 11, 31, 23, 59).getTime();
-  return Array.from({ length: LAPSE_COUNT }, (_, i) => ({
-    ref: i === 2 ? endOfYear : startOfYear,
-    format: 0 as Format,
-    sec: (i === 0 ? 1 : 0) as SecondsMode,
-    enabled: i === 0,
-  }));
+  return [
+    { ref: new Date(y, 11, 31, 23, 59).getTime(), format: 3, sec: 1, enabled: true },
+    // le mois est un **indice**, donc 3 pour avril — pas 4
+    { ref: new Date(2026, 3, 18, 23, 0).getTime(), format: 2, sec: 0, enabled: true },
+    { ref: new Date(2000, 0, 1).getTime(), format: 0, sec: 0, enabled: true },
+  ];
 }

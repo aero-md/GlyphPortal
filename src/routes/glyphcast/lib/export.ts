@@ -16,6 +16,7 @@ import {
   deviceById,
   deviceForDesign,
   exportGrid,
+  frameOf,
   isDesign,
   paint,
   toBytes,
@@ -186,8 +187,24 @@ export const RANGES = {
  * - l'ancien objet `format: "glyphcast"` des versions 1.0 et 1.1. Une session
  *   sans champ `device` vient de la 1.0, où le Phone (3) était le seul appareil
  *   — c'est le repli de `deviceById`.
+ *
+ * **`frame` rend la trame que le fichier porte**, et pas seulement les réglages.
+ * C'est ce qui manquait : un fichier n'a jamais contenu l'image source — il ne
+ * peut pas, c'est un tableau de LEDs — donc l'import reposait les curseurs sur
+ * une matrice éteinte, dans un rack verrouillé faute d'image. Les valeurs
+ * étaient bien là, mais rien à l'écran ne le montrait, et le message annonçait
+ * une session rechargée que personne ne voyait.
+ *
+ * Le fichier, lui, porte le résultat : `frames[0].p` en 1.2, `values` avant. Il
+ * n'y a donc rien à recalculer pour remettre à l'écran ce qu'on avait exporté.
+ * Ce qu'on ne peut toujours pas faire, c'est **rejouer** les réglages dessus :
+ * sans la source, bouger un curseur n'a rien à convertir.
  */
-export function parseSession(text: string): { device: Device; params: Params } {
+export function parseSession(text: string): {
+  device: Device;
+  params: Params;
+  frame: Frame | null;
+} {
   const raw = JSON.parse(text);
 
   if (isDesign(raw)) {
@@ -196,14 +213,39 @@ export function parseSession(text: string): { device: Device; params: Params } {
        seconde une étiquette qu'un fichier recopié peut porter à tort. */
     const device = deviceForDesign(raw) ?? DEFAULT_DEVICE;
     const p = (raw as Partial<Session>).glyphcast?.params;
-    return { device, params: p ? bound(p) : { ...DEFAULTS } };
+    return {
+      device,
+      params: p ? bound(p) : { ...DEFAULTS },
+      // `p` ne porte que les LEDs du disque, dans l'ordre de lecture
+      frame: fromLevels(device, (i, k) => raw.frames[0].p[k]),
+    };
   }
 
   if (raw?.format !== "glyphcast") throw new Error("format inconnu");
+  const device = raw.device === undefined ? DEFAULT_DEVICE : deviceById(raw.device);
   return {
-    device: raw.device === undefined ? DEFAULT_DEVICE : deviceById(raw.device),
+    device,
     params: bound(raw.params ?? {}),
+    /* `values` est l'IntArray carré du SDK, coins compris : il s'indexe par
+       cellule et non par LED. Absent d'un fichier tronqué à la main, on rend
+       `null` plutôt qu'une trame noire — l'appelant saura qu'il n'y a rien à
+       montrer. */
+    frame: Array.isArray(raw.values) ? fromLevels(device, (i) => raw.values[i]) : null,
   };
+}
+
+/**
+ * Une trame depuis des consignes 0-255, quelle que soit la façon dont le fichier
+ * les indexe : `i` est la cellule row-major, `k` le rang de la LED dans le
+ * disque. Les deux formats ne diffèrent que par là.
+ */
+function fromLevels(d: Device, at: (i: number, k: number) => unknown): Frame {
+  const values = new Float32Array(d.cells);
+  d.inside.forEach((i, k) => {
+    const n = Number(at(i, k));
+    values[i] = !Number.isFinite(n) || n <= 0 ? 0 : n >= 255 ? 1 : n / 255;
+  });
+  return frameOf(d, values);
 }
 
 /** Les modes de dither connus — la liste que l'import accepte. */

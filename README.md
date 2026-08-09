@@ -8,37 +8,6 @@ l'appareil** — la Glyph Matrix est rendue à sa position et à son échelle
 réelles. Tout tourne en local : aucune image, aucun son, aucune donnée ne sort
 du navigateur.
 
-## Pourquoi un dépôt unique
-
-Les préviews ont d'abord été écrites séparément, une par dépôt de toy, chacune
-avec sa techno : une app Svelte pour glyphcast, une autre pour sonoglyph, un
-fichier HTML monolithique pour glyphlapse, un composant React transpilé par
-Babel dans le navigateur pour glyphslot.
-
-Elles partageaient pourtant l'essentiel — la même photo, la même géométrie, la
-même mise en page — **en trois copies divergentes**. Le calage du hublot en est
-la démonstration : glyphlapse et glyphslot le plaçaient à 79,53 % / 15,36 % pour
-un diamètre de 26,04 %, valeurs relevées à l'œil ; glyphcast à 79,688 % /
-15,433 % pour 26,49 %, mesurées dans les pixels de la photo. Trois copies, dont
-deux fausses, et rien pour le signaler.
-
-Ici il n'y en a qu'une, dans `src/lib`.
-
-## Une seule app, pas cinq
-
-Le rapprochement s'est d'abord fait en monorepo : cinq apps Vite dans `apps/`,
-un paquet partagé dans `packages/`, liés par les workspaces de Bun. C'était le
-chemin qui touchait le moins de code à chaque étape du portage, pas un choix de
-structure — et il se payait cher. Cinq `vite.config.ts`, quinze `tsconfig`, cinq
-`index.html`, un `base: "/<slug>/"` par app à tenir en accord avec son dossier
-de déploiement, et un lanceur maison de 67 lignes montant cinq serveurs de dev
-derrière un sixième qui les proxyfiait. Du routage réimplémenté à la main, en
-moins bien : chaque saut d'une préview à l'autre était un rechargement complet.
-
-Le dossier d'une route **est** son URL, il n'y a plus rien à tenir en accord. Le
-découpage du JS par route vient du bundler, et la navigation entre les toys ne
-recharge plus la page.
-
 ## Arborescence
 
 ```
@@ -60,9 +29,7 @@ src/routes/
 
 src/app.html         le `<head>` commun : polices, favicon, script de thème
 static/              favicon, worklet du micro, boucles des vignettes
-scripts/             fabrication de la boucle de mini-prévisu de GlyphSlot
-deploy.ps1           check + build + un seul tarball vers le Pi
-deploy/              le bloc Caddy correspondant
+scripts/             fabrication des boucles de mini-prévisu
 ```
 
 Le moteur d'un toy vit dans `lib/` **sous sa route** et non dans `src/lib` : il
@@ -122,35 +89,45 @@ son titre et sa description par un `<svelte:head>`. Le thème est posé sur
 `<html>` par un script inline **avant le premier paint** — un effet s'exécute
 après, et un visiteur en sombre prendrait un flash clair à chaque chargement.
 Ces lignes sont la copie de `THEME_BOOT` dans `$lib/ui/theme.ts`, un `<head>` ne
-pouvant pas importer de TypeScript ; il n'en existe qu'une, contre cinq du temps
-des `index.html` séparés.
+pouvant pas importer de TypeScript.
 
 Le site est **pré-rendu sans SSR**, et les deux moitiés de cette phrase comptent.
 Le pré-rendu écrit les cinq pages au build : il n'y a pas de serveur Node
-derrière, seulement Caddy et des fichiers. Le SSR est coupé parce que les quatre
-préviews sont du canvas — leur contenu n'existe qu'une fois la boucle
-d'affichage lancée — et parce que la bascule de thème lit le DOM à son
-initialisation. Le HTML livré est donc la coquille que servaient déjà les cinq
-builds Vite.
+derrière, seulement des fichiers. Le SSR est coupé parce que les quatre préviews
+sont du canvas — leur contenu n'existe qu'une fois la boucle d'affichage lancée
+— et parce que la bascule de thème lit le DOM à son initialisation.
 
 Les URL gardent leur **barre finale** (`trailingSlash` dans `+layout.ts`) : le
-pré-rendu écrit `glyphcast/index.html` et non `glyphcast.html`, ce qui garde
-valables les adresses de la version précédente.
+pré-rendu écrit `glyphcast/index.html` et non `glyphcast.html`.
 
 ## Déploiement
 
 ```powershell
-.\deploy.ps1              # check + build + tarball + extraction sur le Pi
-.\deploy.ps1 -SkipBuild   # envoie build/ tel quel
+bun run build   # sort build/, prêt à servir tel quel
 ```
 
-La cible est `/srv/glyph` sur le Raspberry Pi, servie par Caddy derrière un
-tunnel Cloudflare. **La racine du domaine a changé de contenu** : elle servait
-GlyphCast, elle sert maintenant le sommaire, et GlyphCast a déménagé sous
-`/glyphcast/`. Le bloc Caddy est à remplacer en même temps — voir
-[`deploy/Caddyfile.snippet`](deploy/Caddyfile.snippet). Il a changé une seconde
-fois depuis : les assets hachés sont sous `/_app/immutable/` et non plus sous
-`/assets/`, donc un bloc laissé tel quel annule le cache long sur tout le site.
+Le site est un paquet de fichiers statiques : le sommaire à la racine, une route
+par sous-dossier, les assets hachés sous `/_app/immutable/`. N'importe quel
+serveur de fichiers convient, à deux conditions — servir l'`index.html` d'un
+dossier pour une URL à barre finale, et ne pas mettre les HTML en cache long,
+puisqu'ils portent les références vers des assets dont le nom change à chaque
+build.
+
+[`deploy.example.ps1`](deploy.example.ps1) pousse `build/` sur un serveur par
+SSH. **C'est un exemple avec deux valeurs à renseigner** — l'hôte et le chemin
+servi, en tête de fichier :
+
+```powershell
+[string]$RemoteHost = "utilisateur@machine",
+[string]$RemotePath = "/chemin/vers/la/racine/servie",
+```
+
+Une fois ces deux lignes remplies, le script marche tel quel : copier en
+`deploy.ps1`, qui est ignoré par git. Le reste — vérifications, build,
+compression, envoi, extraction — n'a rien à personnaliser.
+
+Il est gardé hors du dépôt parce qu'une fois rempli il ne décrit plus le site
+mais l'endroit où il est posé, et ça ne regarde pas le code.
 
 ## Ajouter une préview
 
@@ -158,11 +135,10 @@ fois depuis : les assets hachés sont sous `/_app/immutable/` et non plus sous
    Le moteur du toy dans `src/routes/<slug>/lib/`.
 2. Il produit une `Frame` ; `Shell` et `PreviewPane` font le reste.
 3. L'entrée dans `src/routes/toys.ts`, `ready: true`.
-4. Le slug dans `$Routes` de `deploy.ps1`.
 
-Le point 4 n'est pas de la paperasse : le pré-rendu est silencieux quand une
-page n'est pas atteignable, elle sort simplement du build. `$Routes` est ce qui
-fait échouer le deploy avant l'envoi plutôt qu'en ligne.
+Vérifier ensuite que `build/<slug>/index.html` existe : le pré-rendu est
+silencieux quand une page n'est pas atteignable, elle sort simplement du build
+et le 404 n'apparaît qu'en ligne.
 
 ## Licence
 

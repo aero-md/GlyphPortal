@@ -13,7 +13,7 @@
      sommaire se lit comme un rack, ce qui est exactement ce qu'il est. */
   import ThemeToggle from "$lib/ui/ThemeToggle.svelte";
   import ToyPreview from "$lib/matrix/ToyPreview.svelte";
-  import { TOYS } from "./toys";
+  import { KIND_LABEL, TOYS } from "./toys";
 
   /* Encombrement de la mini-prévisu, en px CSS. Déclaré ici et passé au
      composant plutôt que laissé à son défaut : c'est la mise en page de la tuile
@@ -64,11 +64,11 @@
 <div class="page">
   <header>
     <p class="sub meta">
-      Index de glyph toys par <a
+      Index de créations autour de la Glyph Matrix, par <a
         class="by"
         href="https://github.com/aero-md"
         target="_blank"
-        rel="noopener noreferrer">Aero-md</a
+        rel="noopener noreferrer">aero-md</a
       >
     </p>
     <ThemeToggle />
@@ -79,6 +79,14 @@
       {#each tuiles as toy, i (toy.slug)}
         <li>
           <a class="tile" class:soon={!toy.ready} href={toy.ready ? `/${toy.slug}/` : toy.repo}>
+            <!-- La nature de l'entrée, sur la tranche. Première dans le DOM :
+                 c'est aussi l'ordre de lecture d'un lecteur d'écran, et
+                 « Glyph toy, 01, GLYPHSLOT, une machine à sous » est la bonne
+                 phrase. Pas d'`aria-hidden` donc — ce n'est pas de la
+                 décoration, c'est la seule chose qui distingue un APK d'un
+                 outil qui tourne dans cet onglet. -->
+            <span class="spine">{KIND_LABEL[toy.kind]}</span>
+
             <!-- Numéro et nom sur la même ligne de base, sous-titre dessous, le
                  tout calé en haut : la tuile tire sa hauteur du disque, et un
                  bloc de deux lignes centré dedans laisserait le numéro flotter
@@ -194,6 +202,45 @@
     transition: background 0.12s;
   }
 
+  /**
+   * La tranche : la nature de l'entrée, sur le flanc gauche de la tuile.
+   *
+   * Elle était dans le sous-titre — « (Glyph toy) Une visualisation du temps
+   * qui passe » — où elle dépensait le premier tiers de la phrase à dire ce que
+   * la tuile **est** avant de dire ce qu'elle **fait**. Une catégorie va dans la
+   * marge. Au passage ça retire trois textes recopiés à la main, qui avaient
+   * déjà divergé entre parenthèses et crochets.
+   *
+   * Bord gauche et non droit : c'est le bord de l'identité — tranche, numéro,
+   * nom, de gauche à droite dans l'ordre croissant de précision. Essayée à
+   * droite, après le disque, elle avait l'air de qualifier le disque plutôt que
+   * la tuile.
+   *
+   * `rotate(180deg)` retourne le flux de `vertical-rl`, qui descend par défaut :
+   * sur un bord gauche, une étiquette se lit de bas en haut.
+   *
+   * `align-self: stretch` lui donne la hauteur de la tuile et le contenu est
+   * centré dedans. Sans ça elle suivrait le `center` de la tuile et flotterait
+   * au milieu d'un flanc, ce qui ne se lit plus comme une tranche.
+   */
+  .spine {
+    flex: none;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.2rem;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--faint);
+    /* L'interlettrage ajoute un blanc APRÈS la dernière lettre. Sans cette
+       compensation, le texte paraît décalé d'un demi-cran dans sa boîte. */
+    text-indent: 0.4em;
+  }
+
   /* Un jeton dédié plutôt que `--hover`, qui est translucide : posé en fond
      opaque il assombrirait la tuile en thème sombre, c'est-à-dire dans le
      mauvais sens. Ici la surface se rapproche de l'encre dans les deux thèmes. */
@@ -203,11 +250,24 @@
     text-decoration: none;
   }
 
-  /* `baseline` et non `flex-start` : le numéro est en 12 px, le nom en 14, et
-     alignés par le haut ils flottaient l'un au-dessus de l'autre. La ligne de
-     base du bloc, c'est celle de sa première ligne — donc celle du nom. */
+  /* Deux alignements, qui ne parlent pas de la même chose.
+
+     `align-self` place le **bloc de texte** dans la hauteur de la tuile. Il
+     valait `flex-start` — une exception au `center` de la tuile, héritée du
+     temps où le sous-titre tenait sur deux lignes et se calait sur le haut du
+     hublot. Ils en font trois ou quatre maintenant, et le disque a pris neuf
+     pixels : collé en haut, le texte laissait un trou sous lui et faisait face
+     au sommet d'un cercle. La ligne ci-dessous ne fait donc que rendre au bloc
+     l'alignement de la tuile — on pourrait la retirer, elle est gardée parce
+     que la requête média plus bas la contredit et qu'il faut voir d'où vient
+     la valeur par défaut.
+
+     `align-items: baseline` aligne, lui, le **numéro et le nom** entre eux :
+     l'un est en 12 px, l'autre en 14, et calés par le haut ils flottaient. La
+     ligne de base d'un bloc étant celle de sa première ligne, c'est celle du
+     nom qui commande. */
   .head {
-    align-self: flex-start;
+    align-self: center;
     flex: 1 1 auto;
     min-width: 0;
     display: flex;
@@ -268,9 +328,22 @@
       padding: 1.6rem 1.2rem;
     }
 
-    /* En colonne étroite le texte et le disque côte à côte laissent moins de
-       120 px au sous-titre, qui se casse en cinq lignes. Ils s'empilent, et le
-       disque garde sa taille : c'est la préview, c'est ce qu'on vient voir. */
+    /* **La tuile reste en ligne.** Ce bloc a longtemps porté un commentaire
+       affirmant que le texte et le disque « s'empilent » — c'était faux, il n'y
+       a jamais eu de `flex-direction: column` ici, et la mesure le confirme :
+       `flexDirection` vaut `row` à toutes les largeurs.
+
+       Ce qui se passe réellement, et qui est accepté en l'état : sur une tuile
+       de 360 px — un téléphone ordinaire — le disque en prend 159 et ne bouge
+       pas, le numéro 43, les rembourrages et gouttières le reste. Il tombe
+       **49 px** au sous-titre, soit cinq caractères par ligne. Relevé sans la
+       tranche : 83 px, à peine mieux. Le coupable est le disque à taille fixe,
+       pas le marqueur.
+
+       Le corriger demande de trancher entre trois choses — empiler pour de bon,
+       réduire le disque sous 720 px, ou retirer le numéro — et aucune n'est
+       gratuite. En attendant, ce commentaire dit ce que le CSS fait plutôt que
+       ce qu'on aurait voulu qu'il fasse. */
     .tile {
       align-items: flex-start;
       gap: 1.2rem;
@@ -279,6 +352,16 @@
 
     .head {
       align-self: stretch;
+    }
+
+    /* La tranche reste, choix assumé : elle coûte une vingtaine de pixels au
+       texte là où il en manque déjà, mais une catégorie qui disparaît selon la
+       largeur de la fenêtre n'est plus une catégorie. Elle se resserre — moins
+       d'interlettrage, moins d'écart — plutôt que de sauter. */
+    .spine {
+      margin-right: 0;
+      letter-spacing: 0.3em;
+      text-indent: 0.3em;
     }
   }
 </style>

@@ -248,14 +248,8 @@ a:focus-visible {
   color: var(--dim);
 }
 
-.code {
-  margin: 0;
-  border: 1px solid var(--line);
-  padding: 0.6rem;
-  font-size: 10px;
-  line-height: 1.5;
-  color: var(--dim);
-  max-height: 190px;
-  overflow: auto;
-  white-space: pre;
-}
+/* `.code` vivait ici : le cadre défilant qui montrait l'IntArray sous la carte
+   d'export de GlyphCast. Il n'avait qu'un seul emploi dans tout le domaine, et
+   cet emploi a disparu — on copie ces 625 nombres, on ne les lit pas. Retiré
+   plutôt que gardé « au cas où » : une règle sans porteur ne se maintient pas,
+   elle pourrit. */

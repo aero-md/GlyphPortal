@@ -257,8 +257,8 @@
          carte, rien ne dit où il se récupère. -->
     <Card ref="00" title="Glyph toy" stat={device.name}>
       <p class="note">
-        Glyph toy pour {device.name}. Cette page en est la préview dans le navigateur — le toy
-        lui-même se publie en APK sur GitHub.
+        <b>GLYPHLAPSE</b> est une application Android pour {device.name}. Cette page en reproduit
+        le fonctionnement dans le navigateur — le toy lui-même se télécharge en APK sur GitHub.
       </p>
       <div class="btns">
         <a

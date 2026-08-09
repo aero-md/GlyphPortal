@@ -20,10 +20,11 @@
 import { buildGeometry, type Geometry } from "./matrix";
 
 /* Les dos passent par le pipeline d'assets : Vite leur donne un nom portant
-   l'empreinte de leur contenu. Posés dans `public/`, ils gardaient une URL fixe
-   et Cloudflare continuait de servir la version périmée longtemps après un
-   déploiement — le hublot du (3) est resté non noirci en ligne pendant que le
-   Pi servait déjà la bonne image. Ici l'URL change dès que l'image change. */
+   l'empreinte de leur contenu. Posés dans `static/`, ils gardent une URL fixe,
+   et tout cache intermédiaire continue alors de servir la version périmée
+   longtemps après un déploiement — le hublot du (3) est resté non noirci en
+   ligne pendant des jours alors que le fichier était corrigé. Ici l'URL change
+   dès que l'image change, donc il n'y a rien à purger. */
 import phone3Back from "./assets/phone3-back.webp";
 import phone4aProBack from "./assets/phone4apro-back.webp";
 

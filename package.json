@@ -10,7 +10,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "preview:glyphslot": "bun run scripts/glyphslot-preview.ts"
+    "preview:glyphslot": "bun run scripts/glyphslot-preview.ts",
+    "preview:sonoglyph": "bun run scripts/sonoglyph-preview.ts",
+    "preview:glyphlapse": "bun run scripts/glyphlapse-preview.ts"
   },
   "dependencies": {
     "lottie-web": "^5.13.0"

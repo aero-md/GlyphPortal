@@ -1,6 +1,7 @@
 <script lang="ts">
   import {
     DEFAULT_DEVICE,
+    emptyFrame,
     type Device,
     type Frame,
     type LedStyle,
@@ -42,13 +43,40 @@
   let mode = $state<PreviewMode>("phone");
   let ledStyle = $state<LedStyle>("sharp");
 
+  /**
+   * La trame relue d'un `.json`, affichée tant qu'aucune image n'est chargée.
+   *
+   * Un fichier de session ne contient pas l'image source — il ne peut pas, c'est
+   * un tableau de LEDs. L'import reposait donc les curseurs sur une matrice
+   * éteinte : les valeurs étaient bien reprises, mais le rack est verrouillé
+   * faute d'image et la préview restait noire, si bien que rien à l'écran ne
+   * disait qu'il s'était passé quoi que ce soit.
+   *
+   * Le fichier porte le **résultat**, lui. On le montre donc tel quel, et les
+   * curseurs à côté disent ce qui l'a produit. Déposer une image rend la main au
+   * pipeline.
+   */
+  let imported = $state<Frame | null>(null);
+
   /* Deux canvas de travail distincts : le rendu courant et le rendu de
      comparaison sont recalculés dans la même passe réactive, partager le
      scratch ferait lire l'un les pixels de l'autre. */
   const scratchA = document.createElement("canvas");
   const scratchB = document.createElement("canvas");
 
-  const frame = $derived<Frame>(convert(device, img, srcW, srcH, params, scratchA));
+  /* L'image d'abord, la trame importée sinon, le disque éteint en dernier.
+     La trame importée n'est retenue que si elle est **de l'appareil courant** :
+     ce sont des consignes de LED, elles n'ont pas de source à reprojeter sur
+     l'autre grille. Basculer d'appareil la fait donc disparaître, ce qui est la
+     seule chose honnête à faire — et se dit sans effet ni état à remettre à
+     zéro, d'où le test ici plutôt qu'un `$effect` qui l'effacerait. */
+  const frame = $derived<Frame>(
+    img
+      ? convert(device, img, srcW, srcH, params, scratchA)
+      : imported && imported.device.id === device.id
+        ? imported
+        : emptyFrame(device),
+  );
 
   /* Rendu « brut » : même cadrage, tonalité au repos, sans dither. Ce que
      donnerait l'image sans aucun réglage — la référence de l'A/B. */
@@ -61,7 +89,6 @@
   });
   const rawFrame = $derived<Frame>(convert(device, img, srcW, srcH, rawParams, scratchB));
 
-  const kotlin = $derived(toKotlin(frame));
   const hasImg = $derived(!!img);
 
   /* --- chargement --- */
@@ -80,6 +107,10 @@
       srcW = im.naturalWidth;
       srcH = im.naturalHeight;
       fileName = file.name;
+      /* Le pipeline reprend la main : garder la trame importée derrière ne
+         servirait qu'à la voir réapparaître si l'image est retirée, alors
+         qu'elle ne décrit plus ce qui est à l'écran. */
+      imported = null;
       flash("");
     };
     im.onerror = () => {
@@ -150,8 +181,12 @@
     flash(`Gates posées sur ${Math.round(lo * 100)} – ${Math.round(hi * 100)} %`);
   }
 
+  /* L'IntArray est monté **au clic** et non tenu dans un `$derived`. Il l'était
+     du temps où la carte l'affichait ; maintenant que plus personne ne le
+     regarde, le garder à jour revenait à formater 625 nombres en chaîne à
+     chaque cran de curseur, pour un texte demandé une fois de temps en temps. */
   async function copyKotlin() {
-    flash((await copy(kotlin)) ? "IntArray copié" : "Copie refusée par le navigateur");
+    flash((await copy(toKotlin(frame))) ? "IntArray copié" : "Copie refusée par le navigateur");
   }
 
   async function importJson(e: Event) {
@@ -165,7 +200,16 @@
       const s = parseSession(await file.text());
       device = s.device;
       params = s.params;
-      flash(`Session rechargée — ${s.device.name}`);
+      imported = s.frame;
+      /* Le message dit **ce qui manque**, et non seulement ce qui est arrivé.
+         « Session rechargée » tout court promettait une restauration complète
+         alors que le rack reste verrouillé faute de source : on le lisait comme
+         un import qui n'avait rien fait. */
+      flash(
+        img
+          ? `Réglages rechargés — ${s.device.name}`
+          : `Trame et réglages rechargés — déposez l'image pour les reprendre`,
+      );
     } catch {
       flash("JSON illisible");
     }
@@ -207,11 +251,20 @@
       bind:style={ledStyle}
       compare={hasImg ? rawFrame : null}
     >
+      <!-- Trois états, pas deux : sans source la matrice peut porter une trame
+           relue d'un fichier, et lui coller « matrice éteinte » sous le nez
+           serait faux — ce qu'on regarde est bien le rendu exporté, il n'y a
+           simplement rien à en refaire tant que l'image manque. -->
       {#snippet note()}
         {#if !hasImg}
           <p class="empty meta">
-            Matrice éteinte — déposez une image n'importe où sur la page, collez-en une
-            (Ctrl+V) ou passez par <b>[01] Source</b>.
+            {#if frame === imported}
+              Trame relue du fichier. Les réglages à droite sont ceux qui l'ont produite —
+              déposez l'image pour les reprendre.
+            {:else}
+              Matrice éteinte — déposez une image n'importe où sur la page, collez-en une
+              (Ctrl+V) ou passez par <b>[01] Source</b>.
+            {/if}
           </p>
         {/if}
       {/snippet}
@@ -358,9 +411,9 @@
         <button type="button" onclick={() => exportPng(frame, ledStyle)} disabled={!hasImg}>
           PNG · {ledStyle}
         </button>
-        <button type="button" onclick={copyKotlin} disabled={!hasImg}>Copier IntArray</button>
-        <button type="button" onclick={() => downloadKotlin(frame)} disabled={!hasImg}>.kt</button>
         <button type="button" onclick={() => downloadJson(frame, params)} disabled={!hasImg}>.json</button>
+        <button type="button" onclick={() => downloadKotlin(frame)} disabled={!hasImg}>.kt</button>
+        <button type="button" onclick={copyKotlin} disabled={!hasImg}>Copier IntArray</button>
       </div>
       <p class="note">
         Le <b>.json</b> est un dessin au format du <a
@@ -371,7 +424,10 @@
         page, sous une clé que les autres lecteurs ignorent : le même fichier s'ouvre là-bas et se
         recharge ici avec tous ses curseurs.
       </p>
-      <pre class="code" aria-label="IntArray Kotlin">{kotlin}</pre>
+      <!-- Pas d'aperçu de l'IntArray. Il en occupait le bas : 625 nombres dans
+           un cadre défilant, qu'on ne lit pas — on les copie. Ce que la carte
+           doit dire de la matrice tient déjà dans son compteur de LEDs et dans
+           le pied de page. -->
     </Card>
   {/snippet}
 </Shell>

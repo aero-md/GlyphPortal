@@ -9,12 +9,44 @@
  * le navigateur d'abord, les toys embarqués ensuite.
  */
 
+/**
+ * Ce qu'une entrée **est**, par opposition à ce qu'elle fait.
+ *
+ * Deux natures, et la différence est réelle : un `toy` est un APK Android qui
+ * s'installe sur le téléphone et dont cette page n'est qu'une reproduction ;
+ * un `tool` tourne dans le navigateur et n'existe nulle part ailleurs. Ça
+ * décide du dépôt, de la présence d'un bouton de téléchargement, et de ce
+ * qu'un visiteur peut espérer en faire.
+ */
+export type Kind = "toy" | "tool";
+
+/**
+ * Le libellé porté par la tranche de la tuile.
+ *
+ * Une table plutôt qu'une chaîne libre par entrée : la catégorie vivait avant
+ * dans le sous-titre, écrite à la main, et elle avait déjà dérivé — `(Glyph
+ * toy)` sur deux entrées, `[Glyph toy pour Nothing Phone (3)]` sur une
+ * troisième. Quatre entrées suffisent à faire diverger un texte recopié.
+ */
+export const KIND_LABEL: Record<Kind, string> = {
+  toy: "Glyph toy",
+  tool: "Outil web",
+};
+
 export type Toy = {
   /** Segment d'URL sous glyph.suns.red, et nom du dossier au déploiement. */
   slug: string;
   /** Nom affiché, en capitales — c'est un wordmark, pas une phrase. */
   name: string;
-  /** Ce que fait le toy, en une ligne. Sous-titre de la tuile. */
+  /** Nature de l'entrée, portée par la tranche verticale de la tuile. */
+  kind: Kind;
+  /**
+   * Ce que fait l'entrée, en une ligne. Sous-titre de la tuile.
+   *
+   * **Ce qu'elle fait, pas ce qu'elle est** : la catégorie est sur la tranche,
+   * la répéter ici dépenserait le premier tiers de la phrase à redire ce qui
+   * est déjà écrit sur le flanc.
+   */
   line: string;
   /** Dépôt GitHub. */
   repo: string;
@@ -57,7 +89,8 @@ export const TOYS: Toy[] = [
   {
     slug: "glyphslot",
     name: "GLYPHSLOT",
-    line: "(Glyph toy) Une machine à sous pixélisée",
+    kind: "toy",
+    line: "Une machine à sous pixélisée",
     repo: "https://github.com/aero-md/glyphslot",
     ready: true,
     preview: "/preview/glyphslot.json",
@@ -65,21 +98,38 @@ export const TOYS: Toy[] = [
   {
     slug: "glyphlapse",
     name: "GLYPHLAPSE",
-    line: "(Glyph toy) Une visualisation du temps qui passe",
+    kind: "toy",
+    line: "Une visualisation du temps qui passe",
     repo: "https://github.com/aero-md/glyphlapse",
     ready: true,
+    /* Les trois lapses par défaut, dix secondes chacun, avec le glissement de
+       l'appui long entre eux. Générée depuis `defaultLapses` : c'est la même
+       liste que celle sur laquelle la préview interactive ouvre.
+
+       Les nombres sont ceux du jour de génération et ne bougeront plus — une
+       vignette de sommaire montre à quoi ressemble le toy, elle ne donne pas
+       l'heure. C'est la préview qui compte juste. */
+    preview: "/preview/glyphlapse.json",
   },
   {
     slug: "sonoglyph",
     name: "SONOGLYPH",
-    line: "(Glyph toy) \n Le son du micro, mesuré et représenté avec une poignée de pixels",
+    kind: "toy",
+    line: "Le son du micro, mesuré et représenté avec une poignée de pixels",
     repo: "https://github.com/aero-md/sonoglyph",
     ready: true,
+    /* Quatre secondes de VU-mètre puis quatre de spectre, sur une seule prise
+       de son : le toy a deux affichages et l'appui long bascule de l'un à
+       l'autre, une vignette qui n'en montrerait qu'un mentirait par omission. */
+    preview: "/preview/sonoglyph.json",
   },
   {
     slug: "glyphcast",
     name: "GLYPHCAST",
-    line: "Outil de convertion d'une image en rendu Glyph Matrix",
+    kind: "tool",
+    /* « Outil de convertion d'une image… » avant — dont un `convertion` sans
+       s. La tranche dit déjà « Outil web », donc la phrase repart du verbe. */
+    line: "Convertit une image en rendu Glyph Matrix",
     /* Le dépôt du portail, et non un dépôt à lui : GlyphCast est un outil web,
        pas un toy embarqué, et son code vit dans celui-ci — c'est d'ailleurs ce
        dépôt-là qui s'appelait `glyphcast` avant de prendre tout le domaine. Les
@@ -92,6 +142,6 @@ export const TOYS: Toy[] = [
        tuile en tire un au sort : c'est le seul endroit du sommaire où la
        différence entre les deux appareils se voit, et elle est le sujet de cet
        outil-là. */
-    preview: ["/preview/hmmm.json", "/preview/hmmm4apro.json"],
+    preview: ["/preview/squirtle.json", "/preview/squirtle4apro.json"],
   },
 ];

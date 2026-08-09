@@ -466,8 +466,8 @@ La bascule est non destructive et immédiate. Ce qui **ne bouge pas** : l'image
 chargée, le cadrage, le mixeur, la tonalité, la sortie LED, l'échelle de préview,
 le style de LED, le thème. Ce qui **suit** : la grille et le masque, le compteur
 de LEDs, la photo du dos et le calage dessus, l'échelle en px/LED, la présence
-d'un Glyph Button, l'en-tête, le pied de page, la longueur de l'IntArray et le
-nom des fichiers exportés.
+d'un Glyph Button, l'en-tête, le pied de page, la version de format du `.json`,
+la longueur de l'IntArray et le nom des fichiers exportés.
 
 C'est ce qui permet de régler une image une fois et de lire, en un clic, ce que
 chacune des deux matrices en garde. Un réglage réencodé à la bascule aurait fait
@@ -986,7 +986,7 @@ page doit donc avoir son bloc conteneur explicitement déclaré.
 |---|---|---|
 | PNG | disque d'environ 600 px de côté, fond compris, **dans le style de LED affiché** | `glyphcast-<appareil>-<style>-<horodatage>.png` |
 | Kotlin | `val FRAME = intArrayOf(...)`, `size²` valeurs 0-255 sur `size` lignes de `size`, alignées | `glyphcast-<appareil>-<horodatage>.kt` |
-| JSON | trame **et** réglages **et** appareil | `glyphcast-<appareil>-<horodatage>.json` |
+| JSON | **dessin du Glyph Museum** — trame, plus les réglages sous une clé d'extension | `glyphcast-<appareil>-<horodatage>.json` |
 
 **L'appareil est dans le nom de chaque fichier**, et en tête du Kotlin. Deux
 IntArrays de longueurs différentes finissent sinon par se croiser dans un projet
@@ -997,42 +997,80 @@ par LED : les deux appareils sortent des fichiers de même encombrement, et c'es
 la finesse de la matrice qui fait la différence, pas la taille de l'image.
 600 px donnent 24 px/LED sur un (3), 46 px/LED sur un (4a) Pro.
 
-Le Kotlin est aussi copiable dans le presse-papiers (`navigator.clipboard`,
-repli sur `textarea` + `execCommand`) et affiché en clair dans la carte
-Export : ce qu'on lit est exactement ce qu'on exporte.
+Le Kotlin est copiable dans le presse-papiers (`navigator.clipboard`, repli sur
+`textarea` + `execCommand`). Il **n'est plus affiché** sous la carte Export : les
+625 nombres y occupaient un cadre défilant que personne ne lit — on les copie. Le
+compte de LEDs en tête de carte et la ligne de pied disent déjà ce qu'il y a à
+savoir de la matrice, et l'aperçu ne montrait que des zéros tant qu'aucune image
+n'était chargée.
+
+Les quatre sorties sont dans l'ordre du plus fini au plus brut : **PNG**, puis
+**.json**, puis **.kt**, puis **Copier IntArray**.
 
 L'horodatage est un ISO 8601 tronqué à la seconde, `:` et `T` remplacés par
 des tirets.
 
 ### Schéma JSON
 
+Depuis la 1.2, le `.json` est un **dessin du Glyph Museum**
+(<https://glyphmuseum.com/developers>) et non plus un objet maison :
+
 ```json
 {
-  "format": "glyphcast",
-  "version": "1.1",
-  "device": "phone4apro",
-  "size": 13,
-  "ledCount": 137,
-  "params": { "zoom": 1, "wR": 0.2126, "...": "tous les réglages" },
-  "values": [0, 0, 102, "... size² entiers 0-255"]
+  "v": 4,
+  "frames": [{ "p": [0, 0, 102, "... 137 entiers 0-255"] }],
+  "glyphcast": {
+    "version": "1.2",
+    "device": "phone4apro",
+    "params": { "zoom": 1, "wR": 0.2126, "...": "tous les réglages" }
+  }
 }
 ```
 
-`device` vaut `"phone3"` ou `"phone4apro"`. `size` et `ledCount` restent
-présents pour la lecture humaine ; ils sont **dérivés** de `device` et ne sont
-pas relus.
+`v` identifie la **matrice visée** et non une révision du fichier : 1 pour le
+Phone (3), 4 pour le (4a) Pro. `p` porte les consignes des **seules LEDs du
+disque**, dans l'ordre de lecture — 489 ou 137 valeurs, et non les `size²` de
+l'IntArray du SDK, coins compris.
+
+Les réglages vivent sous une clé `glyphcast` à côté de `frames`. Le format
+demande à ses lecteurs d'ignorer les clés inconnues : le bloc ne gêne donc
+personne, et un fichier sorti d'ici s'ouvre au Glyph Museum comme n'importe quel
+dessin tout en restant rechargeable ici avec tous ses curseurs. Un seul fichier,
+deux lectures.
+
+Pas de bloc `meta` : ce serait l'attribution du Glyph Museum, et elle appartient
+à qui publie un dessin là-bas, pas à l'outil qui l'a calculé.
 
 ### Import
 
-`format` doit valoir `"glyphcast"`, sinon rejet. Sont relus les **réglages** et
-l'**appareil** : `values` est ignoré et recalculé depuis l'image chargée. Un
-`.json` rechargé sans image ne fait donc que restaurer les curseurs et la
-matrice cible.
+Trois provenances sont acceptées, reconnues à la **forme** du fichier :
 
-Relire une session sur l'autre grille redonnerait d'autres valeurs sous les
-mêmes réglages — d'où le fait que l'appareil voyage avec elle. Un fichier de la
-version 1.0, où le Phone (3) était seul, n'a pas de champ `device` : il retombe
-sur le (3), ce qui est exactement ce qu'il décrivait.
+| Fichier | Appareil | Réglages | Trame |
+|---|---|---|---|
+| dessin + bloc `glyphcast` (1.2) | longueur de `p` | relus | `frames[0].p` |
+| dessin nu, d'un autre outil | longueur de `p` | défauts | `frames[0].p` |
+| objet `format: "glyphcast"` (1.0 / 1.1) | champ `device` | relus | `values` |
+
+L'appareil se lit sur la **longueur des trames** et non sur ce que le fichier
+déclare : la première est une contrainte du contenu, la seconde une étiquette
+qu'une copie peut porter à tort. Un fichier de la version 1.0, où le Phone (3)
+était seul, n'a pas de champ `device` : il retombe sur le (3), ce qui est
+exactement ce qu'il décrivait.
+
+**La trame est restituée, pas seulement les réglages.** Un fichier ne contient
+pas l'image source — il ne peut pas, c'est un tableau de LEDs — donc l'import
+reposait les curseurs sur une matrice éteinte, dans un rack verrouillé faute de
+source : rien à l'écran ne montrait qu'il s'était passé quelque chose. Le
+fichier porte le résultat, il est donc affiché tel quel, et les curseurs à côté
+disent ce qui l'a produit.
+
+Cette trame n'est retenue que si elle est **de l'appareil courant**. Ce sont des
+consignes de LED, il n'y a pas de source à reprojeter sur l'autre grille :
+basculer d'appareil la fait disparaître. Charger une image rend la main au
+pipeline.
+
+Ce qu'on ne peut toujours pas faire, c'est **rejouer** les réglages dessus : sans
+la source, bouger un curseur n'a rien à convertir, et le rack reste verrouillé.
 
 Chaque valeur est bornée aux plages du § 5.3 et retombe sur le défaut si elle
 est absente ou non finie ; `dither` doit être l'une des trois valeurs connues,
