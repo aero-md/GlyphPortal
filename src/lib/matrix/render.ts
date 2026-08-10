@@ -197,8 +197,14 @@ const OFF: Record<LedStyle, string> = { sharp: "#1b1b20", soft: "#08080a" };
  * Reprendre une part de l'écart plutôt qu'appliquer un facteur à la LED donne à
  * chaque appareil ce qu'il a à gagner : le (3), plus aéré, récupère davantage
  * que le (4a) Pro, déjà presque jointif.
+ *
+ * Portée de 0,25 à 0,35 : sur un (4a) Pro à 550 px de colonne — cellule de
+ * 34 px — l'écart tombe de 5 à 4 px CSS, et de 4 à 3 sur un (3). C'est bien la
+ * **LED** qui grossit et pas la grille : le pas reste `cell`, le champ reste
+ * `size × cell`, le disque dessiné reste `(size + 2 × cerne) × cell`. La matrice
+ * n'occupe donc pas un pixel de plus, seuls les écarts se referment.
  */
-const REPRISE = 0.25;
+const REPRISE = 0.35;
 
 export function ledMetrics(
   cell: number,
@@ -220,6 +226,20 @@ export function ledMetrics(
   return { led, pad: Math.floor((cell - led) / 2) };
 }
 
+/**
+ * Arrondi des coins en soft, en part du côté de la LED.
+ *
+ * Il est là pour casser le carré franc, pas pour faire une pastille : à 0,24 les
+ * congés mangeaient un quart du côté et, sur les grosses LEDs du mode grand, la
+ * trame se lisait comme une grille de galets. À 0,18 le coin est adouci et la
+ * LED reste carrée.
+ *
+ * En part du côté et non en pixels : l'arrondi suit alors la LED d'un appareil à
+ * l'autre et d'une échelle à l'autre, au lieu d'écraser la petite et de
+ * disparaître sur la grande.
+ */
+const RAYON_SOFT = 0.18;
+
 export function paint(
   ctx: CanvasRenderingContext2D,
   frame: Frame,
@@ -229,7 +249,7 @@ export function paint(
   const { style = "sharp", background = null, grand = false } = opts;
   const { size, inside, duty } = frame.device;
   const { led, pad } = ledMetrics(g.cell, duty, grand);
-  const radius = style === "soft" ? led * 0.24 : 0;
+  const radius = style === "soft" ? led * RAYON_SOFT : 0;
   const rounded = radius > 0.5 && typeof ctx.roundRect === "function";
 
   /* La grille est centrée dans le canvas qu'on lui donne, quel qu'il soit :
