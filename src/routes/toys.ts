@@ -5,8 +5,9 @@
  * reste dans le sommaire mais renvoie au dépôt : une entrée absente laisse
  * croire que le toy n'existe pas, une entrée qui pointe sur un 404 est pire.
  *
- * L'ordre est celui de la grille, et il est délibéré : l'outil qui tourne dans
- * le navigateur d'abord, les toys embarqués ensuite.
+ * L'ordre est celui de la grille, et il est délibéré : les toys embarqués d'abord,
+ * l'outil web en dernier. Ce sont les toys qu'on vient voir, et l'outil sert à en
+ * fabriquer les images.
  */
 
 /**
@@ -124,6 +125,24 @@ export const TOYS: Toy[] = [
     preview: "/preview/sonoglyph.json",
   },
   {
+    slug: "justadice",
+    name: "JUST A DICE",
+    kind: "toy",
+    line: "Un dé, jeté d'une secousse",
+    /* Son dépôt à lui depuis que l'APK existe. Il a longtemps pointé sur celui du
+       portail, faute d'avoir autre chose derrière lui qu'une préview — et c'est ce
+       qui le faisait figurer en queue de grille. */
+    repo: "https://github.com/aero-md/justadice",
+    ready: true,
+    /* Trois solides et trois jets — d6, d12, d20 — qui couvrent les **trois façons
+       dont le toy écrit un résultat** : des pips, un chiffre dilaté, deux chiffres
+       en petite police. Chaque solide entre sur sa plus haute face, comme le fait
+       l'appui long, et aucun jet ne retombe sur ce nombre-là : un dé qui montre 20,
+       culbute trois secondes et remontre 20 se lirait comme une animation qui n'a
+       rien fait. Générée en rejouant le moteur, voir `scripts/`. */
+    preview: "/preview/justadice.json",
+  },
+  {
     slug: "glyphcast",
     name: "GLYPHCAST",
     kind: "tool",
@@ -133,7 +152,7 @@ export const TOYS: Toy[] = [
     /* Le dépôt du portail, et non un dépôt à lui : GlyphCast est un outil web,
        pas un toy embarqué, et son code vit dans celui-ci — c'est d'ailleurs ce
        dépôt-là qui s'appelait `glyphcast` avant de prendre tout le domaine. Les
-       trois autres entrées pointent bien sur des dépôts distincts, ceux des
+       quatre autres entrées pointent bien sur des dépôts distincts, ceux des
        APK Android. */
     repo: "https://github.com/aero-md/GlyphPortal",
     ready: true,

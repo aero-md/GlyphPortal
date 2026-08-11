@@ -240,6 +240,15 @@ a:focus-visible {
   border-color: var(--ink);
 }
 
+/* Le survol repeint le texte en encre, et l'état retenu a déjà l'encre pour
+   fond : la souris posée sur un bouton actif effaçait son libellé. La règle du
+   survol est plus spécifique que celle de l'état — il faut donc la reprendre
+   ici, et pas seulement compter sur l'ordre des déclarations. */
+.btns button.on:hover,
+.btns button.on:focus-visible {
+  color: var(--bg);
+}
+
 /* --- prose de carte --- */
 .note {
   margin: 0;
