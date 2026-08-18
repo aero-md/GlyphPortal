@@ -9,13 +9,15 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json && bun run check:locales",
+    "check:locales": "bun run scripts/check-locales.ts",
     "preview:glyphslot": "bun run scripts/glyphslot-preview.ts",
     "preview:sonoglyph": "bun run scripts/sonoglyph-preview.ts",
     "preview:glyphlapse": "bun run scripts/glyphlapse-preview.ts"
   },
   "dependencies": {
-    "lottie-web": "^5.13.0"
+    "lottie-web": "^5.13.0",
+    "svelte-i18n": "^4.0.1"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.10",

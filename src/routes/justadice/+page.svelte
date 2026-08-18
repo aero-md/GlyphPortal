@@ -1,5 +1,7 @@
 <script lang="ts">
   import { DEVICES, DEFAULT_DEVICE, emptyFrame, frameOf, type Device, type Frame, type LedStyle } from "$lib";
+  import type { Dict } from "$lib/i18n";
+  import { _, number } from "svelte-i18n";
   import Card from "$lib/ui/Card.svelte";
   import PreviewPane from "$lib/matrix/PreviewPane.svelte";
   import type { PreviewMode } from "$lib/matrix/Preview.svelte";
@@ -46,8 +48,12 @@
 
   let mode = $state<PreviewMode>("phone");
   let ledStyle = $state<LedStyle>("sharp");
-  let notice = $state("");
   let buttonReachable = $state(true);
+
+  /* Gardés en fonctions et non en textes : un message figé dans la langue qui
+     avait cours quand il a été posé y resterait après un changement de langue. */
+  let noticeFn = $state<(() => string) | null>(null);
+  const notice = $derived(noticeFn ? noticeFn() : "");
 
   let frame = $state<Frame>(emptyFrame(DEFAULT_DEVICE));
 
@@ -84,17 +90,18 @@
     >,
   );
 
-  const REJECT: Record<Verdict, string> = {
-    ok: "",
-    "too-early": "Le dé vient de partir",
-    "too-late": "Le dé se pose — laissez-le se poser",
-    reading: "On lit la face",
+  /** Le motif du refus, par verdict. Une clé du dictionnaire, pas une phrase. */
+  const REJECT: Record<Exclude<Verdict, "ok">, keyof Dict["justadice"]["reject"]> = {
+    "too-early": "tooEarly",
+    "too-late": "tooLate",
+    reading: "reading",
   };
 
   function roll(force?: number) {
     const v = verdict(elapsed);
     if (v !== "ok") {
-      refuse(REJECT[v]);
+      const key = REJECT[v];
+      refuse(() => $_(`justadice.reject.${key}`));
       return;
     }
     /* Le jet part de l'orientation **courante** : relancer un dé encore en l'air
@@ -114,13 +121,14 @@
    */
   function pick(id: DieId) {
     if (elapsed !== null) {
-      refuse("Le dé est en l'air");
+      refuse(() => $_("justadice.reject.inAir"));
       return;
     }
     if (id === die.id) return;
     die = dieById(id);
     rest = restQuat(die, die.faces, 0);
-    flash(`${die.id} — ${die.solid}`);
+    const picked = die.id;
+    flash(() => `${picked} — ${$_(`justadice.solids.${picked}`)}`);
   }
 
   /** L'appui long fait défiler les quatre solides, dans l'ordre du sélecteur. */
@@ -181,10 +189,10 @@
   });
 
   let flashTimer: ReturnType<typeof setTimeout>;
-  function flash(msg: string) {
-    notice = msg;
+  function flash(msg: (() => string) | null) {
+    noticeFn = msg;
     clearTimeout(flashTimer);
-    if (msg) flashTimer = setTimeout(() => (notice = ""), 2200);
+    if (msg) flashTimer = setTimeout(() => (noticeFn = null), 2200);
   }
 
   /* Deux canaux et pas un seul, parce qu'ils n'ont pas le même destinataire.
@@ -193,12 +201,13 @@
      l'œil lit déjà, pourquoi le clic qu'on vient de faire n'a rien produit. Un
      refus annoncé six cents pixels plus bas en corps 10 n'est pas un refus,
      c'est un bouton qui ne marche pas. */
-  let reject = $state("");
+  let rejectFn = $state<(() => string) | null>(null);
+  const reject = $derived(rejectFn ? rejectFn() : "");
   let rejectTimer: ReturnType<typeof setTimeout>;
-  function refuse(msg: string) {
-    reject = msg;
+  function refuse(msg: (() => string) | null) {
+    rejectFn = msg;
     clearTimeout(rejectTimer);
-    if (msg) rejectTimer = setTimeout(() => (reject = ""), 2200);
+    if (msg) rejectTimer = setTimeout(() => (rejectFn = null), 2200);
   }
 
   /* Repliée par défaut, et pour tous les dés. Ouverte, la rangée passe de six à
@@ -206,21 +215,18 @@
      changement de dé et poussait tout le rack sous les yeux du lecteur. */
   let showForce = $state(false);
 
-  /** Virgule décimale — la page est en français, et son pied de page l'écrit déjà. */
-  const fr = (n: number, d = 2) => n.toFixed(d).replace(".", ",");
-
   const status = $derived(
     stage === "rest"
-      ? "Le dé est posé — secouez pour jeter"
+      ? $_("justadice.status.rest")
       : stage === "toss"
-        ? "Le dé quitte la main"
+        ? $_("justadice.status.toss")
         : stage === "tumble"
-          ? "Il culbute — une secousse le relance"
+          ? $_("justadice.status.tumble")
           : stage === "brake"
             ? listening
-              ? "Il ralentit"
-              : "Il se pose"
-            : "Gros plan sur la face",
+              ? $_("justadice.status.slowing")
+              : $_("justadice.status.settling")
+            : $_("justadice.status.closeup"),
   );
 
   /** Position d'un instant sur la frise, en pour-cent. */
@@ -238,19 +244,26 @@
   const enough = $derived(landedCount >= die.faces * 2);
   /** Hauteur du trait d'espérance dans la colonne, en fraction de la plus haute. */
   const expRatio = $derived(Math.min(1, expected / maxCount));
+
+  /* Les durées de cette page s'écrivent toutes à décimales imposées. Le
+     formateur est **lu ici**, dans la dérivation, et non dans la fonction
+     rendue : c'est cette lecture qui abonne le composant, et qui refait passer
+     les secondes de « 0.45 » à « 0,45 » au changement de langue. */
+  const num = $derived.by(() => {
+    const fmt = $number;
+    return (v: number, digits = 2) =>
+      fmt(v, { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  });
 </script>
 
 <svelte:head>
   <title>JUST A DICE</title>
-  <meta
-    name="description"
-    content="Préview du Glyph Toy Just a dice : un dé jeté d'une secousse sur la Glyph Matrix d'un Nothing Phone."
-  />
+  <meta name="description" content={$_("justadice.description")} />
 </svelte:head>
 
 <Shell
   title="Just a dice"
-  sub="Un dé, et rien d'autre"
+  sub={$_("justadice.sub")}
   stamp={VERSION}
   {device}
   repo="https://github.com/aero-md/justadice"
@@ -264,7 +277,7 @@
       bind:mode
       bind:style={ledStyle}
       bind:buttonReachable
-      action="Dé suivant"
+      action={$_("justadice.action")}
       onlongpress={nextDie}
     >
       {#snippet controls()}
@@ -272,7 +285,7 @@
              change ce qui tourne sur le téléphone, les trois autres ne changent
              que la façon de le regarder. -->
         <Seg
-          label="Dé"
+          label={$_("justadice.dieSeg")}
           value={die.id}
           options={DICE.map((d) => ({ v: d.id, t: d.id }))}
           onchange={pick}
@@ -285,16 +298,16 @@
     <!-- [00] parce que c'est ce qui vient avant tout le reste : la page est une
          préview, le toy est un APK qui s'installe sur le téléphone. Sans cette
          carte, rien ne dit où il se récupère. -->
-    <Card ref="00" title="Glyph toy" stat={device.name}>
+    <Card ref="00" title={$_("common.kind.toy")} stat={device.name}>
       <p class="note">
-        <b>JUST A DICE</b> est une application Android pour {device.name}. Cette page en reproduit
-        le fonctionnement dans le navigateur — le toy lui-même se télécharge en APK sur GitHub.
+        <b>JUST A DICE</b>
+        {$_("common.toyCard.apk", { values: { device: device.name } })}
       </p>
       <div class="btns">
         <a
           href="https://github.com/aero-md/justadice/releases"
           target="_blank"
-          rel="noopener noreferrer">Télécharger</a
+          rel="noopener noreferrer">{$_("common.toyCard.download")}</a
         >
       </div>
     </Card>
@@ -305,8 +318,8 @@
          au-dessus ce qu'on fait, en dessous ce que ça donne. -->
     <Card
       ref="01"
-      title="Jeter"
-      stat={listening ? "à l'écoute" : "verrouillé"}
+      title={$_("justadice.throwCard.title")}
+      stat={listening ? $_("justadice.throwCard.listening") : $_("justadice.throwCard.locked")}
       cta={stage === "rest"}
     >
       <div class="bar" class:idle={progress === 0} aria-hidden="true">
@@ -316,13 +329,17 @@
            carte que l'œil suit déjà pendant un jet. -->
       <p class="status" class:accent={!!reject}>{reject || status}</p>
       <div class="btns">
-        <button type="button" onclick={() => roll()} disabled={!listening}>Secouer</button>
-        <button type="button" onclick={nextDie} disabled={stage !== "rest"}>Dé suivant</button>
+        <button type="button" onclick={() => roll()} disabled={!listening}>
+          {$_("justadice.throwCard.shake")}
+        </button>
+        <button type="button" onclick={nextDie} disabled={stage !== "rest"}>
+          {$_("justadice.throwCard.next")}
+        </button>
         <button
           type="button"
           class:on={showForce}
           aria-pressed={showForce}
-          onclick={() => (showForce = !showForce)}>Forcer une face</button
+          onclick={() => (showForce = !showForce)}>{$_("justadice.throwCard.force")}</button
         >
       </div>
       {#if showForce}
@@ -331,23 +348,16 @@
             <button type="button" onclick={() => roll(v)} disabled={!listening}>{v}</button>
           {/each}
         </div>
-        <p class="note">
-          Ces boutons n'existent pas côté toy : ils sont là pour voir une face précise sans
-          l'attendre. La valeur est de toute façon <b>tirée au départ</b> — l'animation ne la
-          découvre pas, elle y conduit.
-        </p>
+        <p class="note">{@html $_("justadice.throwCard.forceNote")}</p>
       {/if}
-      <p class="note">
-        Sur l'appareil : <b>secouer le téléphone</b> jette le dé, un <b>appui long sur le Glyph
-        Button</b> change de solide — ce que refont les deux premiers boutons ci-dessus.
-      </p>
+      <p class="note">{@html $_("justadice.throwCard.deviceNote")}</p>
 
       <div class="split"></div>
 
       <dl class="readout">
-        <dt>Face</dt>
+        <dt>{$_("justadice.throwCard.face")}</dt>
         <dd class="big">{landedCount ? value : "—"}</dd>
-        <dt>Jets posés</dt>
+        <dt>{$_("justadice.throwCard.landed")}</dt>
         <dd>{landedCount}</dd>
       </dl>
       <div class="hist" style="grid-template-columns:repeat({die.faces}, 1fr)">
@@ -375,14 +385,16 @@
         {/if}
       </div>
       <p class="note">
-        Un tableau par dé.
+        {$_("justadice.throwCard.tally")}
         {#if enough}
-          À {landedCount} jets, chaque face en attend {fr(expected, 1)} — le trait pointillé.
+          {$_("justadice.throwCard.expected", {
+            values: { throws: landedCount, each: num(expected, 1) },
+          })}
         {/if}
       </p>
     </Card>
 
-    <Card ref="02" title="Minutage" stat="{fr(T_END)} s">
+    <Card ref="02" title={$_("justadice.timing.title")} stat="{num(T_END)} s">
       <div class="tl" aria-hidden="true">
         <span
           class="live"
@@ -396,45 +408,32 @@
       <!-- La légende, en toutes lettres et collée à la frise. Sans elle, quatre
            zones, trois traits et une bande rouge dont personne ne peut deviner
            qu'elle est la fenêtre d'écoute. -->
-      <p class="note">
-        La bande rouge est la fenêtre où une secousse <b>relance le dé</b> — avant, c'est la fin du
-        geste précédent ; après, le dé choisit sa face.
-      </p>
+      <p class="note">{@html $_("justadice.timing.note1")}</p>
       <dl class="readout">
-        <dt>Impulsion</dt>
-        <dd>0 → {fr(T_TOSS)} s</dd>
-        <dt>Culbute</dt>
-        <dd>{fr(T_TOSS)} → {fr(T_BRAKE)} s</dd>
-        <dt>Mise en place</dt>
-        <dd>{fr(T_BRAKE)} → {fr(T_LAND)} s</dd>
-        <dt>Gros plan</dt>
-        <dd>{fr(T_LAND)} → {fr(T_END)} s</dd>
+        <dt>{$_("justadice.timing.impulse")}</dt>
+        <dd>0 → {num(T_TOSS)} s</dd>
+        <dt>{$_("justadice.timing.tumble")}</dt>
+        <dd>{num(T_TOSS)} → {num(T_BRAKE)} s</dd>
+        <dt>{$_("justadice.timing.settle")}</dt>
+        <dd>{num(T_BRAKE)} → {num(T_LAND)} s</dd>
+        <dt>{$_("justadice.timing.closeup")}</dt>
+        <dd>{num(T_LAND)} → {num(T_END)} s</dd>
       </dl>
-      <p class="note">
-        Six rebonds, puis la caméra se rapproche pour révéler la face du dessus.
-      </p>
+      <p class="note">{$_("justadice.timing.note2")}</p>
     </Card>
 
-    <Card ref="03" title="Le rendu" stat={die.faces === 6 ? "pips 3 × 3" : "chiffre"}>
-      <p class="note">
-        Sur vingt-cinq LEDs de côté, un dé vu de trois quarts ne se lit pas : la pose de repos est le
-        gros plan à l'aplomb, les trois quarts n'existent qu'en vol.
-      </p>
-      <p class="note">
-        Un pip fait 3 × 3 cellules, un nombre est un glyphe dilaté, et la marque ne s'imprime
-        qu'<b>au gros plan</b> — en vol elle serait rognée par une arête et changerait à chaque
-        rebond.
-      </p>
+    <Card
+      ref="03"
+      title={$_("justadice.render.title")}
+      stat={die.faces === 6 ? $_("justadice.render.pips") : $_("justadice.render.digit")}
+    >
+      <p class="note">{$_("justadice.render.note1")}</p>
+      <p class="note">{@html $_("justadice.render.note2")}</p>
     </Card>
   {/snippet}
 </Shell>
 
 <style>
-  .note b {
-    color: var(--ink);
-    font-weight: 500;
-  }
-
   .status {
     margin: 0;
     font-size: 11px;

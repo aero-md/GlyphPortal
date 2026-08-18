@@ -11,9 +11,11 @@
 
      Une tuile par toy, numérotée comme les cartes de réglage des préviews : le
      sommaire se lit comme un rack, ce qui est exactement ce qu'il est. */
+  import LangToggle from "$lib/i18n/LangToggle.svelte";
+  import { _ } from "svelte-i18n";
   import ThemeToggle from "$lib/ui/ThemeToggle.svelte";
   import ToyPreview from "$lib/matrix/ToyPreview.svelte";
-  import { KIND_LABEL, TOYS } from "./toys";
+  import { TOYS } from "./toys";
 
   /* Encombrement de la mini-prévisu, en px CSS. Déclaré ici et passé au
      composant plutôt que laissé à son défaut : c'est la mise en page de la tuile
@@ -50,10 +52,7 @@
      lui est propre. -->
 <svelte:head>
   <title>GLYPH</title>
-  <meta
-    name="description"
-    content="Préviews web des Glyph Toys pour Nothing Phone — la Glyph Matrix dans le navigateur, à son échelle réelle."
-  />
+  <meta name="description" content={$_("home.description")} />
 </svelte:head>
 
 <span class="reg tl"></span>
@@ -64,14 +63,15 @@
 <div class="page">
   <header>
     <p class="sub meta">
-      Index de créations autour de la Glyph Matrix, par <a
-        class="by"
-        href="https://github.com/aero-md"
-        target="_blank"
-        rel="noopener noreferrer">aero-md</a
+      {$_("home.intro")}
+      <a class="by" href="https://github.com/aero-md" target="_blank" rel="noopener noreferrer"
+        >aero-md</a
       >
     </p>
-    <ThemeToggle />
+    <div class="h-tools">
+      <ThemeToggle />
+      <LangToggle />
+    </div>
   </header>
 
   <main>
@@ -85,7 +85,7 @@
                  phrase. Pas d'`aria-hidden` donc — ce n'est pas de la
                  décoration, c'est la seule chose qui distingue un APK d'un
                  outil qui tourne dans cet onglet. -->
-            <span class="spine">{KIND_LABEL[toy.kind]}</span>
+            <span class="spine">{$_(`common.kind.${toy.kind}`)}</span>
 
             <!-- Numéro et nom sur la même ligne de base, sous-titre dessous, le
                  tout calé en haut : la tuile tire sa hauteur du disque, et un
@@ -95,12 +95,12 @@
               <span class="ref">[{num(i)}]</span>
               <span class="body">
                 <span class="name">{toy.name}</span>
-                <span class="line">{toy.line}</span>
+                <span class="line">{$_(`home.lines.${toy.slug}`)}</span>
                 {#if !toy.ready}
                   <!-- Sans le libellé « Ouvrir », plus rien ne distinguerait une
                        tuile qui mène à une préview d'une tuile qui mène à un
                        dépôt. Ce mot est la seule chose qui les sépare. -->
-                  <span class="tag label">à venir</span>
+                  <span class="tag label">{$_("home.soon")}</span>
                 {/if}
               </span>
             </span>
@@ -168,6 +168,16 @@
   /* Même main, même destination que la signature au pied de chaque préview. */
   .by {
     color: var(--ink);
+  }
+
+  /* Les deux commandes de l'en-tête, groupées comme dans la coquille des
+     préviews : sans conteneur, le `space-between` du bandeau les écarterait
+     l'une de l'autre au lieu de les tenir ensemble à droite. */
+  .h-tools {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
   }
 
   main {

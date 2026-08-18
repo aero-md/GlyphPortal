@@ -45,7 +45,9 @@ export const SPR: Record<string, string[]> = {
 export const STRIP = ["seven", "cherry", "bar", "diamond", "bell"];
 
 /** Les noms affichables, dans l'ordre de la bande. Le 7 est le jackpot. */
-export const SYMBOL_NAMES = ["Sept", "Cerise", "Bar", "Diamant", "Cloche"];
+/* Les noms des cinq symboles sont dans `glyphslot.symbols` des dictionnaires de
+   langue, dans ce même ordre : c'est un libellé affiché dans le relevé, pas une
+   donnée du moteur — lui ne manipule que des indices. */
 
 /* Police 5×7 du bandeau JACKPOT — propre à ce toy, il n'écrit rien d'autre. */
 const JK: Record<string, string[]> = {

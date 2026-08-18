@@ -1,5 +1,6 @@
 <script lang="ts">
   import { DEFAULT_DEVICE, frameOf, type Frame, type LedStyle } from "$lib";
+  import { _ } from "svelte-i18n";
   import Card from "$lib/ui/Card.svelte";
   import PreviewPane from "$lib/matrix/PreviewPane.svelte";
   import type { PreviewMode } from "$lib/matrix/Preview.svelte";
@@ -8,7 +9,6 @@
   import {
     RESULT_DUR,
     STOPS,
-    SYMBOL_NAMES,
     draw,
     idleTargets,
     makePlan,
@@ -30,7 +30,13 @@
 
   let mode = $state<PreviewMode>("phone");
   let ledStyle = $state<LedStyle>("sharp");
-  let notice = $state("");
+
+  /* Le message éphémère est gardé sous forme de **fonction**, pas de texte.
+     Un texte y serait figé dans la langue qui avait cours à l'instant où il a
+     été posé, et un changement de langue laisserait une phrase orpheline au
+     pied de page. La fonction relit le dictionnaire courant à chaque rendu. */
+  let noticeFn = $state<(() => string) | null>(null);
+  const notice = $derived(noticeFn ? noticeFn() : "");
 
   let frame = $state<Frame>(frameOf(device, new Float32Array(device.cells)));
 
@@ -49,7 +55,17 @@
   let fx: JackpotFx | null = null;
   let announced = -1;
 
-  let status = $state("Appui long sur le Glyph Button pour lancer");
+  /* La ligne d'état, gardée en **clé** et non en phrase, pour la même raison
+     que la note ci-dessus — elle, en plus, reste à l'écran indéfiniment. */
+  type StatusKey = "idle" | "spinning" | "reel" | "jackpot" | "win" | "lose";
+  let statusKey = $state<StatusKey>("idle");
+  let statusReel = $state(0);
+  const status = $derived(
+    statusKey === "reel"
+      ? $_("glyphslot.status.reel", { values: { n: statusReel } })
+      : $_(`glyphslot.status.${statusKey}`),
+  );
+
   let busy = $state(false);
   let progress = $state(0);
   /** Le dernier tirage, pour la carte de relevé. */
@@ -63,7 +79,7 @@
     machineMode = "spin";
     announced = -1;
     busy = true;
-    status = "Lancement — les rouleaux défilent…";
+    statusKey = "spinning";
   }
 
   $effect(() => {
@@ -82,7 +98,8 @@
         const stopped = STOPS.filter((s) => t >= s).length;
         if (stopped !== announced && stopped > 0 && stopped < 3) {
           announced = stopped;
-          status = `Rouleau ${stopped} arrêté…`;
+          statusReel = stopped;
+          statusKey = "reel";
         }
 
         if (t >= STOPS[2] + 0.15) {
@@ -92,12 +109,7 @@
           offsets = targets.map((k, i) => targetOffset(i, k));
           lastRoll = { syms: targets, type: resultType };
           fx = resultType === "jackpot" ? renderer.makeFx() : null;
-          status =
-            resultType === "jackpot"
-              ? "JACKPOT 777"
-              : resultType === "win"
-                ? "Trois symboles identiques"
-                : "Pas de combinaison. Relance !";
+          statusKey = resultType;
         }
       } else if (machineMode === "idle") {
         progress = 0;
@@ -109,7 +121,7 @@
           resultType = null;
           fx = null;
           busy = false;
-          status = "Appui long sur le Glyph Button pour lancer";
+          statusKey = "idle";
         }
       }
 
@@ -128,37 +140,35 @@
 
   function longPress() {
     if (machineMode !== "idle") {
-      flash("La machine tourne encore");
+      flash(() => $_("glyphslot.stillSpinning"));
       return;
     }
     spin();
   }
 
   let flashTimer: ReturnType<typeof setTimeout>;
-  function flash(msg: string) {
-    notice = msg;
+  function flash(msg: (() => string) | null) {
+    noticeFn = msg;
     clearTimeout(flashTimer);
-    if (msg) flashTimer = setTimeout(() => (notice = ""), 2600);
+    if (msg) flashTimer = setTimeout(() => (noticeFn = null), 2600);
   }
 
   const rollText = $derived(
-    lastRoll ? lastRoll.syms.map((k) => SYMBOL_NAMES[k]).join(" · ") : "—",
+    lastRoll ? lastRoll.syms.map((k) => $_(`glyphslot.symbols.${k}`)).join(" · ") : "—",
   );
-  const RESULT_FR: Record<ResultType, string> = {
-    lose: "Perdu",
-    win: "Gagné",
-    jackpot: "Jackpot",
-  };
+  const resultText = $derived(
+    lastRoll ? $_(`glyphslot.result.${lastRoll.type}`) : "—",
+  );
 </script>
 
 <svelte:head>
   <title>GLYPHSLOT</title>
-  <meta name="description" content="Préview du Glyph Toy GlyphSlot : une machine à sous sur la Glyph Matrix du Nothing Phone (3)." />
+  <meta name="description" content={$_("glyphslot.description")} />
 </svelte:head>
 
 <Shell
   title="Glyphslot"
-  sub="Une machine à sous pixélisée"
+  sub={$_("glyphslot.sub")}
   stamp={VERSION}
   {device}
   repo="https://github.com/aero-md/glyphslot"
@@ -171,7 +181,7 @@
       devices={[device]}
       bind:mode
       bind:style={ledStyle}
-      action={busy ? "En cours…" : "Lancer"}
+      action={busy ? $_("glyphslot.spinCard.busy") : $_("glyphslot.spinCard.spin")}
       onlongpress={longPress}
     />
   {/snippet}
@@ -180,106 +190,68 @@
     <!-- [00] parce que c'est ce qui vient avant tout le reste : la page est une
          préview, le toy est un APK qui s'installe sur le téléphone. Sans cette
          carte, rien ne dit où il se récupère. -->
-    <Card ref="00" title="Glyph toy" stat={device.name}>
+    <Card ref="00" title={$_("common.kind.toy")} stat={device.name}>
       <p class="note">
-        <b>GLYPHSLOT</b> est une application Android pour {device.name}. Cette page en reproduit
-        le fonctionnement dans le navigateur — le toy lui-même se télécharge en APK sur GitHub.
+        <b>GLYPHSLOT</b>
+        {$_("common.toyCard.apk", { values: { device: device.name } })}
       </p>
       <div class="btns">
         <a
           href="https://github.com/aero-md/glyphslot/releases"
           target="_blank"
-          rel="noopener noreferrer">Télécharger</a
+          rel="noopener noreferrer">{$_("common.toyCard.download")}</a
         >
       </div>
     </Card>
 
-    <Card ref="01" title="Lancer" stat={busy ? "en cours" : "au repos"} cta={!busy}>
+    <Card
+      ref="01"
+      title={$_("glyphslot.spinCard.title")}
+      stat={busy ? $_("glyphslot.spinCard.running") : $_("glyphslot.spinCard.idle")}
+      cta={!busy}
+    >
       <div class="bar" aria-hidden="true"><span style="width:{progress * 100}%"></span></div>
-      <p class="status" class:accent={status.includes("JACKPOT")}>{status}</p>
+      <p class="status" class:accent={statusKey === "jackpot"}>{status}</p>
       <div class="btns">
-        <button type="button" onclick={() => spin()} disabled={busy}>Lancer</button>
-        <button type="button" onclick={() => spin("win")} disabled={busy}>Forcer un gain</button>
-        <button type="button" onclick={() => spin("jackpot")} disabled={busy}>Forcer le 777</button>
+        <button type="button" onclick={() => spin()} disabled={busy}>
+          {$_("glyphslot.spinCard.spin")}
+        </button>
+        <button type="button" onclick={() => spin("win")} disabled={busy}>
+          {$_("glyphslot.spinCard.forceWin")}
+        </button>
+        <button type="button" onclick={() => spin("jackpot")} disabled={busy}>
+          {$_("glyphslot.spinCard.forceJackpot")}
+        </button>
       </div>
-      <p class="note">
-        Les deux boutons de forçage n'existent pas côté toy : ils sont là pour voir les effets
-        sans attendre. Un jackpot tombe à <b>5 %</b>, un gain simple à <b>15 %</b> — vérifier
-        que l'animation de sept secondes rend bien en la tirant au sort n'est pas une façon de
-        travailler.
-      </p>
-      <p class="note">
-        Sur l'appareil, la seule commande est l'appui long sur le Glyph Button. Maintenir celui
-        de la photo pendant 450 ms fait la même chose.
-      </p>
+      <p class="note">{@html $_("glyphslot.spinCard.note1")}</p>
+      <p class="note">{$_("glyphslot.spinCard.note2")}</p>
     </Card>
 
-    <Card ref="02" title="Dernier tirage" stat={lastRoll ? RESULT_FR[lastRoll.type] : "—"}>
+    <Card ref="02" title={$_("glyphslot.roll.title")} stat={resultText}>
       <dl class="readout">
-        <dt>Symboles</dt>
+        <dt>{$_("glyphslot.roll.symbols")}</dt>
         <dd>{rollText}</dd>
-        <dt>Résultat</dt>
-        <dd class:accent={lastRoll?.type === "jackpot"}>
-          {lastRoll ? RESULT_FR[lastRoll.type] : "—"}
-        </dd>
+        <dt>{$_("glyphslot.roll.result")}</dt>
+        <dd class:accent={lastRoll?.type === "jackpot"}>{resultText}</dd>
       </dl>
-      <p class="note">
-        La payline est la fenêtre centrale de sept lignes. Les symboles voisins restent
-        affichés au cinquième de l'intensité : c'est ce qui fait lire une fenêtre sur une bande
-        qui tourne, et non trois cases indépendantes.
-      </p>
+      <p class="note">{$_("glyphslot.roll.note")}</p>
     </Card>
 
-    <Card ref="03" title="Rouleaux" stat="3 × 7 colonnes">
-      <p class="note">
-        Un rouleau n'est pas un symbole tiré au sort à l'arrivée : c'est une bande continue de
-        cinq symboles qui tourne, et l'arrêt consiste à choisir <b>où</b> la freiner. On voit
-        donc passer les voisins du symbole gagnant avant qu'il ne se pose.
-      </p>
-      <p class="note">
-        L'ordre des symboles diffère d'un rouleau à l'autre — le rouleau <i>i</i> avance de
-        <i>i</i>+1 modulo 5. Les voisins d'un symbole aligné ne sont pas les mêmes sur les
-        trois, et un alignement ne se lit pas d'avance en regardant ce qui passe au-dessus.
-      </p>
-      <p class="note">
-        Au lancement, le rouleau recule d'abord lentement — un ressort qu'on arme — puis se
-        détend. Sans ce recul, le départ est un glissement uniforme qui ne dit pas qu'on vient
-        de tirer sur quelque chose.
-      </p>
-      <p class="note">
-        La distance de freinage est tirée dans une plage plutôt que calculée au plus court :
-        freiner sur la distance minimale ferait s'arrêter le rouleau presque tout de suite
-        quand la cible est déjà proche, et on verrait la machine viser.
-      </p>
+    <Card ref="03" title={$_("glyphslot.reels.title")} stat={$_("glyphslot.reels.stat")}>
+      <p class="note">{@html $_("glyphslot.reels.note1")}</p>
+      <p class="note">{@html $_("glyphslot.reels.note2")}</p>
+      <p class="note">{$_("glyphslot.reels.note3")}</p>
+      <p class="note">{$_("glyphslot.reels.note4")}</p>
     </Card>
 
-    <Card ref="04" title="Effets" stat="5 phases">
-      <p class="note">
-        Un gain simple fait pulser l'anneau du bord. Le jackpot prend l'écran pendant sept
-        secondes et demie : triple strobe, ondes de choc concentriques, bandeau
-        <b>JACKPOT</b> qui défile, feux d'artifice avec gravité, puis un 7 qui zoome.
-      </p>
-      <p class="note">
-        La secousse décale la trame d'une <b>cellule entière</b>. La préview d'origine secouait
-        le canvas : une Glyph Matrix a ses LEDs soudées, elle ne peut pas bouger d'un
-        demi-pixel — et un canvas transformé sortirait de la grille de pixels physiques sur
-        laquelle repose tout le calage de la préview.
-      </p>
+    <Card ref="04" title={$_("glyphslot.fx.title")} stat={$_("glyphslot.fx.stat")}>
+      <p class="note">{@html $_("glyphslot.fx.note1")}</p>
+      <p class="note">{@html $_("glyphslot.fx.note2")}</p>
     </Card>
   {/snippet}
 </Shell>
 
 <style>
-  .note b {
-    color: var(--ink);
-    font-weight: 500;
-  }
-
-  .note i {
-    font-style: normal;
-    color: var(--ink);
-  }
-
   .status {
     margin: 0;
     font-size: 11px;

@@ -15,6 +15,7 @@ src/lib/             le noyau, sous l'alias $lib
   matrix/            géométrie, calibrage, rendu au pixel, Grid, polices,
                      Preview, PreviewPane, ToyPreview, design & lottie
   ui/                Shell, Card, Seg, Slider, ThemeToggle, thème
+  i18n/              les cinq langues, un JSON chacune, et le sélecteur
   app.css            jetons de thème, trame de fond, étages typographiques
 
 src/routes/
@@ -29,7 +30,7 @@ src/routes/
 
 src/app.html         le `<head>` commun : polices, favicon, script de thème
 static/              favicon, worklet du micro, boucles des vignettes
-scripts/             fabrication des boucles de mini-prévisu
+scripts/             boucles de mini-prévisu, contrôle des dictionnaires
 ```
 
 Le moteur d'un toy vit dans `lib/` **sous sa route** et non dans `src/lib` : il
@@ -81,7 +82,7 @@ et suit donc le sélecteur d'appareil.
 ```powershell
 bun install
 bun run dev     # http://localhost:5180
-bun run check   # svelte-kit sync + svelte-check
+bun run check   # svelte-kit sync + svelte-check + dictionnaires
 ```
 
 Le `<head>` est commun aux cinq pages (`src/app.html`) ; chaque route y ajoute
@@ -128,6 +129,46 @@ compression, envoi, extraction — n'a rien à personnaliser.
 
 Il est gardé hors du dépôt parce qu'une fois rempli il ne décrit plus le site
 mais l'endroit où il est posé, et ça ne regarde pas le code.
+
+## Les langues
+
+Cinq langues — anglais, français, allemand, italien, espagnol — sur
+[`svelte-i18n`](https://github.com/kaisermann/svelte-i18n). **Une langue, un
+fichier** : `src/lib/i18n/locales/<code>.json`, et rien d'autre à déclarer. La
+liste servie est déduite du dossier par `import.meta.glob`, et le libellé du
+sélecteur vient d'`Intl.DisplayNames`. Ajouter le portugais, c'est déposer
+`pt.json`.
+
+Les dictionnaires sont **chargés à la demande**, un module par langue : un
+visiteur en télécharge un seul, jamais les cinq. La langue d'arrivée est celle
+du navigateur si elle est servie, l'anglais sinon ; le choix explicite du
+sélecteur est retenu dans `glyph:lang`, et lui seul.
+
+Dans une page, le dictionnaire se lit par les magasins de la bibliothèque :
+
+```svelte
+{$_("glyphcast.crop.zoom")}                          <!-- un message      -->
+{$_("glyphslot.status.reel", { values: { n } })}     <!-- à trous, en ICU -->
+{$number(value, { style: "percent" })}               <!-- un nombre       -->
+{$date(ms, { dateStyle: "medium" })}                 <!-- une date        -->
+```
+
+Deux règles qui ne se devinent pas :
+
+- **Un message éphémère se garde en fonction, pas en texte.** Un texte est figé
+  dans la langue qui avait cours à l'instant où il a été posé, et changer de
+  langue laisse une phrase orpheline au pied de page. D'où les `noticeFn` des
+  quatre préviews.
+- **L'accord au pluriel appartient au dictionnaire**, jamais au code : un
+  `n > 1 ? pluriel : singulier` est la règle française, les quatre autres
+  langues basculent à `n ≠ 1`. La forme à écrire est
+  `{n, plural, one {# jour} other {# jours}}`.
+
+`bun run check` vérifie les dictionnaires après le typage : mêmes clés partout,
+ICU valide, mêmes paramètres d'une langue à l'autre, apostrophes qui ne se font
+pas avaler par le lexer, et toute clé écrite dans `src/` qui existe vraiment.
+C'est ce qui remplace la vérification à la compilation, que `svelte-i18n` ne
+peut pas offrir puisqu'il résout ses clés au rendu.
 
 ## Ajouter une préview
 

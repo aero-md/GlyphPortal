@@ -101,10 +101,12 @@ export function units(d: Breakdown): Unit[] {
 /* Réglages d'un lapse                                                         */
 /* -------------------------------------------------------------------------- */
 
-export const FORMATS = ["Dense", "Compact", "Cycle", "Jours"] as const;
+/* Les libellés des quatre mises en page et des deux rendus de la minute sont
+   dans `glyphlapse.formats` et `glyphlapse.secondsModes` des dictionnaires de
+   langue, dans l'ordre de ces deux types-ci. Ils ne servaient qu'à peupler des
+   sélecteurs : le moteur, lui, ne connaît que les indices. */
 export type Format = 0 | 1 | 2 | 3;
 
-export const SECONDS_MODES = ["Anneau", "Sablier"] as const;
 export type SecondsMode = 0 | 1;
 
 /** Chiffres romains — les trois lapses sont numérotés comme dans l'app. */

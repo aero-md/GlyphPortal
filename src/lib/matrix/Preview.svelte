@@ -14,6 +14,7 @@
      `frame.device`. Une trame et son cadre ne peuvent donc pas se désaccorder
      pendant une bascule d'appareil. */
   import { onMount } from "svelte";
+  import { _ } from "svelte-i18n";
   import { DEVICES, previewBand, type Device, type Disc } from "./devices";
   import type { Frame } from "./frame";
   import { DISC_BG, paint, screenGrid, type PixelGrid, type LedStyle } from "./render";
@@ -62,7 +63,11 @@
     compare?: Frame | null;
     /** Largeur disponible en px CSS, pour caler la grille du mode « grand ». */
     width?: number;
-    /** Libellé de ce que fera l'appui long sur le toy courant. */
+    /**
+     * Libellé de ce que fera l'appui long sur le toy courant. Vide, la légende
+     * retombe sur « appui long » — le défaut ne peut pas être écrit dans la
+     * signature, il dépend de la langue et changerait donc en cours de vie.
+     */
     action?: string;
     /** Reçoit l'appui long — la seule commande qu'un Glyph Toy reçoive. */
     onlongpress?: () => void;
@@ -82,11 +87,13 @@
     style = "sharp",
     compare = null,
     width = 550,
-    action = "Appui long",
+    action = "",
     onlongpress,
     devices = DEVICES,
     buttonReachable = $bindable(true),
   }: Props = $props();
+
+  const actionText = $derived(action || $_("common.button.longPress"));
 
   let cvs = $state<HTMLCanvasElement>();
   let phoneEl = $state<HTMLElement>();
@@ -413,15 +420,19 @@
   const active = $derived(role === "press" ? pressed : held);
 
   const label = $derived(
-    role === "press"
-      ? "Glyph Button — maintenir pour simuler l'appui long"
-      : "Glyph Button — maintenir pour comparer avec le rendu sans réglages",
+    role === "press" ? $_("common.button.pressLabel") : $_("common.button.holdLabel"),
   );
 
   /* Légende du bouton, et texte de la barre de repli. Rien à promettre quand le
      bouton ne fait rien : une légende annoncerait une action qu'il ne rend pas. */
   const hintText = $derived(
-    role === "press" ? (tooShort ? "Maintenir →" : action) : held ? "Rendu brut" : "Maintenir",
+    role === "press"
+      ? tooShort
+        ? $_("common.button.tooShort")
+        : actionText
+      : held
+        ? $_("common.button.raw")
+        : $_("common.button.hold"),
   );
 
   /* La barre de repli remplace le Glyph Button quand il n'y en a pas à l'écran.
@@ -450,7 +461,7 @@
         style="width:{size}px;aspect-ratio:{dev.aspect}"
       >
       <div class="phone" style="transform:translate({subX}px,{subY}px)">
-        <img src={dev.photo.src} alt={dev.photo.alt} draggable="false" />
+        <img src={dev.photo.src} alt={$_("common.photoAlt", { values: { device: dev.name } })} draggable="false" />
 
         <!-- Le hublot de la photo est noirci : il n'y a rien à masquer, donc
              pas d'aplat. Le canvas est posé seul, centré sur le hublot, et
@@ -513,7 +524,13 @@
        voir `barre`, qui n'applique pas la même règle aux deux rôles. -->
   {#if barre}
     <button class="ab" class:is-held={active} disabled={!armed} {...handlers}>
-      {role === "press" ? (pressed ? "…" : hintText) : held ? "Rendu brut" : "Maintenir : avant / après"}
+      {role === "press"
+        ? pressed
+          ? "…"
+          : hintText
+        : held
+          ? $_("common.button.raw")
+          : $_("common.button.holdAb")}
     </button>
   {/if}
 

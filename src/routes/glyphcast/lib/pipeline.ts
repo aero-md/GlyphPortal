@@ -75,14 +75,18 @@ export const DEFAULTS: Params = {
 };
 
 /** Presets du mixeur — les poids sont normalisés à la volée, pas besoin de somme 1. */
-export const CHANNEL_PRESETS: Record<string, [number, number, number]> = {
-  LUMA: [0.2126, 0.7152, 0.0722], // Rec. 709, la référence perceptuelle
-  ÉGAL: [1, 1, 1],
-  ROUGE: [1, 0.15, 0],
-  VERT: [0.1, 1, 0.1],
-  BLEU: [0, 0.2, 1],
-  "CIEL NOIR": [1.4, 0.4, -0.4], // filtre rouge photo : ciel dense, nuages détachés
-};
+/* Les clés sont des **identifiants**, pas des libellés : ceux-ci sont dans
+   `glyphcast.mixer.presets` des dictionnaires de langue, sous ces mêmes clés.
+   Elles servaient les deux rôles, et un bouton s'appelait « ÉGAL » aussi bien
+   dans le code que sur l'écran. */
+export const CHANNEL_PRESETS = {
+  luma: [0.2126, 0.7152, 0.0722], // Rec. 709, la référence perceptuelle
+  equal: [1, 1, 1],
+  red: [1, 0.15, 0],
+  green: [0.1, 1, 0.1],
+  blue: [0, 0.2, 1],
+  darkSky: [1.4, 0.4, -0.4], // filtre rouge photo : ciel dense, nuages détachés
+} as const satisfies Record<string, readonly [number, number, number]>;
 
 /* -------------------------------------------------------------------------- */
 /* sRGB <-> linéaire                                                          */

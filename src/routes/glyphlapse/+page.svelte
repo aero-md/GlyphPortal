@@ -1,15 +1,15 @@
 <script lang="ts">
   import { DEFAULT_DEVICE, frameOf, type Frame, type LedStyle } from "$lib";
+  import type { Dict } from "$lib/i18n";
+  import { _, date, json } from "svelte-i18n";
   import Card from "$lib/ui/Card.svelte";
   import PreviewPane from "$lib/matrix/PreviewPane.svelte";
   import type { PreviewMode } from "$lib/matrix/Preview.svelte";
   import Seg from "$lib/ui/Seg.svelte";
   import Shell from "$lib/ui/Shell.svelte";
   import {
-    FORMATS,
     LAPSE_COUNT,
     ROMAN,
-    SECONDS_MODES,
     breakdown,
     defaultLapses,
     type Breakdown,
@@ -45,7 +45,12 @@
   /* --- animation --- */
   let mode = $state<PreviewMode>("phone");
   let ledStyle = $state<LedStyle>("sharp");
-  let notice = $state("");
+
+  /* Gardé en fonction et non en texte : un message figé dans la langue qui
+     avait cours quand il a été posé resterait tel quel après un changement de
+     langue. La fonction relit le dictionnaire courant à chaque rendu. */
+  let noticeFn = $state<(() => string) | null>(null);
+  const notice = $derived(noticeFn ? noticeFn() : "");
 
   /* Le Glyph Button de la photo passe sous la coupe dès que le cadre est rogné
      — colonne unique, ou fenêtre trop courte pour montrer le bas du dos. Comme
@@ -154,7 +159,7 @@
     const next = nextEnabledIndex();
     // un seul lapse activé : le toy ne ferait rien. On le dit, plutôt que de
     // laisser croire à une panne.
-    if (next === active) flash("Un seul lapse activé — le toy ne bascule nulle part");
+    if (next === active) flash(() => $_("glyphlapse.onlyOne"));
     else switchLapse(next);
   }
 
@@ -164,10 +169,10 @@
   }
 
   let flashTimer: ReturnType<typeof setTimeout>;
-  function flash(msg: string) {
-    notice = msg;
+  function flash(msg: (() => string) | null) {
+    noticeFn = msg;
     clearTimeout(flashTimer);
-    if (msg) flashTimer = setTimeout(() => (notice = ""), 2600);
+    if (msg) flashTimer = setTimeout(() => (noticeFn = null), 2600);
   }
 
   /* --- champ de date --- */
@@ -184,11 +189,14 @@
     if (!isNaN(v)) setRef(v);
   }
 
-  const PRESETS: { t: string; ms: () => number }[] = [
-    { t: "Début d'année", ms: () => new Date(new Date().getFullYear(), 0, 1).getTime() },
-    { t: "Il y a 5 jours", ms: () => Date.now() - 5 * 86400000 - 3 * 3600000 - 1000 * 60 * 7 },
+  /* Les préréglages : une clé de libellé et l'instant qu'elle vise. Le libellé
+     n'est pas gardé ici — il est relu dans le dictionnaire au rendu, sinon un
+     changement de langue laisserait cinq boutons dans l'ancienne. */
+  const PRESETS: { key: keyof Dict["glyphlapse"]["presets"]; ms: () => number }[] = [
+    { key: "yearStart", ms: () => new Date(new Date().getFullYear(), 0, 1).getTime() },
+    { key: "fiveDaysAgo", ms: () => Date.now() - 5 * 86400000 - 3 * 3600000 - 1000 * 60 * 7 },
     {
-      t: "Noël",
+      key: "christmas",
       ms: () => {
         const now = new Date();
         let noel = new Date(now.getFullYear(), 11, 25);
@@ -196,43 +204,43 @@
         return noel.getTime();
       },
     },
-    { t: "An 2000", ms: () => new Date(2000, 0, 1).getTime() },
-    { t: "Dans 10 s", ms: () => Date.now() + 10000 },
+    { key: "y2k", ms: () => new Date(2000, 0, 1).getTime() },
+    { key: "inTenSeconds", ms: () => Date.now() + 10000 },
   ];
 
   /* --- relevé --- */
-  const UNIT_FR = [
-    ["an", "ans"],
-    ["mois", "mois"],
-    ["jour", "jours"],
-    ["h", "h"],
-    ["min", "min"],
-  ];
+  /* L'accord au pluriel est laissé au dictionnaire, pas décidé ici.
+     Un `v > 1 ? pluriel : singulier` posé dans le code est la règle
+     **française** : l'anglais, l'allemand, l'italien et l'espagnol basculent
+     à v ≠ 1, et zéro y prend le pluriel. Il ne se voyait pas parce que les
+     valeurs nulles sont écartées juste en dessous, ce qui rendait les deux
+     règles équivalentes — une équivalence qu'aucun de ces deux bouts de code
+     ne mentionne à l'autre. Chaque unité est donc un message ICU, et c'est
+     `Intl.PluralRules` qui choisit la branche dans la langue affichée. */
+  const UNITS = ["years", "months", "days", "hours", "minutes"] as const;
 
   const readoutText = $derived.by(() => {
     const d = readout;
     const parts = [d.years, d.months, d.days, d.hours, d.minutes]
-      .map((v, i) => (v > 0 ? `${v} ${UNIT_FR[i][v > 1 ? 1 : 0]}` : null))
+      .map((v, i) => (v > 0 ? $_(`glyphlapse.units.${UNITS[i]}`, { values: { n: v } }) : null))
       .filter(Boolean);
-    parts.push(`${d.seconds} s`);
+    parts.push($_("glyphlapse.units.seconds", { values: { n: d.seconds } }));
     return parts.join(" · ");
   });
 
-  const refText = $derived(
-    new Date(current.ref).toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" }),
-  );
+  const refText = $derived($date(current.ref, { dateStyle: "medium", timeStyle: "short" }));
 
   const enabledCount = $derived(lapses.filter((l) => l.enabled).length);
 </script>
 
 <svelte:head>
   <title>GLYPHLAPSE</title>
-  <meta name="description" content="Préview du Glyph Toy GlyphLapse : le temps qui passe, décomposé sur la Glyph Matrix du Nothing Phone (3)." />
+  <meta name="description" content={$_("glyphlapse.description")} />
 </svelte:head>
 
 <Shell
   title="Glyphlapse"
-  sub="Une visualisation du temps qui passe"
+  sub={$_("glyphlapse.sub")}
   stamp={VERSION}
   {device}
   repo="https://github.com/aero-md/glyphlapse"
@@ -245,7 +253,7 @@
       devices={[device]}
       bind:mode
       bind:style={ledStyle}
-      action="Lapse suivant"
+      action={$_("glyphlapse.action")}
       onlongpress={longPress}
       bind:buttonReachable
     />
@@ -255,132 +263,120 @@
     <!-- [00] parce que c'est ce qui vient avant tout le reste : la page est une
          préview, le toy est un APK qui s'installe sur le téléphone. Sans cette
          carte, rien ne dit où il se récupère. -->
-    <Card ref="00" title="Glyph toy" stat={device.name}>
+    <Card ref="00" title={$_("common.kind.toy")} stat={device.name}>
       <p class="note">
-        <b>GLYPHLAPSE</b> est une application Android pour {device.name}. Cette page en reproduit
-        le fonctionnement dans le navigateur — le toy lui-même se télécharge en APK sur GitHub.
+        <b>GLYPHLAPSE</b>
+        {$_("common.toyCard.apk", { values: { device: device.name } })}
       </p>
       <div class="btns">
         <a
           href="https://github.com/aero-md/glyphlapse/releases"
           target="_blank"
-          rel="noopener noreferrer">Télécharger</a
+          rel="noopener noreferrer">{$_("common.toyCard.download")}</a
         >
       </div>
     </Card>
 
-    <Card ref="01" title="Lapse affiché" stat="{ROMAN[active]} · {enabledCount} / {LAPSE_COUNT} activés">
+    <Card
+      ref="01"
+      title={$_("glyphlapse.lapse.title")}
+      stat="{ROMAN[active]} · {$_('glyphlapse.lapse.stat', {
+        values: { enabled: enabledCount, total: LAPSE_COUNT },
+      })}"
+    >
       <Seg
-        label="Lapse"
+        label={$_("glyphlapse.lapse.seg")}
         value={active}
         options={ROMAN.map((r, i) => ({ v: i, t: r }))}
         onchange={switchLapse}
       />
       <div class="btns">
         <button type="button" class:on={current.enabled} disabled={active === 0} onclick={toggleEnabled}>
-          {current.enabled ? "Activé — dans la rotation" : "Désactivé"}
+          {current.enabled ? $_("glyphlapse.lapse.enabled") : $_("glyphlapse.lapse.disabled")}
         </button>
         <!-- Repli : le Glyph Button de la photo est hors champ, et l'appui long
              est la seule commande du toy. Il n'apparaît pas quand le bouton est
              là — un doublon permanent apprendrait la mauvaise interaction. -->
         {#if !buttonReachable}
-          <button type="button" onclick={longPress}>Simuler l'appui long</button>
+          <button type="button" onclick={longPress}>{$_("glyphlapse.lapse.simulate")}</button>
         {/if}
       </div>
-      <p class="note">
-        L'appui long sur le Glyph Button passe au lapse activé suivant. Le lapse <b>I</b> ne se
-        désactive pas : un toy sans aucun lapse actif n'aurait rien à afficher.
-      </p>
-      <p class="note">
-        L'onglet sélectionné <b>est</b> celui que le toy affiche : il n'y a pas d'un côté le
-        lapse qu'on règle et de l'autre celui qui tourne. C'est le comportement de l'app de
-        réglages, où choisir un onglet bascule le toy.
-      </p>
+      <p class="note">{@html $_("glyphlapse.lapse.note1")}</p>
+      <p class="note">{@html $_("glyphlapse.lapse.note2")}</p>
     </Card>
 
-    <Card ref="02" title="Échéance" stat={readout.dir === "since" ? "depuis" : "jusqu'au"}>
+    <Card
+      ref="02"
+      title={$_("glyphlapse.deadline.title")}
+      stat={readout.dir === "since" ? $_("glyphlapse.deadline.since") : $_("glyphlapse.deadline.until")}
+    >
       <label class="field">
-        <span class="label">Instant de référence</span>
+        <span class="label">{$_("glyphlapse.deadline.ref")}</span>
         <input type="datetime-local" step="1" value={refInput} onchange={onRefInput} />
       </label>
       <div class="btns">
-        {#each PRESETS as p (p.t)}
-          <button type="button" onclick={() => setRef(p.ms())}>{p.t}</button>
+        {#each PRESETS as p (p.key)}
+          <button type="button" onclick={() => setRef(p.ms())}>
+            {$_(`glyphlapse.presets.${p.key}`)}
+          </button>
         {/each}
       </div>
-      <p class="note">
-        Une échéance à venir bascule le toy en compte à rebours. Au franchissement, il joue une
-        arrivée de quatre secondes — <b>Dans 10 s</b> est là pour la voir sans attendre.
-      </p>
+      <p class="note">{@html $_("glyphlapse.deadline.note")}</p>
     </Card>
 
-    <Card ref="03" title="Format" stat={FORMATS[current.format]}>
+    <Card ref="03" title={$_("glyphlapse.format.title")} stat={$_(`glyphlapse.formats.${current.format}`)}>
       <Seg
-        label="Mise en page"
+        label={$_("glyphlapse.format.seg")}
         value={current.format}
-        options={FORMATS.map((t, i) => ({ v: i as Format, t }))}
+        options={($json("glyphlapse.formats") as Dict["glyphlapse"]["formats"]).map((label, i) => ({
+          v: i as Format,
+          t: label,
+        }))}
         onchange={setFormat}
       />
-      <p class="note">
-        <b>Dense</b> écrit toute la granularité, deux unités par ligne quand il le faut.
-        <b>Compact</b> ne garde que les deux unités de tête, en 5×7. <b>Cycle</b> les fait
-        défiler une par une. <b>Jours</b> ne dit que le total.
-      </p>
-      <p class="note">
-        Les unités de tête à zéro sont coupées : « 0A 0M 3J » gâcherait deux lignes de disque
-        pour dire qu'il ne s'est rien passé.
-      </p>
+      <p class="note">{@html $_("glyphlapse.format.note1")}</p>
+      <p class="note">{$_("glyphlapse.format.note2")}</p>
     </Card>
 
-    <Card ref="04" title="Secondes" stat={SECONDS_MODES[current.sec]}>
+    <Card
+      ref="04"
+      title={$_("glyphlapse.seconds.title")}
+      stat={$_(`glyphlapse.secondsModes.${current.sec}`)}
+    >
       <Seg
-        label="Rendu de la minute"
+        label={$_("glyphlapse.seconds.seg")}
         value={current.sec}
-        options={SECONDS_MODES.map((t, i) => ({ v: i as SecondsMode, t }))}
+        options={($json("glyphlapse.secondsModes") as Dict["glyphlapse"]["secondsModes"]).map((label, i) => ({
+          v: i as SecondsMode,
+          t: label,
+        }))}
         onchange={setSec}
       />
-      <p class="note">
-        <b>Anneau</b> remplit le bord depuis midi — horaire quand le temps s'accumule,
-        antihoraire quand il se consomme. <b>Sablier</b> monte ou descend un niveau de sable
-        dont la surface est un cône : pointe au centre en « depuis », entonnoir en « jusqu'à ».
-      </p>
-      <p class="note">
-        La hauteur du sable est trouvée par dichotomie et non calculée : la surface de disque
-        au-dessus d'une ligne n'a pas d'expression simple, et quatorze itérations suffisent à
-        retomber sur la bonne quantité à la cellule près.
-      </p>
+      <p class="note">{@html $_("glyphlapse.seconds.note1")}</p>
+      <p class="note">{$_("glyphlapse.seconds.note2")}</p>
     </Card>
 
-    <Card ref="05" title="Relevé" stat="{readout.totalDays} j">
+    <Card
+      ref="05"
+      title={$_("glyphlapse.readout.title")}
+      stat={$_("glyphlapse.dayShort", { values: { days: readout.totalDays } })}
+    >
       <dl class="readout">
-        <dt>Référence</dt>
+        <dt>{$_("glyphlapse.readout.ref")}</dt>
         <dd>{refText}</dd>
-        <dt>Direction</dt>
-        <dd>{readout.dir === "since" ? "Depuis" : "Jusqu'au"}</dd>
-        <dt>Décomposition</dt>
+        <dt>{$_("glyphlapse.readout.direction")}</dt>
+        <dd>{readout.dir === "since" ? $_("glyphlapse.readout.since") : $_("glyphlapse.readout.until")}</dd>
+        <dt>{$_("glyphlapse.readout.breakdown")}</dt>
         <dd>{readoutText}</dd>
-        <dt>Total en jours</dt>
+        <dt>{$_("glyphlapse.readout.totalDays")}</dt>
         <dd>{readout.totalDays}</dd>
       </dl>
-      <p class="note">
-        La décomposition suit le calendrier, pas une division : deux mois font 59, 60 ou 62
-        jours selon lesquels. C'est le même comptage que <code>Period.between</code> côté toy.
-      </p>
+      <p class="note">{@html $_("glyphlapse.readout.note")}</p>
     </Card>
   {/snippet}
 </Shell>
 
 <style>
-  .note b {
-    color: var(--ink);
-    font-weight: 500;
-  }
-
-  .note code {
-    color: var(--ink);
-    font-size: 10px;
-  }
-
   /* Le seul champ de saisie du portail. Même filet et même rembourrage que les
      boutons : il doit se lire comme une commande de la même famille. */
   .field {

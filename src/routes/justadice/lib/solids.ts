@@ -133,8 +133,9 @@ export type Die = {
   id: DieId;
   /** Nombre de faces — et donc plage du tirage. */
   faces: number;
-  /** Nom du solide, pour le rack. */
-  solid: string;
+  /* Le nom du solide — cube, dodécaèdre… — est dans `justadice.solids` des
+     dictionnaires de langue, sous l'identifiant du dé. Il n'a jamais servi
+     qu'à une notification du rack, et un maillage n'a pas de langue. */
   /**
    * Demi-champ de la caméra au gros plan, en unités de dé.
    *
@@ -376,7 +377,6 @@ function assignValues(planes: { n: Vec3 }[], faces: number): number[] {
 
 function build(
   id: DieId,
-  solid: string,
   mesh: Mesh,
   close: number,
   spin: number,
@@ -434,7 +434,7 @@ function build(
     };
   });
 
-  return { id, faces: count, solid, close, spin, face };
+  return { id, faces: count, close, spin, face };
 }
 
 /* -------------------------------------------------------------------------- */
@@ -458,10 +458,10 @@ function build(
    en petite police là où les chiffres seuls restent en grande, comme le dix du d10
    depuis toujours. */
 export const DICE: Die[] = [
-  build("d6", "cube", CUBE, 1.3, 4, CUBE_VALUES),
-  build("d10", "trapézoèdre", trapezohedron(), 1.06, 1),
-  build("d12", "dodécaèdre", fromDual(dodecaVerts(), icosaVerts(), 5), 1.24, 5),
-  build("d20", "icosaèdre", fromDual(icosaVerts(), dodecaVerts(), 3), 0.9, 3),
+  build("d6", CUBE, 1.3, 4, CUBE_VALUES),
+  build("d10", trapezohedron(), 1.06, 1),
+  build("d12", fromDual(dodecaVerts(), icosaVerts(), 5), 1.24, 5),
+  build("d20", fromDual(icosaVerts(), dodecaVerts(), 3), 0.9, 3),
 ];
 
 /* Le d6, et par son identité plutôt que par son rang : c'est le dé dont tout le

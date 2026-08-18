@@ -5,10 +5,8 @@ import { MAX_DB, MIN_DB, type Snapshot } from "../engine";
 
 export type Style = "mirror" | "bars";
 
-export const STYLES: { v: Style; t: string }[] = [
-  { v: "mirror", t: "Miroir" },
-  { v: "bars", t: "Colonnes" },
-];
+/** Les deux styles, dans l'ordre où l'appui long les fait défiler. */
+export const STYLE_IDS: Style[] = ["mirror", "bars"];
 
 /**
  * Plage d'une bande : celle du cadran, décalée vers le bas.

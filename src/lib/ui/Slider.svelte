@@ -2,6 +2,8 @@
   /* Réglage continu, format « LABEL : VALEUR ». Le curseur est un plot carré
      sur un filet de 1 px : la portion parcourue est pleine, le reste est un
      filet. L'état se lit sans lire la valeur. */
+  import { _, number } from "svelte-i18n";
+
   type Props = {
     label: string;
     value: number;
@@ -14,8 +16,19 @@
     step?: number | "any";
     /** Valeur de repos — double-clic sur le libellé pour y revenir. */
     reset?: number;
-    /** Mise en forme de la valeur affichée. */
-    format?: (v: number) => string;
+    /**
+     * Registre d'affichage de la valeur.
+     *
+     * Trois cas et pas une fonction de mise en forme, contrairement à avant :
+     * une fonction passée par l'appelant écrivait forcément ses décimales au
+     * point et son pourcentage à la main, et le rack affichait `0.21` juste à
+     * côté d'une note qui disait `12,5`. Les trois registres couvrent les
+     * quinze curseurs de l'application, et c'est `Intl` qui décide du
+     * séparateur, du signe et de la place du `%`.
+     */
+    format?: "number" | "percent" | "signed";
+    /** Décimales affichées. Zéro par défaut en pourcentage, deux sinon. */
+    digits?: number;
     unit?: string;
   };
 
@@ -25,13 +38,28 @@
     range,
     step = "any",
     reset,
-    format,
+    format = "number",
+    digits,
     unit = "",
   }: Props = $props();
 
   const min = $derived(range[0]);
   const max = $derived(range[1]);
-  const shown = $derived(format ? format(value) : value.toFixed(2));
+
+  const frac = $derived(digits ?? (format === "percent" ? 0 : 2));
+  /* `signDisplay: "always"` et non `"exceptZero"` : ces curseurs-là sont des
+     corrections autour d'un repos, et « +0,00 » dit « je n'ai rien corrigé »
+     là où « 0,00 » se lit comme une valeur absolue. */
+  const opts: Intl.NumberFormatOptions = $derived(
+    format === "percent"
+      ? { style: "percent", maximumFractionDigits: frac }
+      : {
+          minimumFractionDigits: frac,
+          maximumFractionDigits: frac,
+          ...(format === "signed" ? { signDisplay: "always" as const } : {}),
+        },
+  );
+  const shown = $derived($number(value, opts));
   const pct = $derived(((value - min) / (max - min)) * 100);
   const dirty = $derived(
     reset !== undefined && Math.abs(value - reset) > (max - min) * 1e-4,
@@ -46,7 +74,7 @@
       class:dirty
       disabled={reset === undefined}
       onclick={() => reset !== undefined && (value = reset)}
-      title={reset !== undefined ? "Revenir au repos" : undefined}
+      title={reset !== undefined ? $_("common.slider.reset") : undefined}
     >
       {label}
     </button>

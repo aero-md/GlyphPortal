@@ -21,34 +21,33 @@
  */
 export type Kind = "toy" | "tool";
 
-/**
- * Le libellé porté par la tranche de la tuile.
- *
- * Une table plutôt qu'une chaîne libre par entrée : la catégorie vivait avant
- * dans le sous-titre, écrite à la main, et elle avait déjà dérivé — `(Glyph
- * toy)` sur deux entrées, `[Glyph toy pour Nothing Phone (3)]` sur une
- * troisième. Quatre entrées suffisent à faire diverger un texte recopié.
+/*
+ * Le libellé de la tranche — « Glyph toy », « Outil web » — vivait ici, dans
+ * une table `KIND_LABEL`. Il est parti dans les dictionnaires de langue, sous
+ * `common.kind` : c'est du texte affiché, pas une donnée du catalogue. Même
+ * chose pour la ligne de chaque entrée, voir `slug` ci-dessous.
  */
-export const KIND_LABEL: Record<Kind, string> = {
-  toy: "Glyph toy",
-  tool: "Outil web",
-};
+
+/**
+ * Les entrées du catalogue, par leur segment d'URL.
+ *
+ * Le type est fermé et non `string` : c'est lui qui indexe `home.lines` dans
+ * les dictionnaires, et un slug ajouté ici sans sa ligne traduite ne compile
+ * plus. C'est exactement le rappel qu'on veut au moment où on ajoute un toy.
+ */
+export type Slug = "glyphslot" | "glyphlapse" | "sonoglyph" | "justadice" | "glyphcast";
 
 export type Toy = {
   /** Segment d'URL sous glyph.suns.red, et nom du dossier au déploiement. */
-  slug: string;
+  slug: Slug;
   /** Nom affiché, en capitales — c'est un wordmark, pas une phrase. */
   name: string;
   /** Nature de l'entrée, portée par la tranche verticale de la tuile. */
   kind: Kind;
-  /**
-   * Ce que fait l'entrée, en une ligne. Sous-titre de la tuile.
-   *
-   * **Ce qu'elle fait, pas ce qu'elle est** : la catégorie est sur la tranche,
-   * la répéter ici dépenserait le premier tiers de la phrase à redire ce qui
-   * est déjà écrit sur le flanc.
-   */
-  line: string;
+  /* Ce que fait l'entrée, en une ligne, est dans `home.lines[slug]` des
+     dictionnaires — **ce qu'elle fait, pas ce qu'elle est** : la catégorie est
+     sur la tranche, la répéter dépenserait le premier tiers de la phrase à
+     redire ce qui est déjà écrit sur le flanc. */
   /** Dépôt GitHub. */
   repo: string;
   /** La préview est-elle servie sur ce domaine ? */
@@ -91,7 +90,6 @@ export const TOYS: Toy[] = [
     slug: "glyphslot",
     name: "GLYPHSLOT",
     kind: "toy",
-    line: "Une machine à sous pixélisée",
     repo: "https://github.com/aero-md/glyphslot",
     ready: true,
     preview: "/preview/glyphslot.json",
@@ -100,7 +98,6 @@ export const TOYS: Toy[] = [
     slug: "glyphlapse",
     name: "GLYPHLAPSE",
     kind: "toy",
-    line: "Une visualisation du temps qui passe",
     repo: "https://github.com/aero-md/glyphlapse",
     ready: true,
     /* Les trois lapses par défaut, dix secondes chacun, avec le glissement de
@@ -116,7 +113,6 @@ export const TOYS: Toy[] = [
     slug: "sonoglyph",
     name: "SONOGLYPH",
     kind: "toy",
-    line: "Le son du micro, mesuré et représenté avec une poignée de pixels",
     repo: "https://github.com/aero-md/sonoglyph",
     ready: true,
     /* Quatre secondes de VU-mètre puis quatre de spectre, sur une seule prise
@@ -128,7 +124,6 @@ export const TOYS: Toy[] = [
     slug: "justadice",
     name: "JUST A DICE",
     kind: "toy",
-    line: "Un dé, jeté d'une secousse",
     /* Son dépôt à lui depuis que l'APK existe. Il a longtemps pointé sur celui du
        portail, faute d'avoir autre chose derrière lui qu'une préview — et c'est ce
        qui le faisait figurer en queue de grille. */
@@ -146,9 +141,6 @@ export const TOYS: Toy[] = [
     slug: "glyphcast",
     name: "GLYPHCAST",
     kind: "tool",
-    /* « Outil de convertion d'une image… » avant — dont un `convertion` sans
-       s. La tranche dit déjà « Outil web », donc la phrase repart du verbe. */
-    line: "Convertit une image en rendu Glyph Matrix",
     /* Le dépôt du portail, et non un dépôt à lui : GlyphCast est un outil web,
        pas un toy embarqué, et son code vit dans celui-ci — c'est d'ailleurs ce
        dépôt-là qui s'appelait `glyphcast` avant de prendre tout le domaine. Les

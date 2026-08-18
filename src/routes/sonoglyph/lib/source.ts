@@ -20,13 +20,14 @@ export const FS = 48000;
 
 export type Timbre = "sine" | "voice" | "pink" | "traffic" | "music";
 
-export const TIMBRES: { v: Timbre; t: string; note: string }[] = [
-  { v: "voice", t: "Voix", note: "Bande 200 Hz – 4 kHz, modulation syllabique ~4 Hz" },
-  { v: "pink", t: "Ambiance", note: "Bruit rose large bande, quasi stationnaire" },
-  { v: "traffic", t: "Trafic", note: "Grave dominant, passages lents" },
-  { v: "music", t: "Musique", note: "Pulsation 2 Hz, grave marqué et aigus brefs" },
-  { v: "sine", t: "Sinus 1 kHz", note: "Référence : la pondération A y vaut 0 dB" },
-];
+/**
+ * Les cinq timbres, dans l'ordre du sélecteur.
+ *
+ * Leur nom et leur ligne de description sont dans `sonoglyph.timbres` des
+ * dictionnaires de langue, sous ces mêmes identifiants : c'est de l'affichage,
+ * et la synthèse n'en a que faire.
+ */
+export const TIMBRE_IDS: Timbre[] = ["voice", "pink", "traffic", "music", "sine"];
 
 type Shape = {
   /** Passe-haut et passe-bas de mise en forme, en Hz. */

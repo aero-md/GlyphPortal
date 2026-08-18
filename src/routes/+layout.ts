@@ -1,3 +1,6 @@
+import { browser } from "$app/environment";
+import { loadLocale } from "$lib/i18n";
+
 /**
  * Réglages valables pour les cinq pages.
  *
@@ -19,6 +22,24 @@
  */
 export const prerender = true;
 export const ssr = false;
+
+/**
+ * La langue, chargée **avant** le premier rendu.
+ *
+ * La langue est détectée à l'import de `$lib/i18n` ; ce `load` attend que son
+ * dictionnaire soit arrivé. Attendre ici et non dans un effet de la mise en
+ * page : un effet s'exécute après le premier rendu, et la page s'afficherait
+ * une image sans aucun texte. C'est le même raisonnement que le script de thème
+ * du `<head>`, à ceci près qu'un dictionnaire pèse trop pour tenir dans le HTML
+ * — il est donc attendu, et non anticipé.
+ *
+ * Le `browser` n'est pas décoratif : le pré-rendu exécute ce fichier dans Node,
+ * où `localStorage` et `document` n'existent pas. Rien n'y est rendu de toute
+ * façon, `ssr` étant faux.
+ */
+export const load = async () => {
+  if (browser) await loadLocale();
+};
 
 /**
  * Les URL gardent leur barre finale — `/glyphcast/` et non `/glyphcast`.

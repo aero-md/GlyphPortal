@@ -1,5 +1,10 @@
 <!doctype html>
-<html lang="fr" data-theme="light">
+<!-- `lang` est une valeur d'attente, pas une décision : le module de langue la
+     remplace par celle du visiteur au chargement du dictionnaire, avant le
+     premier rendu. L'anglais plutôt que le français parce que c'est la langue
+     de repli, donc celle que porte réellement la coquille pré-rendue — qui, `ssr`
+     étant faux, ne contient aucun texte. -->
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="%sveltekit.assets%/favicon.svg" />

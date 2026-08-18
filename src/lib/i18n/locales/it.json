@@ -1,0 +1,423 @@
+{
+  "common": {
+    "language": "Lingua",
+    "theme": {
+      "label": "Tema",
+      "light": "Chiaro",
+      "dark": "Scuro"
+    },
+    "home": "Home",
+    "spec": "Row-major {size}×{size}, valori 0-255, maschera circolare r = {radius} → {leds} LED.",
+    "photoAlt": "Retro di un {device}",
+    "kind": {
+      "toy": "Glyph toy",
+      "tool": "Strumento web"
+    },
+    "toyCard": {
+      "apk": "è un'app Android per {device}. Questa pagina ne riproduce il funzionamento nel browser — il toy vero e proprio si scarica come APK su GitHub.",
+      "plain": "è un'app Android per {device}. Questa pagina ne riproduce il funzionamento nel browser.",
+      "download": "Scarica"
+    },
+    "pane": {
+      "device": "Dispositivo",
+      "scale": "Scala dell'anteprima",
+      "phone": "Telefono",
+      "large": "Grande",
+      "led": "Resa dei LED",
+      "sharp": "Sharp",
+      "soft": "Soft"
+    },
+    "button": {
+      "longPress": "Pressione lunga",
+      "pressLabel": "Glyph Button — tieni premuto per simulare la pressione lunga",
+      "holdLabel": "Glyph Button — tieni premuto per confrontare con la resa senza regolazioni",
+      "tooShort": "Tieni premuto →",
+      "raw": "Resa grezza",
+      "hold": "Tieni premuto",
+      "holdAb": "Tieni premuto: prima / dopo"
+    },
+    "slider": {
+      "reset": "Torna al valore di riposo"
+    }
+  },
+  "home": {
+    "description": "Anteprime web dei Glyph Toys per Nothing Phone — la Glyph Matrix nel browser, a grandezza reale.",
+    "intro": "Indice di creazioni attorno alla Glyph Matrix, di",
+    "soon": "in arrivo",
+    "lines": {
+      "glyphslot": "Una slot machine pixellata",
+      "glyphlapse": "Una visualizzazione del tempo che passa",
+      "sonoglyph": "Il suono del microfono, misurato e rappresentato con una manciata di pixel",
+      "justadice": "Un dado, lanciato con una scossa",
+      "glyphcast": "Converte un'immagine in una resa Glyph Matrix"
+    }
+  },
+  "glyphcast": {
+    "description": "Converte un'immagine in una resa Glyph Matrix per Nothing Phone (3) e (4a) Pro.",
+    "sub": "Dai stile a un'immagine proiettandola sulla Glyph Matrix",
+    "notice": {
+      "notAnImage": "File ignorato — era attesa un'immagine",
+      "decodeFailed": "Decodifica impossibile",
+      "tooFlat": "Intervallo troppo piatto per essere esteso",
+      "gates": "Gate impostati su {lo} – {hi} %",
+      "copied": "IntArray copiato",
+      "copyRefused": "Copia rifiutata dal browser",
+      "settingsReloaded": "Regolazioni ricaricate — {device}",
+      "frameReloaded": "Frame e regolazioni ricaricati — rilascia l'immagine per riprenderli",
+      "badJson": "JSON illeggibile"
+    },
+    "empty": {
+      "imported": "Frame riletto dal file. Le regolazioni a destra sono quelle che l'hanno prodotto — rilascia l'immagine per riprenderle.",
+      "none": "Matrice spenta — rilascia un'immagine ovunque sulla pagina, incollane una (Ctrl+V) oppure passa da <b>[01] Sorgente</b>."
+    },
+    "source": {
+      "title": "Sorgente",
+      "none": "nessuna",
+      "pick": "Importa un'immagine",
+      "hint": "Trascina · Incolla · Sfoglia",
+      "json": "Importa un .json",
+      "note": "L'immagine è elaborata in locale, nel browser. Non viene inviato nulla da nessuna parte."
+    },
+    "crop": {
+      "title": "Inquadratura",
+      "zoom": "Zoom",
+      "offsetX": "Scostamento X",
+      "offsetY": "Scostamento Y",
+      "rotation": "Rotazione",
+      "reset": "Reinquadra"
+    },
+    "mixer": {
+      "title": "Mixer di canali",
+      "stat": "monocromatico",
+      "note": "La matrice non ha colore: questi pesi decidono la parte di ogni canale nella luminanza. È il filtro colorato della fotografia in bianco e nero — alzare il rosso schiarisce gli incarnati e scurisce un cielo azzurro.",
+      "red": "Rosso",
+      "green": "Verde",
+      "blue": "Blu",
+      "presets": {
+        "luma": "LUMA",
+        "equal": "UGUALE",
+        "red": "ROSSO",
+        "green": "VERDE",
+        "blue": "BLU",
+        "darkSky": "CIELO SCURO"
+      }
+    },
+    "tone": {
+      "title": "Tonalità",
+      "inverted": "invertito",
+      "direct": "diretto",
+      "exposure": "Esposizione",
+      "ev": " EV",
+      "black": "Gate — punto di nero",
+      "white": "Gate — punto di bianco",
+      "contrast": "Contrasto",
+      "gamma": "Gamma",
+      "sharpen": "Nitidezza",
+      "invert": "Inverti",
+      "auto": "Auto-gate"
+    },
+    "led": {
+      "title": "Uscita LED",
+      "stat": "{levels, plural, one {# livello} other {# livelli}}",
+      "levels": "Livelli di luminosità",
+      "ceiling": "Tetto di luminosità",
+      "dither": "Dithering",
+      "none": "Nessuno",
+      "amount": "Forza del dither",
+      "note": "A 2 livelli la resa diventa binaria e il dithering fa tutto il lavoro. Oltre i ~16 livelli la matrice restituisce veri grigi e il dither serve solo a rompere le bande nelle sfumature."
+    },
+    "exportCard": {
+      "title": "Esportazione",
+      "copy": "Copia IntArray",
+      "note1": "Il <b>.json</b> è un disegno nel formato del",
+      "noteLink": "Glyph Museum",
+      "note2": "— un frame, {leds} istruzioni di LED. Porta con sé anche le regolazioni di questa pagina, sotto una chiave che gli altri lettori ignorano: lo stesso file si apre là e si ricarica qui con tutti i suoi cursori."
+    }
+  },
+  "glyphlapse": {
+    "description": "Anteprima del Glyph Toy GlyphLapse: il tempo che passa, scomposto sulla Glyph Matrix del Nothing Phone (3).",
+    "sub": "Una visualizzazione del tempo che passa",
+    "action": "Lapse successivo",
+    "formats": [
+      "Denso",
+      "Compatto",
+      "Ciclo",
+      "Giorni"
+    ],
+    "secondsModes": [
+      "Anello",
+      "Clessidra"
+    ],
+    "units": {
+      "years": "{n, plural, one {# anno} other {# anni}}",
+      "months": "{n, plural, one {# mese} other {# mesi}}",
+      "days": "{n, plural, one {# giorno} other {# giorni}}",
+      "hours": "{n} h",
+      "minutes": "{n} min",
+      "seconds": "{n} s"
+    },
+    "dayShort": "{days} g",
+    "presets": {
+      "yearStart": "Inizio dell'anno",
+      "fiveDaysAgo": "5 giorni fa",
+      "christmas": "Natale",
+      "y2k": "Anno 2000",
+      "inTenSeconds": "Tra 10 s"
+    },
+    "onlyOne": "Un solo lapse attivo — il toy non ha su cosa passare",
+    "lapse": {
+      "title": "Lapse visualizzato",
+      "stat": "{enabled} / {total} attivi",
+      "seg": "Lapse",
+      "enabled": "Attivo — nella rotazione",
+      "disabled": "Disattivato",
+      "simulate": "Simula la pressione lunga",
+      "note1": "La pressione lunga sul Glyph Button passa al lapse attivo successivo. Il lapse <b>I</b> non si disattiva: un toy senza alcun lapse attivo non avrebbe nulla da mostrare.",
+      "note2": "La scheda selezionata <b>è</b> quella che il toy mostra: non c'è da una parte il lapse che si regola e dall'altra quello che gira. È il comportamento dell'app delle impostazioni, dove scegliere una scheda cambia il toy."
+    },
+    "deadline": {
+      "title": "Scadenza",
+      "since": "da",
+      "until": "fino al",
+      "ref": "Istante di riferimento",
+      "note": "Una scadenza futura mette il toy in conto alla rovescia. Al superamento, riproduce un arrivo di quattro secondi — <b>Tra 10 s</b> è lì per vederlo senza aspettare."
+    },
+    "format": {
+      "title": "Formato",
+      "seg": "Impaginazione",
+      "note1": "<b>Denso</b> scrive tutta la granularità, due unità per riga quando serve. <b>Compatto</b> tiene solo le due unità di testa, in 5×7. <b>Ciclo</b> le fa scorrere una a una. <b>Giorni</b> dice solo il totale.",
+      "note2": "Le unità di testa a zero vengono tagliate: «0A 0M 3G» sprecherebbe due righe di disco per dire che non è successo nulla."
+    },
+    "seconds": {
+      "title": "Secondi",
+      "seg": "Resa del minuto",
+      "note1": "<b>Anello</b> riempie il bordo a partire da mezzogiorno — orario quando il tempo si accumula, antiorario quando si consuma. <b>Clessidra</b> alza o abbassa un livello di sabbia la cui superficie è un cono: punta al centro in «da», imbuto in «fino a».",
+      "note2": "L'altezza della sabbia è trovata per bisezione e non calcolata: l'area di un disco sopra una linea non ha un'espressione semplice, e quattordici iterazioni bastano a ritrovare la quantità giusta alla cella."
+    },
+    "readout": {
+      "title": "Lettura",
+      "ref": "Riferimento",
+      "direction": "Direzione",
+      "since": "Da",
+      "until": "Fino al",
+      "breakdown": "Scomposizione",
+      "totalDays": "Totale in giorni",
+      "note": "La scomposizione segue il calendario, non una divisione: due mesi fanno 59, 60 o 62 giorni a seconda di quali. È lo stesso conteggio di <code>Period.between</code> lato toy."
+    }
+  },
+  "glyphslot": {
+    "description": "Anteprima del Glyph Toy GlyphSlot: una slot machine sulla Glyph Matrix del Nothing Phone (3).",
+    "sub": "Una slot machine pixellata",
+    "symbols": [
+      "Sette",
+      "Ciliegia",
+      "Bar",
+      "Diamante",
+      "Campana"
+    ],
+    "status": {
+      "idle": "Pressione lunga sul Glyph Button per giocare",
+      "spinning": "Avvio — i rulli girano…",
+      "reel": "Rullo {n} fermo…",
+      "jackpot": "JACKPOT 777",
+      "win": "Tre simboli uguali",
+      "lose": "Nessuna combinazione. Rigioca!"
+    },
+    "result": {
+      "lose": "Perso",
+      "win": "Vinto",
+      "jackpot": "Jackpot"
+    },
+    "stillSpinning": "La macchina sta ancora girando",
+    "spinCard": {
+      "title": "Gioca",
+      "running": "in corso",
+      "idle": "a riposo",
+      "busy": "In corso…",
+      "spin": "Gioca",
+      "forceWin": "Forza una vincita",
+      "forceJackpot": "Forza il 777",
+      "note1": "I due pulsanti di forzatura non esistono nel toy: sono qui per vedere gli effetti senza aspettare. Un jackpot cade al <b>5 %</b>, una vincita semplice al <b>15 %</b> — verificare che un'animazione di sette secondi funzioni tirandola a sorte non è un modo di lavorare.",
+      "note2": "Sul dispositivo l'unico comando è la pressione lunga sul Glyph Button. Tenere premuto quello della foto per 450 ms fa la stessa cosa."
+    },
+    "roll": {
+      "title": "Ultima giocata",
+      "symbols": "Simboli",
+      "result": "Risultato",
+      "note": "La payline è la finestra centrale di sette righe. I simboli vicini restano accesi a un quinto dell'intensità: è questo che fa leggere una finestra su una banda che gira, e non tre caselle indipendenti."
+    },
+    "reels": {
+      "title": "Rulli",
+      "stat": "3 × 7 colonne",
+      "note1": "Un rullo non è un simbolo estratto all'arrivo: è una banda continua di cinque simboli che gira, e fermarsi vuol dire scegliere <b>dove</b> frenare. Si vedono quindi passare i vicini del simbolo vincente prima che si posi.",
+      "note2": "L'ordine dei simboli cambia da un rullo all'altro — il rullo <i>i</i> avanza di <i>i</i>+1 modulo 5. I vicini di un simbolo allineato non sono gli stessi sui tre, e un allineamento non si legge in anticipo guardando ciò che passa sopra.",
+      "note3": "All'avvio il rullo indietreggia prima lentamente — una molla che si carica — poi scatta. Senza questo rinculo la partenza è uno scorrimento uniforme che non dice che si è appena tirato qualcosa.",
+      "note4": "La distanza di frenata è estratta da un intervallo invece che calcolata al minimo: frenare sulla distanza minima fermerebbe il rullo quasi subito quando il bersaglio è già vicino, e si vedrebbe la macchina mirare."
+    },
+    "fx": {
+      "title": "Effetti",
+      "stat": "5 fasi",
+      "note1": "Una vincita semplice fa pulsare l'anello del bordo. Il jackpot prende lo schermo per sette secondi e mezzo: triplo stroboscopio, onde d'urto concentriche, una banda <b>JACKPOT</b> che scorre, fuochi d'artificio con gravità, poi un 7 che zooma.",
+      "note2": "La scossa sposta il frame di una <b>cella intera</b>. L'anteprima originale scuoteva il canvas: una Glyph Matrix ha i LED saldati, non può muoversi di mezzo pixel — e un canvas trasformato uscirebbe dalla griglia di pixel fisici su cui poggia tutto l'allineamento dell'anteprima."
+    }
+  },
+  "justadice": {
+    "description": "Anteprima del Glyph Toy Just a dice: un dado lanciato con una scossa sulla Glyph Matrix di un Nothing Phone.",
+    "sub": "Un dado, e nient'altro",
+    "action": "Dado successivo",
+    "dieSeg": "Dado",
+    "solids": {
+      "d6": "cubo",
+      "d10": "trapezoedro",
+      "d12": "dodecaedro",
+      "d20": "icosaedro"
+    },
+    "reject": {
+      "tooEarly": "Il dado è appena partito",
+      "tooLate": "Il dado si sta posando — lascialo posare",
+      "reading": "Si sta leggendo la faccia",
+      "inAir": "Il dado è in aria"
+    },
+    "status": {
+      "rest": "Il dado è fermo — scuoti per lanciare",
+      "toss": "Il dado lascia la mano",
+      "tumble": "Sta ruzzolando — una scossa lo rilancia",
+      "slowing": "Sta rallentando",
+      "settling": "Si sta posando",
+      "closeup": "Primo piano sulla faccia"
+    },
+    "throwCard": {
+      "title": "Lanciare",
+      "listening": "in ascolto",
+      "locked": "bloccato",
+      "shake": "Scuoti",
+      "next": "Dado successivo",
+      "force": "Forza una faccia",
+      "forceNote": "Questi pulsanti non esistono nel toy: sono qui per vedere una faccia precisa senza aspettarla. Il valore è comunque <b>estratto alla partenza</b> — l'animazione non lo scopre, ci porta.",
+      "deviceNote": "Sul dispositivo: <b>scuotere il telefono</b> lancia il dado, una <b>pressione lunga sul Glyph Button</b> cambia solido — è quello che rifanno i primi due pulsanti qui sopra.",
+      "face": "Faccia",
+      "landed": "Lanci posati",
+      "tally": "Un conteggio per dado.",
+      "expected": "A {throws, plural, one {# lancio} other {# lanci}}, ogni faccia ne attende {each} — la linea tratteggiata."
+    },
+    "timing": {
+      "title": "Tempistica",
+      "note1": "La banda rossa è la finestra in cui una scossa <b>rilancia il dado</b> — prima è la fine del gesto precedente; dopo, il dado sceglie la sua faccia.",
+      "impulse": "Impulso",
+      "tumble": "Ruzzolata",
+      "settle": "Assestamento",
+      "closeup": "Primo piano",
+      "note2": "Sei rimbalzi, poi la camera si avvicina per rivelare la faccia superiore."
+    },
+    "render": {
+      "title": "La resa",
+      "pips": "pip 3 × 3",
+      "digit": "cifra",
+      "note1": "Su venticinque LED di lato, un dado visto di tre quarti non si legge: la posa di riposo è il primo piano dall'alto, i tre quarti esistono solo in volo.",
+      "note2": "Un pip occupa 3 × 3 celle, un numero è un glifo dilatato, e il segno si stampa solo <b>al primo piano</b> — in volo sarebbe tagliato da uno spigolo e cambierebbe a ogni rimbalzo."
+    }
+  },
+  "sonoglyph": {
+    "description": "Anteprima dei due Glyph Toys di Sonoglyph: visualizzatore di spettro e VU-meter ad ago, sulla Glyph Matrix del Nothing Phone (3).",
+    "sub": "Due Glyph Toys che leggono il livello sonoro",
+    "toySeg": "Toy",
+    "toys": {
+      "needle": "Ago",
+      "spectrum": "Spettro"
+    },
+    "styles": {
+      "mirror": "Specchio",
+      "bars": "Colonne"
+    },
+    "timbres": {
+      "voice": {
+        "name": "Voce",
+        "note": "Banda 200 Hz – 4 kHz, modulazione sillabica ~4 Hz"
+      },
+      "pink": {
+        "name": "Ambiente",
+        "note": "Rumore rosa a banda larga, quasi stazionario"
+      },
+      "traffic": {
+        "name": "Traffico",
+        "note": "Bassi dominanti, passaggi lenti"
+      },
+      "music": {
+        "name": "Musica",
+        "note": "Pulsazione 2 Hz, bassi marcati e acuti brevi"
+      },
+      "sine": {
+        "name": "Sinusoide 1 kHz",
+        "note": "Riferimento: la ponderazione A vale 0 dB"
+      }
+    },
+    "action": {
+      "style": "Stile successivo",
+      "reset": "Reset picco"
+    },
+    "notice": {
+      "micOpen": "Microfono aperto — elaborazioni del browser disattivate",
+      "micRefused": "Microfono rifiutato: {reason}",
+      "style": "Stile: {name}",
+      "engineReset": "Picco, massimo e Leq azzerati",
+      "reset": "Azzerato"
+    },
+    "status": {
+      "ok": "misura",
+      "muted": "flusso muto",
+      "noSource": "nessuna sorgente"
+    },
+    "toyCard": {
+      "archived": "archiviato",
+      "note1": "Il progetto è stato abbandonato e archiviato per vincoli tecnici, ma il codice resta consultabile",
+      "noteLink": "su GitHub"
+    },
+    "shown": {
+      "title": "Toy visualizzato",
+      "styleSeg": "Stile",
+      "spectrum1": "Una banda per colonna, da 40 Hz a 16 kHz a passi di terzo d'ottava, già ponderata A — altrimenti i bassi schiacciano le ventidue colonne superiori. Resa in <b>tutto o niente</b>: un LED è acceso o spento, nessuna sfumatura.",
+      "spectrum2": "L'altezza porta da sola il livello. L'asse mediano resta acceso in permanenza, è la linea di base — e a basso livello l'unica cosa visibile.",
+      "needle": "Il quadrante è il contorno del disco su ± 90°, quindi tutta la metà superiore; il perno è al centro esatto. Tacche principali: {ticks} dB(A). Un solo ago, sul livello Fast. La cifra sotto è in 5×7, arrotondata all'intero."
+    },
+    "source": {
+      "title": "Sorgente",
+      "mic": "microfono",
+      "sim": "simulazione",
+      "seg": "Campioni",
+      "simulation": "Simulazione",
+      "micLabel": "Microfono",
+      "note": "Né l'una né l'altra calcola un livello: producono campioni, ed è la catena del toy — ponderazione A, rivelatore Fast, banco di bande — a ricavarne un dB. Il microfono passa da un AudioWorklet, con AGC, riduzione del rumore e cancellazione d'eco disattivate. Nulla esce dal browser."
+    },
+    "sim": {
+      "title": "Segnale simulato",
+      "target": "Livello mirato",
+      "timbreSeg": "Timbro",
+      "dynamics": "Dinamica",
+      "overdrive": "Sovraccarico",
+      "quiet": "Stanza silenziosa",
+      "conversation": "Conversazione",
+      "street": "Strada",
+      "concert": "Concerto",
+      "note": "La consegna è in dB(A) e non in dBFS: il guadagno compensa ciò che la ponderazione toglierà al timbro scelto, misurato al cambio di timbro. Senza questa compensazione il cursore mentirebbe di 9 dB tra la sinusoide e il traffico."
+    },
+    "calibration": {
+      "title": "Calibrazione",
+      "stat": "K = {k} dB",
+      "slider": "dBFS → dB SPL",
+      "note": "<b>Questa cifra non è misurata.</b> 120 dB è l'ordine di grandezza di un MEMS da telefono, il cui fondo scala cade da quelle parti. Finché l'esemplare non è caratterizzato, il livello mostrato è giusto a ±5 dB — i toy sono indicatori, non fonometri. Il cursore è qui per vedere cosa sposta la calibrazione; sul dispositivo è una costante."
+    },
+    "meter": {
+      "title": "Misura",
+      "fast": "Fast (LAF)",
+      "slow": "Slow (LAS)",
+      "leq": "Equivalente (LAeq)",
+      "max": "Massimo",
+      "peak": "Picco mostrato",
+      "integration": "Integrazione",
+      "overload": "Sovraccarico",
+      "yes": "sì",
+      "no": "no",
+      "reset": "Reset"
+    }
+  }
+}

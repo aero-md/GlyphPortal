@@ -1,0 +1,423 @@
+{
+  "common": {
+    "language": "Language",
+    "theme": {
+      "label": "Theme",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "home": "Home",
+    "spec": "Row-major {size}×{size}, values 0-255, circular mask r = {radius} → {leds} LEDs.",
+    "photoAlt": "Back of a {device}",
+    "kind": {
+      "toy": "Glyph toy",
+      "tool": "Web tool"
+    },
+    "toyCard": {
+      "apk": "is an Android app for {device}. This page reproduces how it works in the browser — the toy itself downloads as an APK on GitHub.",
+      "plain": "is an Android app for {device}. This page reproduces how it works in the browser.",
+      "download": "Download"
+    },
+    "pane": {
+      "device": "Device",
+      "scale": "Preview scale",
+      "phone": "Phone",
+      "large": "Large",
+      "led": "LED rendering",
+      "sharp": "Sharp",
+      "soft": "Soft"
+    },
+    "button": {
+      "longPress": "Long press",
+      "pressLabel": "Glyph Button — hold to simulate the long press",
+      "holdLabel": "Glyph Button — hold to compare with the unprocessed render",
+      "tooShort": "Hold →",
+      "raw": "Raw render",
+      "hold": "Hold",
+      "holdAb": "Hold: before / after"
+    },
+    "slider": {
+      "reset": "Back to rest"
+    }
+  },
+  "home": {
+    "description": "Web previews of the Glyph Toys for Nothing Phone — the Glyph Matrix in the browser, at its real scale.",
+    "intro": "Index of work around the Glyph Matrix, by",
+    "soon": "coming",
+    "lines": {
+      "glyphslot": "A pixelated slot machine",
+      "glyphlapse": "A visualisation of time passing",
+      "sonoglyph": "The sound of the mic, measured and drawn with a handful of pixels",
+      "justadice": "A die, thrown with a shake",
+      "glyphcast": "Turns an image into a Glyph Matrix render"
+    }
+  },
+  "glyphcast": {
+    "description": "Turns an image into a Glyph Matrix render for Nothing Phone (3) and (4a) Pro.",
+    "sub": "Style an image by projecting it onto the Glyph Matrix",
+    "notice": {
+      "notAnImage": "File ignored — an image was expected",
+      "decodeFailed": "Cannot decode",
+      "tooFlat": "Range too flat to stretch",
+      "gates": "Gates set at {lo} – {hi} %",
+      "copied": "IntArray copied",
+      "copyRefused": "Copy refused by the browser",
+      "settingsReloaded": "Settings reloaded — {device}",
+      "frameReloaded": "Frame and settings reloaded — drop the image to carry them on",
+      "badJson": "Unreadable JSON"
+    },
+    "empty": {
+      "imported": "Frame read back from the file. The settings on the right are the ones that produced it — drop the image to carry them on.",
+      "none": "Matrix off — drop an image anywhere on the page, paste one (Ctrl+V) or use <b>[01] Source</b>."
+    },
+    "source": {
+      "title": "Source",
+      "none": "none",
+      "pick": "Import an image",
+      "hint": "Drag & drop · Paste · Browse",
+      "json": "Import a .json",
+      "note": "The image is processed locally, in the browser. Nothing is sent anywhere."
+    },
+    "crop": {
+      "title": "Framing",
+      "zoom": "Zoom",
+      "offsetX": "Offset X",
+      "offsetY": "Offset Y",
+      "rotation": "Rotation",
+      "reset": "Reframe"
+    },
+    "mixer": {
+      "title": "Channel mixer",
+      "stat": "monochrome",
+      "note": "The matrix has no colour: these weights decide how much of each channel goes into the luminance. It is the coloured filter of black and white photography — raising the red lightens skin and darkens a blue sky.",
+      "red": "Red",
+      "green": "Green",
+      "blue": "Blue",
+      "presets": {
+        "luma": "LUMA",
+        "equal": "EQUAL",
+        "red": "RED",
+        "green": "GREEN",
+        "blue": "BLUE",
+        "darkSky": "DARK SKY"
+      }
+    },
+    "tone": {
+      "title": "Tone",
+      "inverted": "inverted",
+      "direct": "direct",
+      "exposure": "Exposure",
+      "ev": " EV",
+      "black": "Gate — black point",
+      "white": "Gate — white point",
+      "contrast": "Contrast",
+      "gamma": "Gamma",
+      "sharpen": "Sharpening",
+      "invert": "Invert",
+      "auto": "Auto-gates"
+    },
+    "led": {
+      "title": "LED output",
+      "stat": "{levels, plural, one {# step} other {# steps}}",
+      "levels": "Brightness steps",
+      "ceiling": "Brightness ceiling",
+      "dither": "Dithering",
+      "none": "None",
+      "amount": "Dither strength",
+      "note": "At 2 steps the render goes binary and the dithering does all the work. Past ~16 steps the matrix renders real greys and the dither only serves to break up banding in gradients."
+    },
+    "exportCard": {
+      "title": "Export",
+      "copy": "Copy IntArray",
+      "note1": "The <b>.json</b> is a drawing in the",
+      "noteLink": "Glyph Museum",
+      "note2": "format — one frame, {leds} LED instructions. It also carries this page's settings, under a key other readers ignore: the same file opens over there and reloads here with all its sliders."
+    }
+  },
+  "glyphlapse": {
+    "description": "Preview of the GlyphLapse Glyph Toy: time passing, broken down on the Glyph Matrix of the Nothing Phone (3).",
+    "sub": "A visualisation of time passing",
+    "action": "Next lapse",
+    "formats": [
+      "Dense",
+      "Compact",
+      "Cycle",
+      "Days"
+    ],
+    "secondsModes": [
+      "Ring",
+      "Hourglass"
+    ],
+    "units": {
+      "years": "{n, plural, one {# year} other {# years}}",
+      "months": "{n, plural, one {# month} other {# months}}",
+      "days": "{n, plural, one {# day} other {# days}}",
+      "hours": "{n} h",
+      "minutes": "{n} min",
+      "seconds": "{n} s"
+    },
+    "dayShort": "{days} d",
+    "presets": {
+      "yearStart": "Start of year",
+      "fiveDaysAgo": "5 days ago",
+      "christmas": "Christmas",
+      "y2k": "Year 2000",
+      "inTenSeconds": "In 10 s"
+    },
+    "onlyOne": "Only one lapse enabled — the toy has nowhere to switch to",
+    "lapse": {
+      "title": "Displayed lapse",
+      "stat": "{enabled} / {total} enabled",
+      "seg": "Lapse",
+      "enabled": "Enabled — in the rotation",
+      "disabled": "Disabled",
+      "simulate": "Simulate the long press",
+      "note1": "A long press on the Glyph Button moves to the next enabled lapse. Lapse <b>I</b> cannot be disabled: a toy with no active lapse would have nothing to show.",
+      "note2": "The selected tab <b>is</b> the one the toy displays: there is no lapse you configure on one side and another that runs on the other. That is how the settings app behaves — picking a tab switches the toy."
+    },
+    "deadline": {
+      "title": "Deadline",
+      "since": "since",
+      "until": "until",
+      "ref": "Reference instant",
+      "note": "A deadline still ahead flips the toy into a countdown. On crossing it, it plays a four-second arrival — <b>In 10 s</b> is there to see it without waiting."
+    },
+    "format": {
+      "title": "Format",
+      "seg": "Layout",
+      "note1": "<b>Dense</b> writes the whole granularity, two units per line when it has to. <b>Compact</b> keeps only the two leading units, in 5×7. <b>Cycle</b> scrolls them one by one. <b>Days</b> gives the total alone.",
+      "note2": "Leading units at zero are dropped: “0Y 0M 3D” would waste two lines of the disc saying that nothing has happened."
+    },
+    "seconds": {
+      "title": "Seconds",
+      "seg": "Minute rendering",
+      "note1": "<b>Ring</b> fills the rim from twelve o'clock — clockwise when time accumulates, anticlockwise when it runs out. <b>Hourglass</b> raises or lowers a level of sand whose surface is a cone: tip at the centre in “since”, funnel in “until”.",
+      "note2": "The height of the sand is found by bisection rather than computed: the area of a disc above a line has no simple expression, and fourteen iterations are enough to land on the right amount to within a cell."
+    },
+    "readout": {
+      "title": "Readout",
+      "ref": "Reference",
+      "direction": "Direction",
+      "since": "Since",
+      "until": "Until",
+      "breakdown": "Breakdown",
+      "totalDays": "Total in days",
+      "note": "The breakdown follows the calendar, not a division: two months are 59, 60 or 62 days depending on which. It is the same count as <code>Period.between</code> on the toy side."
+    }
+  },
+  "glyphslot": {
+    "description": "Preview of the GlyphSlot Glyph Toy: a slot machine on the Glyph Matrix of the Nothing Phone (3).",
+    "sub": "A pixelated slot machine",
+    "symbols": [
+      "Seven",
+      "Cherry",
+      "Bar",
+      "Diamond",
+      "Bell"
+    ],
+    "status": {
+      "idle": "Long-press the Glyph Button to spin",
+      "spinning": "Spinning — the reels are running…",
+      "reel": "Reel {n} stopped…",
+      "jackpot": "JACKPOT 777",
+      "win": "Three matching symbols",
+      "lose": "No combination. Spin again!"
+    },
+    "result": {
+      "lose": "Lost",
+      "win": "Won",
+      "jackpot": "Jackpot"
+    },
+    "stillSpinning": "The machine is still spinning",
+    "spinCard": {
+      "title": "Spin",
+      "running": "running",
+      "idle": "at rest",
+      "busy": "Running…",
+      "spin": "Spin",
+      "forceWin": "Force a win",
+      "forceJackpot": "Force the 777",
+      "note1": "The two forcing buttons do not exist on the toy: they are here to see the effects without waiting. A jackpot lands at <b>5 %</b>, a plain win at <b>15 %</b> — checking that a seven-second animation reads well by rolling for it is no way to work.",
+      "note2": "On the device the only control is a long press on the Glyph Button. Holding the one in the photo for 450 ms does the same thing."
+    },
+    "roll": {
+      "title": "Last spin",
+      "symbols": "Symbols",
+      "result": "Result",
+      "note": "The payline is the central seven-row window. Neighbouring symbols stay lit at a fifth of the intensity: that is what makes it read as a window onto a spinning band rather than three independent cells."
+    },
+    "reels": {
+      "title": "Reels",
+      "stat": "3 × 7 columns",
+      "note1": "A reel is not a symbol drawn at the finish: it is a continuous band of five symbols that spins, and stopping it means choosing <b>where</b> to brake. So the neighbours of the winning symbol go past before it settles.",
+      "note2": "The order of the symbols differs from one reel to the next — reel <i>i</i> advances by <i>i</i>+1 modulo 5. The neighbours of an aligned symbol are not the same on all three, and an alignment cannot be read in advance from what goes past above it.",
+      "note3": "On the spin, the reel first backs up slowly — a spring being wound — then releases. Without that recoil the start is a uniform glide that does not say anything was pulled.",
+      "note4": "The braking distance is drawn from a range rather than computed to the shortest: braking over the minimum distance would stop the reel almost immediately whenever the target is already close, and the machine would be seen aiming."
+    },
+    "fx": {
+      "title": "Effects",
+      "stat": "5 phases",
+      "note1": "A plain win pulses the rim ring. The jackpot takes the screen for seven and a half seconds: triple strobe, concentric shock waves, a scrolling <b>JACKPOT</b> banner, fireworks with gravity, then a zooming 7.",
+      "note2": "The shake offsets the frame by a <b>whole cell</b>. The original preview shook the canvas: a Glyph Matrix has its LEDs soldered on, it cannot move by half a pixel — and a transformed canvas would leave the grid of physical pixels the whole preview alignment rests on."
+    }
+  },
+  "justadice": {
+    "description": "Preview of the Just a dice Glyph Toy: a die thrown with a shake on the Glyph Matrix of a Nothing Phone.",
+    "sub": "A die, and nothing else",
+    "action": "Next die",
+    "dieSeg": "Die",
+    "solids": {
+      "d6": "cube",
+      "d10": "trapezohedron",
+      "d12": "dodecahedron",
+      "d20": "icosahedron"
+    },
+    "reject": {
+      "tooEarly": "The die has only just left",
+      "tooLate": "The die is landing — let it settle",
+      "reading": "Reading the face",
+      "inAir": "The die is in the air"
+    },
+    "status": {
+      "rest": "The die is at rest — shake to throw",
+      "toss": "The die leaves the hand",
+      "tumble": "It tumbles — a shake throws it again",
+      "slowing": "It slows down",
+      "settling": "It settles",
+      "closeup": "Close-up on the face"
+    },
+    "throwCard": {
+      "title": "Throw",
+      "listening": "listening",
+      "locked": "locked",
+      "shake": "Shake",
+      "next": "Next die",
+      "force": "Force a face",
+      "forceNote": "These buttons do not exist on the toy: they are here to see a given face without waiting for it. The value is <b>drawn at the start</b> anyway — the animation does not discover it, it leads to it.",
+      "deviceNote": "On the device: <b>shaking the phone</b> throws the die, a <b>long press on the Glyph Button</b> changes solid — which is what the first two buttons above do.",
+      "face": "Face",
+      "landed": "Landed throws",
+      "tally": "One tally per die.",
+      "expected": "At {throws, plural, one {# throw} other {# throws}}, each face expects {each} — the dotted line."
+    },
+    "timing": {
+      "title": "Timing",
+      "note1": "The red band is the window where a shake <b>throws the die again</b> — before it, the previous gesture is still ending; after it, the die is choosing its face.",
+      "impulse": "Impulse",
+      "tumble": "Tumble",
+      "settle": "Settling",
+      "closeup": "Close-up",
+      "note2": "Six bounces, then the camera moves in to reveal the top face."
+    },
+    "render": {
+      "title": "The render",
+      "pips": "3 × 3 pips",
+      "digit": "digit",
+      "note1": "On twenty-five LEDs a side, a die seen three-quarters on does not read: the resting pose is the close-up from directly above, and three-quarter views only exist in flight.",
+      "note2": "A pip is 3 × 3 cells, a number is a stretched glyph, and the mark is only printed <b>at the close-up</b> — in flight it would be cut by an edge and change on every bounce."
+    }
+  },
+  "sonoglyph": {
+    "description": "Preview of the two Sonoglyph Glyph Toys: spectrum visualiser and needle VU meter, on the Glyph Matrix of the Nothing Phone (3).",
+    "sub": "Two Glyph Toys that read the sound level",
+    "toySeg": "Toy",
+    "toys": {
+      "needle": "Needle",
+      "spectrum": "Spectrum"
+    },
+    "styles": {
+      "mirror": "Mirror",
+      "bars": "Bars"
+    },
+    "timbres": {
+      "voice": {
+        "name": "Voice",
+        "note": "200 Hz – 4 kHz band, ~4 Hz syllabic modulation"
+      },
+      "pink": {
+        "name": "Ambience",
+        "note": "Broadband pink noise, near stationary"
+      },
+      "traffic": {
+        "name": "Traffic",
+        "note": "Bass dominant, slow pass-bys"
+      },
+      "music": {
+        "name": "Music",
+        "note": "2 Hz pulse, marked bass and short highs"
+      },
+      "sine": {
+        "name": "1 kHz sine",
+        "note": "Reference: A-weighting is 0 dB there"
+      }
+    },
+    "action": {
+      "style": "Next style",
+      "reset": "Reset peak"
+    },
+    "notice": {
+      "micOpen": "Mic open — browser processing disabled",
+      "micRefused": "Mic refused: {reason}",
+      "style": "Style: {name}",
+      "engineReset": "Peak, maximum and Leq reset",
+      "reset": "Reset"
+    },
+    "status": {
+      "ok": "measuring",
+      "muted": "silent stream",
+      "noSource": "no source"
+    },
+    "toyCard": {
+      "archived": "archived",
+      "note1": "The project was abandoned and archived for technical reasons, but the code is still readable",
+      "noteLink": "on GitHub"
+    },
+    "shown": {
+      "title": "Displayed toy",
+      "styleSeg": "Style",
+      "spectrum1": "One band per column, 40 Hz to 16 kHz in third-octave steps, already A-weighted — without which the bass crushes the twenty-two columns above it. Rendered <b>all or nothing</b>: a LED is on or off, no shades.",
+      "spectrum2": "Height alone carries the level. The centre axis stays lit at all times, it is the baseline — and at low level the only visible thing.",
+      "needle": "The dial is the outline of the disc over ± 90°, so the whole upper half; the pivot is at the exact centre. Major graduations: {ticks} dB(A). A single needle, on the Fast level. The number below is 5×7, rounded to the integer."
+    },
+    "source": {
+      "title": "Source",
+      "mic": "mic",
+      "sim": "simulation",
+      "seg": "Samples",
+      "simulation": "Simulation",
+      "micLabel": "Mic",
+      "note": "Neither computes a level: they produce samples, and it is the toy's chain — A-weighting, Fast detector, band bank — that turns them into a dB. The mic goes through an AudioWorklet, with AGC, noise reduction and echo cancellation switched off. Nothing leaves the browser."
+    },
+    "sim": {
+      "title": "Simulated signal",
+      "target": "Target level",
+      "timbreSeg": "Timbre",
+      "dynamics": "Dynamics",
+      "overdrive": "Overdrive",
+      "quiet": "Quiet room",
+      "conversation": "Conversation",
+      "street": "Street",
+      "concert": "Concert",
+      "note": "The setting is in dB(A) and not dBFS: the gain makes up for what the weighting will take off the chosen timbre, measured when the timbre changes. Without that compensation the slider would lie by 9 dB between the sine and the traffic."
+    },
+    "calibration": {
+      "title": "Calibration",
+      "stat": "K = {k} dB",
+      "slider": "dBFS → dB SPL",
+      "note": "<b>This figure is not measured.</b> 120 dB is the order of magnitude of a phone MEMS, whose full scale falls around there. Until the unit is characterised, the displayed level is only right to within ±5 dB — the toys are indicators, not sound level meters. The slider is here to see what calibration moves; on the device it is a constant."
+    },
+    "meter": {
+      "title": "Measurement",
+      "fast": "Fast (LAF)",
+      "slow": "Slow (LAS)",
+      "leq": "Equivalent (LAeq)",
+      "max": "Maximum",
+      "peak": "Displayed peak",
+      "integration": "Integration",
+      "overload": "Overload",
+      "yes": "yes",
+      "no": "no",
+      "reset": "Reset"
+    }
+  }
+}

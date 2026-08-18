@@ -257,6 +257,39 @@ a:focus-visible {
   color: var(--dim);
 }
 
+/* Les mises en relief à l'intérieur d'une note : le mot qui porte la phrase
+   passe en pleine encre, sur une prose qui est en gris.
+   `<i>` perd son italique — la fonte est une chasse fixe, l'italique y est une
+   oblique de synthèse assez laide, et c'est la couleur qui fait la distinction
+   partout ailleurs sur cette page.
+
+   Ces quatre règles vivaient en copies dans quatre pages, dans du CSS scopé
+   par Svelte. Ça ne tient plus : les textes de carte viennent des dictionnaires
+   de langue et sont rendus par `{@html}`, donc leur balisage ne passe pas par le
+   compilateur et ne reçoit aucune classe de portée. Une règle globale, elle,
+   atteint aussi bien le balisage écrit dans le composant que celui qui vient du
+   dictionnaire. */
+.note b {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.note i {
+  font-style: normal;
+  color: var(--ink);
+}
+
+.note code {
+  color: var(--ink);
+  font-size: 10px;
+}
+
+/* En pleine encre pour se détacher de la prose grise qui le porte, sinon rien
+   ne dit qu'il se clique. */
+.note a {
+  color: var(--ink);
+}
+
 /* `.code` vivait ici : le cadre défilant qui montrait l'IntArray sous la carte
    d'export de GlyphCast. Il n'avait qu'un seul emploi dans tout le domaine, et
    cet emploi a disparu — on copie ces 625 nombres, on ne les lit pas. Retiré

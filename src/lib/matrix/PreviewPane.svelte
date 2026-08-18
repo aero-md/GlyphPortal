@@ -15,7 +15,9 @@
      les échappées `:global` qu'elle réclame. Elles ne sortent pas du composant,
      là où chaque app en gardait sa copie. */
   import type { Snippet } from "svelte";
+  import { _ } from "svelte-i18n";
   import Seg from "../ui/Seg.svelte";
+
   import { DEVICES, deviceById, type Device } from "./devices";
   import type { Frame } from "./frame";
   import type { LedStyle } from "./render";
@@ -81,26 +83,26 @@
          un choix entre une option n'est pas un choix. -->
     {#if devices.length > 1}
       <Seg
-        label="Appareil"
+        label={$_("common.pane.device")}
         value={device.id}
         options={devices.map((d) => ({ v: d.id, t: d.ref }))}
         onchange={(id) => (device = deviceById(id))}
       />
     {/if}
     <Seg
-      label="Échelle de préview"
+      label={$_("common.pane.scale")}
       bind:value={mode}
       options={[
-        { v: "phone" as PreviewMode, t: "Téléphone" },
-        { v: "large" as PreviewMode, t: "Grand" },
+        { v: "phone" as PreviewMode, t: $_("common.pane.phone") },
+        { v: "large" as PreviewMode, t: $_("common.pane.large") },
       ]}
     />
     <Seg
-      label="Rendu des LED"
+      label={$_("common.pane.led")}
       bind:value={style}
       options={[
-        { v: "sharp" as LedStyle, t: "Sharp" },
-        { v: "soft" as LedStyle, t: "Soft" },
+        { v: "sharp" as LedStyle, t: $_("common.pane.sharp") },
+        { v: "soft" as LedStyle, t: $_("common.pane.soft") },
       ]}
     />
   </div>

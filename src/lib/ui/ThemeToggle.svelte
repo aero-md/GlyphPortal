@@ -2,6 +2,7 @@
   /* Format « LABEL : VALEUR ». L'icône est un disque mi-rempli qui pivote de
      180° — jamais un soleil/lune. Le thème initial a déjà été posé par le
      script inline du <head> ; on se contente de relire l'attribut. */
+  import { _ } from "svelte-i18n";
   import { readTheme, toggleTheme } from "./theme";
 
   let theme = $state(readTheme());
@@ -12,9 +13,9 @@
 </script>
 
 <button type="button" onclick={toggle}>
-  <span class="k">Thème</span>
+  <span class="k">{$_("common.theme.label")}</span>
   <span class="sep">:</span>
-  <span class="v">{theme === "dark" ? "Sombre" : "Clair"}</span>
+  <span class="v">{theme === "dark" ? $_("common.theme.dark") : $_("common.theme.light")}</span>
   <span class="icon" class:is-dark={theme === "dark"} aria-hidden="true"></span>
 </button>
 

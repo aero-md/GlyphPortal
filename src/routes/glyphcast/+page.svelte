@@ -6,6 +6,7 @@
     type Frame,
     type LedStyle,
   } from "$lib";
+  import { _, number } from "svelte-i18n";
   import Card from "$lib/ui/Card.svelte";
   import PreviewPane from "$lib/matrix/PreviewPane.svelte";
   import type { PreviewMode } from "$lib/matrix/Preview.svelte";
@@ -30,8 +31,13 @@
   let srcH = $state(0);
   let fileName = $state("");
   let dragging = $state(false);
-  let notice = $state("");
   let objectUrl: string | null = null;
+
+  /* Le message éphémère est gardé sous forme de **fonction**, pas de texte : un
+     texte serait figé dans la langue qui avait cours à l'instant où il a été
+     posé, et changer de langue laisserait une phrase orpheline au pied de page. */
+  let noticeFn = $state<(() => string) | null>(null);
+  const notice = $derived(noticeFn ? noticeFn() : "");
 
   /* --- réglages --- */
   /* L'appareil ne fait que changer la grille sous l'image : aucun réglage n'est
@@ -95,7 +101,7 @@
   function load(file: File | null | undefined) {
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      flash("Fichier ignoré — image attendue");
+      flash(() => $_("glyphcast.notice.notAnImage"));
       return;
     }
     const url = URL.createObjectURL(file);
@@ -111,20 +117,20 @@
          servirait qu'à la voir réapparaître si l'image est retirée, alors
          qu'elle ne décrit plus ce qui est à l'écran. */
       imported = null;
-      flash("");
+      flash(null);
     };
     im.onerror = () => {
       URL.revokeObjectURL(url);
-      flash("Décodage impossible");
+      flash(() => $_("glyphcast.notice.decodeFailed"));
     };
     im.src = url;
   }
 
   let flashTimer: ReturnType<typeof setTimeout>;
-  function flash(msg: string) {
-    notice = msg;
+  function flash(msg: (() => string) | null) {
+    noticeFn = msg;
     clearTimeout(flashTimer);
-    if (msg) flashTimer = setTimeout(() => (notice = ""), 2600);
+    if (msg) flashTimer = setTimeout(() => (noticeFn = null), 2600);
   }
 
   function onDrop(e: DragEvent) {
@@ -144,6 +150,12 @@
   }
 
   /* --- actions --- */
+  /* Les identifiants des préréglages, dans l'ordre de déclaration. `Object.keys`
+     rend des `string` nus ; le forçage est ce qui laisse indexer le dictionnaire
+     avec, donc ce qui fait échouer la compilation si un préréglage arrive sans
+     son libellé traduit. */
+  const PRESET_NAMES = Object.keys(CHANNEL_PRESETS) as (keyof typeof CHANNEL_PRESETS)[];
+
   function mix(name: keyof typeof CHANNEL_PRESETS) {
     const [r, g, b] = CHANNEL_PRESETS[name];
     params.wR = r;
@@ -173,12 +185,13 @@
       if (v > hi) hi = v;
     }
     if (hi - lo < 0.02) {
-      flash("Plage trop plate pour un étalement");
+      flash(() => $_("glyphcast.notice.tooFlat"));
       return;
     }
     params.black = Math.max(0, lo - 0.01);
     params.white = Math.min(1, hi + 0.01);
-    flash(`Gates posées sur ${Math.round(lo * 100)} – ${Math.round(hi * 100)} %`);
+    const [pLo, pHi] = [Math.round(lo * 100), Math.round(hi * 100)];
+    flash(() => $_("glyphcast.notice.gates", { values: { lo: pLo, hi: pHi } }));
   }
 
   /* L'IntArray est monté **au clic** et non tenu dans un `$derived`. Il l'était
@@ -186,7 +199,8 @@
      regarde, le garder à jour revenait à formater 625 nombres en chaîne à
      chaque cran de curseur, pour un texte demandé une fois de temps en temps. */
   async function copyKotlin() {
-    flash((await copy(toKotlin(frame))) ? "IntArray copié" : "Copie refusée par le navigateur");
+    const ok = await copy(toKotlin(frame));
+    flash(() => (ok ? $_("glyphcast.notice.copied") : $_("glyphcast.notice.copyRefused")));
   }
 
   async function importJson(e: Event) {
@@ -205,23 +219,28 @@
          « Session rechargée » tout court promettait une restauration complète
          alors que le rack reste verrouillé faute de source : on le lisait comme
          un import qui n'avait rien fait. */
-      flash(
-        img
-          ? `Réglages rechargés — ${s.device.name}`
-          : `Trame et réglages rechargés — déposez l'image pour les reprendre`,
+      const loaded = !!img;
+      const name = s.device.name;
+      flash(() =>
+        loaded
+          ? $_("glyphcast.notice.settingsReloaded", { values: { device: name } })
+          : $_("glyphcast.notice.frameReloaded"),
       );
     } catch {
-      flash("JSON illisible");
+      flash(() => $_("glyphcast.notice.badJson"));
     }
   }
 
-  const pct = (v: number) => `${Math.round(v * 100)} %`;
-  const signed = (v: number) => (v >= 0 ? "+" : "") + v.toFixed(2);
+  /* Le zoom, en tête de carte : même mise en forme que le curseur qu'elle
+     contient, donc la même que celle du reste de la page. */
+  const zoomText = $derived(
+    $number(params.zoom, { style: "percent", maximumFractionDigits: 0 }),
+  );
 </script>
 
 <svelte:head>
   <title>GLYPHCAST</title>
-  <meta name="description" content="Convertit une image en rendu Glyph Matrix pour Nothing Phone (3) et (4a) Pro." />
+  <meta name="description" content={$_("glyphcast.description")} />
 </svelte:head>
 
 <svelte:window
@@ -236,7 +255,7 @@
 
 <Shell
   title="Glyphcast"
-  sub="Stylisez une image en la projetant sur la Glyph Matrix"
+  sub={$_("glyphcast.sub")}
   stamp={VERSION}
   {device}
   repo="https://github.com/aero-md/GlyphPortal"
@@ -259,11 +278,9 @@
         {#if !hasImg}
           <p class="empty meta">
             {#if frame === imported}
-              Trame relue du fichier. Les réglages à droite sont ceux qui l'ont produite —
-              déposez l'image pour les reprendre.
+              {$_("glyphcast.empty.imported")}
             {:else}
-              Matrice éteinte — déposez une image n'importe où sur la page, collez-en une
-              (Ctrl+V) ou passez par <b>[01] Source</b>.
+              {@html $_("glyphcast.empty.none")}
             {/if}
           </p>
         {/if}
@@ -274,36 +291,62 @@
   {#snippet rack()}
     <!-- tant qu'il n'y a rien à convertir, c'est la seule carte qui ait
          quelque chose à faire : elle porte le jaune, tout le reste est éteint -->
-    <Card ref="01" title="Source" stat={hasImg ? `${srcW}×${srcH}` : "aucune"} cta={!hasImg}>
+    <Card
+      ref="01"
+      title={$_("glyphcast.source.title")}
+      stat={hasImg ? `${srcW}×${srcH}` : $_("glyphcast.source.none")}
+      cta={!hasImg}
+    >
       <label class="drop" class:armed={dragging}>
         <input type="file" accept="image/*" onchange={pickFile} />
-        <span class="drop-t">{hasImg ? fileName : "Importer une image"}</span>
-        <span class="drop-s label">Glisser-déposer · Coller · Parcourir</span>
+        <span class="drop-t">{hasImg ? fileName : $_("glyphcast.source.pick")}</span>
+        <span class="drop-s label">{$_("glyphcast.source.hint")}</span>
       </label>
       <div class="btns">
         <!-- une session n'apporte que des réglages : sa place est ici, à
              l'entrée, et pas dans la carte qui produit les fichiers -->
         <label class="filebtn">
           <input type="file" accept="application/json,.json" onchange={importJson} />
-          Importer un .json
+          {$_("glyphcast.source.json")}
         </label>
       </div>
-      <p class="note">
-        L'image est traitée en local, dans le navigateur. Rien n'est envoyé nulle part.
-      </p>
+      <p class="note">{$_("glyphcast.source.note")}</p>
     </Card>
 
-    <Card ref="02" title="Cadrage" stat="{Math.round(params.zoom * 100)} %" locked={!hasImg}>
-      <Slider label="Zoom" bind:value={params.zoom} range={R.zoom} reset={DEFAULTS.zoom} format={pct} />
-      <Slider label="Décalage X" bind:value={params.offsetX} range={R.offsetX} reset={0} format={signed} />
-      <Slider label="Décalage Y" bind:value={params.offsetY} range={R.offsetY} reset={0} format={signed} />
+    <Card
+      ref="02"
+      title={$_("glyphcast.crop.title")}
+      stat={zoomText}
+      locked={!hasImg}
+    >
       <Slider
-        label="Rotation"
+        label={$_("glyphcast.crop.zoom")}
+        bind:value={params.zoom}
+        range={R.zoom}
+        reset={DEFAULTS.zoom}
+        format="percent"
+      />
+      <Slider
+        label={$_("glyphcast.crop.offsetX")}
+        bind:value={params.offsetX}
+        range={R.offsetX}
+        reset={0}
+        format="signed"
+      />
+      <Slider
+        label={$_("glyphcast.crop.offsetY")}
+        bind:value={params.offsetY}
+        range={R.offsetY}
+        reset={0}
+        format="signed"
+      />
+      <Slider
+        label={$_("glyphcast.crop.rotation")}
         bind:value={params.rotation}
         range={R.rotation}
         step={1}
         reset={0}
-        format={(v) => v.toFixed(0)}
+        digits={0}
         unit="°"
       />
       <div class="btns">
@@ -322,107 +365,156 @@
             params.rotation = 0;
           }}
         >
-          Recadrer
+          {$_("glyphcast.crop.reset")}
         </button>
       </div>
     </Card>
 
-    <Card ref="03" title="Mixeur de canaux" stat="monochrome" locked={!hasImg}>
-      <p class="note">
-        La matrice n'a pas de couleur : ces poids décident de la part de chaque canal dans la
-        luminance. C'est un filtre coloré de photo noir et blanc — monter le rouge éclaircit les
-        peaux et noircit un ciel bleu.
-      </p>
-      <Slider label="Rouge" bind:value={params.wR} range={R.wR} reset={DEFAULTS.wR} />
-      <Slider label="Vert" bind:value={params.wG} range={R.wG} reset={DEFAULTS.wG} />
-      <Slider label="Bleu" bind:value={params.wB} range={R.wB} reset={DEFAULTS.wB} />
+    <Card
+      ref="03"
+      title={$_("glyphcast.mixer.title")}
+      stat={$_("glyphcast.mixer.stat")}
+      locked={!hasImg}
+    >
+      <p class="note">{$_("glyphcast.mixer.note")}</p>
+      <Slider
+        label={$_("glyphcast.mixer.red")}
+        bind:value={params.wR}
+        range={R.wR}
+        reset={DEFAULTS.wR}
+      />
+      <Slider
+        label={$_("glyphcast.mixer.green")}
+        bind:value={params.wG}
+        range={R.wG}
+        reset={DEFAULTS.wG}
+      />
+      <Slider
+        label={$_("glyphcast.mixer.blue")}
+        bind:value={params.wB}
+        range={R.wB}
+        reset={DEFAULTS.wB}
+      />
       <div class="btns">
-        {#each Object.keys(CHANNEL_PRESETS) as name (name)}
-          <button type="button" onclick={() => mix(name)}>{name}</button>
+        {#each PRESET_NAMES as name (name)}
+          <button type="button" onclick={() => mix(name)}>
+            {$_(`glyphcast.mixer.presets.${name}`)}
+          </button>
         {/each}
       </div>
     </Card>
 
-    <Card ref="04" title="Tonalité" stat={params.invert ? "inversé" : "direct"} locked={!hasImg}>
+    <Card
+      ref="04"
+      title={$_("glyphcast.tone.title")}
+      stat={params.invert ? $_("glyphcast.tone.inverted") : $_("glyphcast.tone.direct")}
+      locked={!hasImg}
+    >
       <Slider
-        label="Exposition"
+        label={$_("glyphcast.tone.exposure")}
         bind:value={params.exposure}
         range={R.exposure}
         reset={0}
-        format={signed}
-        unit=" IL"
+        format="signed"
+        unit={$_("glyphcast.tone.ev")}
       />
-      <Slider label="Gate — point noir" bind:value={params.black} range={R.black} reset={0} format={pct} />
-      <Slider label="Gate — point blanc" bind:value={params.white} range={R.white} reset={1} format={pct} />
-      <Slider label="Contraste" bind:value={params.contrast} range={R.contrast} reset={0} format={signed} />
-      <Slider label="Gamma" bind:value={params.gamma} range={R.gamma} reset={1} />
-      <Slider label="Netteté" bind:value={params.sharpen} range={R.sharpen} reset={DEFAULTS.sharpen} />
+      <Slider
+        label={$_("glyphcast.tone.black")}
+        bind:value={params.black}
+        range={R.black}
+        reset={0}
+        format="percent"
+      />
+      <Slider
+        label={$_("glyphcast.tone.white")}
+        bind:value={params.white}
+        range={R.white}
+        reset={1}
+        format="percent"
+      />
+      <Slider
+        label={$_("glyphcast.tone.contrast")}
+        bind:value={params.contrast}
+        range={R.contrast}
+        reset={0}
+        format="signed"
+      />
+      <Slider label={$_("glyphcast.tone.gamma")} bind:value={params.gamma} range={R.gamma} reset={1} />
+      <Slider
+        label={$_("glyphcast.tone.sharpen")}
+        bind:value={params.sharpen}
+        range={R.sharpen}
+        reset={DEFAULTS.sharpen}
+      />
       <div class="btns">
         <button type="button" class:on={params.invert} onclick={() => (params.invert = !params.invert)}>
-          Inverser
+          {$_("glyphcast.tone.invert")}
         </button>
-        <button type="button" onclick={autoLevels} disabled={!hasImg}>Auto-gates</button>
+        <button type="button" onclick={autoLevels} disabled={!hasImg}>
+          {$_("glyphcast.tone.auto")}
+        </button>
       </div>
     </Card>
 
-    <Card ref="05" title="Sortie LED" stat="{params.levels} paliers" locked={!hasImg}>
+    <Card
+      ref="05"
+      title={$_("glyphcast.led.title")}
+      stat={$_("glyphcast.led.stat", { values: { levels: params.levels } })}
+      locked={!hasImg}
+    >
       <Slider
-        label="Paliers de luminosité"
+        label={$_("glyphcast.led.levels")}
         bind:value={params.levels}
         range={R.levels}
         step={1}
         reset={DEFAULTS.levels}
-        format={(v) => v.toFixed(0)}
+        digits={0}
       />
       <Slider
-        label="Plafond de luminosité"
+        label={$_("glyphcast.led.ceiling")}
         bind:value={params.ceiling}
         range={R.ceiling}
         reset={1}
-        format={pct}
+        format="percent"
       />
       <Seg
-        label="Dithering"
+        label={$_("glyphcast.led.dither")}
         bind:value={params.dither}
         options={[
-          { v: "none" as DitherMode, t: "Aucun" },
+          { v: "none" as DitherMode, t: $_("glyphcast.led.none") },
           { v: "floyd" as DitherMode, t: "Floyd-Steinberg" },
           { v: "bayer" as DitherMode, t: "Bayer 4×4" },
         ]}
       />
       {#if params.dither !== "none"}
         <Slider
-          label="Force du dither"
+          label={$_("glyphcast.led.amount")}
           bind:value={params.ditherAmount}
           range={R.ditherAmount}
           reset={1}
-          format={pct}
+          format="percent"
         />
       {/if}
-      <p class="note">
-        À 2 paliers le rendu devient binaire et le dithering fait tout le travail. Au-delà de
-        ~16 paliers la matrice restitue de vrais niveaux de gris et le dither ne sert plus qu'à
-        casser les bandes dans les dégradés.
-      </p>
+      <p class="note">{$_("glyphcast.led.note")}</p>
     </Card>
 
-    <Card ref="06" title="Export" stat="{device.ledCount} / {device.cells}">
+    <Card ref="06" title={$_("glyphcast.exportCard.title")} stat="{device.ledCount} / {device.cells}">
       <div class="btns">
         <button type="button" onclick={() => exportPng(frame, ledStyle)} disabled={!hasImg}>
           PNG · {ledStyle}
         </button>
         <button type="button" onclick={() => downloadJson(frame, params)} disabled={!hasImg}>.json</button>
         <button type="button" onclick={() => downloadKotlin(frame)} disabled={!hasImg}>.kt</button>
-        <button type="button" onclick={copyKotlin} disabled={!hasImg}>Copier IntArray</button>
+        <button type="button" onclick={copyKotlin} disabled={!hasImg}>
+          {$_("glyphcast.exportCard.copy")}
+        </button>
       </div>
       <p class="note">
-        Le <b>.json</b> est un dessin au format du <a
-          href="https://glyphmuseum.com/developers"
-          target="_blank"
-          rel="noopener noreferrer">Glyph Museum</a
-        > — une trame, {device.ledCount} consignes de LED. Il porte en plus les réglages de cette
-        page, sous une clé que les autres lecteurs ignorent : le même fichier s'ouvre là-bas et se
-        recharge ici avec tous ses curseurs.
+        {@html $_("glyphcast.exportCard.note1")}
+        <a href="https://glyphmuseum.com/developers" target="_blank" rel="noopener noreferrer"
+          >{$_("glyphcast.exportCard.noteLink")}</a
+        >
+        {$_("glyphcast.exportCard.note2", { values: { leds: device.ledCount } })}
       </p>
       <!-- Pas d'aperçu de l'IntArray. Il en occupait le bas : 625 nombres dans
            un cadre défilant, qu'on ne lit pas — on les copie. Ce que la carte
@@ -447,7 +539,11 @@
     letter-spacing: 0.04em;
   }
 
-  .empty b {
+  /* `:global` obligatoire : le texte de l'état vide vient du dictionnaire de
+     langue et est rendu par `{@html}`, donc son `<b>` ne passe pas par le
+     compilateur et ne porte aucune classe de portée. Même point que les mises
+     en relief des notes, passées en règles globales dans `app.css`. */
+  .empty :global(b) {
     color: var(--ink);
     font-weight: 500;
   }

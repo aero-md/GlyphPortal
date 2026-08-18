@@ -14,6 +14,8 @@
      et c'est la préview, réduite à la bande qui porte le disque, qui s'épingle
      en haut. */
   import type { Snippet } from "svelte";
+  import LangToggle from "$lib/i18n/LangToggle.svelte";
+  import { _, number } from "svelte-i18n";
   import type { Device } from "../matrix/devices";
   import ThemeToggle from "./ThemeToggle.svelte";
 
@@ -100,13 +102,18 @@
      l'année de la dernière compilation vieillit tout seul. */
   const YEAR = new Date().getFullYear();
 
-  /* Ce que la matrice est, pas ce que le toy en fait. Le rayon en virgule
-     décimale — la page est en français, et c'est la seule fraction qu'elle
-     affiche hors des curseurs. */
+  /* Ce que la matrice est, pas ce que le toy en fait. Le rayon passe par le
+     formateur de nombres : c'est la seule fraction affichée hors des curseurs,
+     et elle ne s'écrit pas de la même façon d'une langue à l'autre. */
   const spec = $derived(
     device
-      ? `Row-major ${device.size}×${device.size}, valeurs 0-255, masque circulaire ` +
-        `r = ${String(device.radius).replace(".", ",")} → ${device.ledCount} LEDs.`
+      ? $_("common.spec", {
+          values: {
+            size: device.size,
+            radius: $number(device.radius),
+            leds: device.ledCount,
+          },
+        })
       : "",
   );
 </script>
@@ -127,9 +134,10 @@
       <p class="sub meta"><span class="name">{title}</span> • {sub}</p>
       <div class="h-tools">
         {#if home}
-          <a class="home" href="/">◂ Accueil</a>
+          <a class="home" href="/">◂ {$_("common.home")}</a>
         {/if}
         <ThemeToggle />
+        <LangToggle />
       </div>
     </div>
   </header>

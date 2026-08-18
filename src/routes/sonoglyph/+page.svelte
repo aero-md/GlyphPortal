@@ -1,5 +1,7 @@
 <script lang="ts">
   import { DEFAULT_DEVICE, frameOf, type Frame, type LedStyle } from "$lib";
+  import type { Dict } from "$lib/i18n";
+  import { _, json, number } from "svelte-i18n";
   import Card from "$lib/ui/Card.svelte";
   import PreviewPane from "$lib/matrix/PreviewPane.svelte";
   import type { PreviewMode } from "$lib/matrix/Preview.svelte";
@@ -12,12 +14,12 @@
     FS,
     MicSource,
     SimSource,
-    TIMBRES,
+    TIMBRE_IDS,
     type SimParams,
     type Timbre,
   } from "./lib/source";
   import { NeedleRenderer, TICKS } from "./lib/toys/needle";
-  import { STYLES, VisualizerRenderer, type Style } from "./lib/toys/visualizer";
+  import { STYLE_IDS, VisualizerRenderer, type Style } from "./lib/toys/visualizer";
 
   const VERSION = "01";
 
@@ -41,7 +43,11 @@
   let source = $state<SourceKind>("sim");
   let sim = $state<SimParams>({ ...DEFAULT_SIM });
   let calibrationK = $state(DEFAULT_K);
-  let notice = $state("");
+
+  /* Gardé en fonction et non en texte : un message figé dans la langue qui avait
+     cours quand il a été posé y resterait après un changement de langue. */
+  let noticeFn = $state<(() => string) | null>(null);
+  const notice = $derived(noticeFn ? noticeFn() : "");
 
   /* Le moteur est celui du toy, porté ligne à ligne. Il n'est jamais recréé :
      le recréer à chaque changement de réglage remettrait à zéro le Leq et les
@@ -110,10 +116,11 @@
       engine.clear();
       engine.status = "ok";
       source = "mic";
-      flash("Micro ouvert — traitements du navigateur désactivés");
+      flash(() => $_("sonoglyph.notice.micOpen"));
     } catch (e) {
       engine.status = "no-mic";
-      flash(`Micro refusé : ${e instanceof Error ? e.message : e}`);
+      const reason = e instanceof Error ? e.message : String(e);
+      flash(() => $_("sonoglyph.notice.micRefused", { values: { reason } }));
     }
   }
 
@@ -126,39 +133,63 @@
   /** L'appui long, tel que le système l'enverrait au toy affiché. */
   function longPress() {
     if (toy === "spectre") {
-      const i = STYLES.findIndex((s) => s.v === style);
-      style = STYLES[(i + 1) % STYLES.length].v;
-      flash(`Style : ${STYLES.find((s) => s.v === style)!.t}`);
+      const i = STYLE_IDS.indexOf(style);
+      style = STYLE_IDS[(i + 1) % STYLE_IDS.length];
+      const next = style;
+      flash(() =>
+        $_("sonoglyph.notice.style", { values: { name: $_(`sonoglyph.styles.${next}`) } }),
+      );
     } else {
       engine.reset();
-      flash("Crête, maximum et Leq remis à zéro");
+      flash(() => $_("sonoglyph.notice.engineReset"));
     }
   }
 
   let flashTimer: ReturnType<typeof setTimeout>;
-  function flash(msg: string) {
-    notice = msg;
+  function flash(msg: (() => string) | null) {
+    noticeFn = msg;
     clearTimeout(flashTimer);
-    if (msg) flashTimer = setTimeout(() => (notice = ""), 2600);
+    if (msg) flashTimer = setTimeout(() => (noticeFn = null), 2600);
   }
 
-  const action = $derived(toy === "spectre" ? "Style suivant" : "Reset crête");
-  const timbre = $derived(TIMBRES.find((x) => x.v === sim.timbre)!);
+  const action = $derived(toy === "spectre" ? $_("sonoglyph.action.style") : $_("sonoglyph.action.reset"));
+  /* `$json` et non `$_` : l'entrée porte un nom **et** une note, et les deux
+     sont lues séparément par la carte. */
+  const timbre = $derived(
+    $json(`sonoglyph.timbres.${sim.timbre}`) as Dict["sonoglyph"]["timbres"][Timbre],
+  );
   const statusText = $derived(
-    snap.status === "ok" ? "mesure" : snap.status === "muted" ? "flux muet" : "pas de source",
+    snap.status === "ok"
+      ? $_("sonoglyph.status.ok")
+      : snap.status === "muted"
+        ? $_("sonoglyph.status.muted")
+        : $_("sonoglyph.status.noSource"),
   );
 
-  const db = (v: number) => `${v.toFixed(1)} dB`;
+  /* Les niveaux s'écrivent à décimales imposées. Le formateur est **lu dans la
+     dérivation**, et non dans la fonction rendue : c'est cette lecture qui
+     abonne le composant, et qui refait passer « 61.4 dB » à « 61,4 dB » au
+     changement de langue. */
+  const num = $derived.by(() => {
+    const fmt = $number;
+    return (v: number, digits = 2) =>
+      fmt(v, { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  });
+
+  const db = $derived.by(() => {
+    const fmt = num;
+    return (v: number) => `${fmt(v, 1)} dB`;
+  });
 </script>
 
 <svelte:head>
   <title>SONOGLYPH</title>
-  <meta name="description" content="Préview des deux Glyph Toys de Sonoglyph : visualiseur de spectre et VU-mètre à aiguille, sur la Glyph Matrix du Nothing Phone (3)." />
+  <meta name="description" content={$_("sonoglyph.description")} />
 </svelte:head>
 
 <Shell
   title="Sonoglyph"
-  sub="Deux Glyph Toys qui lisent le niveau sonore"
+  sub={$_("sonoglyph.sub")}
   stamp={VERSION}
   {device}
   repo="https://github.com/aero-md/sonoglyph"
@@ -178,11 +209,11 @@
         <!-- Le toy vient en premier : c'est le seul réglage de cette rangée qui
              change ce qui tourne sur l'appareil. -->
         <Seg
-          label="Toy"
+          label={$_("sonoglyph.toySeg")}
           bind:value={toy}
           options={[
-            { v: "aiguille" as Toy, t: "Aiguille" },
-            { v: "spectre" as Toy, t: "Spectre" },
+            { v: "aiguille" as Toy, t: $_("sonoglyph.toys.needle") },
+            { v: "spectre" as Toy, t: $_("sonoglyph.toys.spectrum") },
           ]}
         />
       {/snippet}
@@ -193,151 +224,141 @@
     <!-- [00] parce que c'est ce qui vient avant tout le reste : la page est une
          préview, le toy est un APK qui s'installe sur le téléphone. Ici il n'y
          a rien à télécharger — le dire vaut mieux que de laisser chercher. -->
-    <Card ref="00" title="Glyph toy" stat="archivé">
+    <Card ref="00" title={$_("common.kind.toy")} stat={$_("sonoglyph.toyCard.archived")}>
       <!-- Pas de « se télécharge en APK » ici, contrairement aux deux autres
            toys : il n'y a rien à télécharger, et le paragraphe suivant dit
            pourquoi. Promettre un APK au-dessus d'une carte marquée « archivé »
            enverrait chercher une release qui n'existe pas. -->
       <p class="note">
-        <b>SONOGLYPH</b> est une application Android pour {device.name}. Cette page en reproduit
-        le fonctionnement dans le navigateur.
+        <b>SONOGLYPH</b>
+        {$_("common.toyCard.plain", { values: { device: device.name } })}
       </p>
       <p class="note">
-        Le projet a été abandonné et archivé pour raison de contraintes techniques, mais le
-        code est toujours consultable
+        {$_("sonoglyph.toyCard.note1")}
         <a href="https://github.com/aero-md/sonoglyph" target="_blank" rel="noopener noreferrer">
-          sur GitHub</a
+          {$_("sonoglyph.toyCard.noteLink")}</a
         >.
       </p>
     </Card>
 
-    <Card ref="01" title="Toy affiché" stat={toy === "spectre" ? "spectre" : "aiguille"}>
+    <Card
+      ref="01"
+      title={$_("sonoglyph.shown.title")}
+      stat={toy === "spectre" ? $_("sonoglyph.toys.spectrum") : $_("sonoglyph.toys.needle")}
+    >
       {#if toy === "spectre"}
-        <Seg label="Style" bind:value={style} options={STYLES} />
-        <p class="note">
-          Une bande par colonne, 40 Hz à 16 kHz en pas de tiers d'octave, déjà pondérée A —
-          sans quoi le grave écrase les vingt-deux colonnes du haut. Rendu en
-          <b>tout ou rien</b> : une LED est allumée ou éteinte, aucune nuance.
-        </p>
-        <p class="note">
-          La hauteur porte seule le niveau. L'axe médian reste allumé en permanence, c'est
-          la ligne de base — et à bas niveau la seule chose visible.
-        </p>
+        <Seg
+          label={$_("sonoglyph.shown.styleSeg")}
+          bind:value={style}
+          options={STYLE_IDS.map((v) => ({ v, t: $_(`sonoglyph.styles.${v}`) }))}
+        />
+        <p class="note">{@html $_("sonoglyph.shown.spectrum1")}</p>
+        <p class="note">{$_("sonoglyph.shown.spectrum2")}</p>
       {:else}
         <p class="note">
-          Le cadran est le contour du disque sur ± 90°, donc toute la moitié haute ; le
-          pivot est au centre exact. Graduations majeures : {TICKS.join(" · ")} dB(A).
-          Une seule aiguille, sur le niveau Fast. Le chiffre en dessous est en 5×7, arrondi
-          à l'entier.
+          {$_("sonoglyph.shown.needle", { values: { ticks: TICKS.join(" · ") } })}
         </p>
       {/if}
     </Card>
 
     <Card
       ref="02"
-      title="Source"
-      stat={source === "mic" ? "micro" : "simulation"}
+      title={$_("sonoglyph.source.title")}
+      stat={source === "mic" ? $_("sonoglyph.source.mic") : $_("sonoglyph.source.sim")}
       cta={source === "mic" && snap.status !== "ok"}
     >
       <Seg
-        label="Échantillons"
+        label={$_("sonoglyph.source.seg")}
         value={source}
         options={[
-          { v: "sim" as SourceKind, t: "Simulation" },
-          { v: "mic" as SourceKind, t: "Micro" },
+          { v: "sim" as SourceKind, t: $_("sonoglyph.source.simulation") },
+          { v: "mic" as SourceKind, t: $_("sonoglyph.source.micLabel") },
         ]}
         onchange={(v) => (v === "mic" ? useMic() : useSim())}
       />
-      <p class="note">
-        Ni l'une ni l'autre ne calcule de niveau : elles produisent des échantillons, et
-        c'est la chaîne du toy — pondération A, détecteur Fast, banc de bandes — qui en
-        tire un dB. Le micro passe par un AudioWorklet, avec AGC, réduction de bruit et
-        annulation d'écho coupés. Rien ne sort du navigateur.
-      </p>
+      <p class="note">{$_("sonoglyph.source.note")}</p>
     </Card>
 
-    <Card ref="03" title="Signal simulé" stat={timbre.t} locked={source !== "sim"}>
+    <Card ref="03" title={$_("sonoglyph.sim.title")} stat={timbre.name} locked={source !== "sim"}>
       <Slider
-        label="Niveau visé"
+        label={$_("sonoglyph.sim.target")}
         bind:value={sim.targetDb}
         range={[MIN_DB, MAX_DB]}
         reset={DEFAULT_SIM.targetDb}
-        format={(v) => v.toFixed(0)}
+        digits={0}
         unit=" dB(A)"
       />
       <Seg
-        label="Timbre"
+        label={$_("sonoglyph.sim.timbreSeg")}
         bind:value={sim.timbre}
-        options={TIMBRES.map((x) => ({ v: x.v as Timbre, t: x.t }))}
+        options={TIMBRE_IDS.map((v) => ({ v: v as Timbre, t: $_(`sonoglyph.timbres.${v}.name`) }))}
       />
       <p class="note">{timbre.note}</p>
       <Slider
-        label="Dynamique"
+        label={$_("sonoglyph.sim.dynamics")}
         bind:value={sim.dynamics}
         range={[0, 1]}
         reset={1}
-        format={(v) => `${Math.round(v * 100)} %`}
+        format="percent"
       />
       <div class="btns">
         <button type="button" class:on={sim.overdrive} onclick={() => (sim.overdrive = !sim.overdrive)}>
-          Surcharge
+          {$_("sonoglyph.sim.overdrive")}
         </button>
-        <button type="button" onclick={() => (sim.targetDb = 42)}>Pièce calme</button>
-        <button type="button" onclick={() => (sim.targetDb = 68)}>Conversation</button>
-        <button type="button" onclick={() => (sim.targetDb = 88)}>Rue</button>
-        <button type="button" onclick={() => (sim.targetDb = 104)}>Concert</button>
+        <button type="button" onclick={() => (sim.targetDb = 42)}>{$_("sonoglyph.sim.quiet")}</button>
+        <button type="button" onclick={() => (sim.targetDb = 68)}>
+          {$_("sonoglyph.sim.conversation")}
+        </button>
+        <button type="button" onclick={() => (sim.targetDb = 88)}>{$_("sonoglyph.sim.street")}</button>
+        <button type="button" onclick={() => (sim.targetDb = 104)}>{$_("sonoglyph.sim.concert")}</button>
       </div>
-      <p class="note">
-        La consigne est en dB(A) et non en dBFS : le gain compense ce que la pondération
-        retirera au timbre choisi, mesuré au changement de timbre. Sans cette compensation
-        le curseur mentirait de 9 dB entre le sinus et le trafic.
-      </p>
+      <p class="note">{$_("sonoglyph.sim.note")}</p>
     </Card>
 
-    <Card ref="04" title="Calibration" stat="K = {calibrationK.toFixed(0)} dB">
+    <Card
+      ref="04"
+      title={$_("sonoglyph.calibration.title")}
+      stat={$_("sonoglyph.calibration.stat", { values: { k: calibrationK.toFixed(0) } })}
+    >
       <Slider
-        label="dBFS → dB SPL"
+        label={$_("sonoglyph.calibration.slider")}
         bind:value={calibrationK}
         range={[100, 140]}
         reset={DEFAULT_K}
-        format={(v) => v.toFixed(0)}
+        digits={0}
         unit=" dB"
       />
-      <p class="note">
-        <b>Ce chiffre n'est pas mesuré.</b> 120 dB est l'ordre de grandeur d'un MEMS de
-        téléphone, dont la pleine échelle tombe par là. Tant que l'exemplaire n'est pas
-        caractérisé, le niveau affiché est juste à ±5 dB près — les toys sont des
-        indicateurs, pas des sonomètres. Le curseur est ici pour voir ce que la
-        calibration déplace ; sur l'appareil c'est une constante.
-      </p>
+      <p class="note">{@html $_("sonoglyph.calibration.note")}</p>
     </Card>
 
-    <Card ref="05" title="Mesure" stat={statusText}>
+    <Card ref="05" title={$_("sonoglyph.meter.title")} stat={statusText}>
       <dl class="readout">
-        <dt>Fast (LAF)</dt>
+        <dt>{$_("sonoglyph.meter.fast")}</dt>
         <dd>{db(snap.laf)}</dd>
-        <dt>Slow (LAS)</dt>
+        <dt>{$_("sonoglyph.meter.slow")}</dt>
         <dd>{db(snap.las)}</dd>
-        <dt>Équivalent (LAeq)</dt>
+        <dt>{$_("sonoglyph.meter.leq")}</dt>
         <dd>{db(snap.laeq)}</dd>
-        <dt>Maximum</dt>
+        <dt>{$_("sonoglyph.meter.max")}</dt>
         <dd>{db(snap.lafmax)}</dd>
-        <dt>Crête affichée</dt>
+        <dt>{$_("sonoglyph.meter.peak")}</dt>
         <dd>{db(snap.peak)}</dd>
-        <dt>Intégration</dt>
-        <dd>{snap.elapsed.toFixed(1)} s</dd>
-        <dt>Surcharge</dt>
-        <dd class:accent={snap.overload}>{snap.overload ? "oui" : "non"}</dd>
+        <dt>{$_("sonoglyph.meter.integration")}</dt>
+        <dd>{num(snap.elapsed, 1)} s</dd>
+        <dt>{$_("sonoglyph.meter.overload")}</dt>
+        <dd class:accent={snap.overload}>
+          {snap.overload ? $_("sonoglyph.meter.yes") : $_("sonoglyph.meter.no")}
+        </dd>
       </dl>
       <div class="btns">
         <button
           type="button"
           onclick={() => {
             engine.reset();
-            flash("Remis à zéro");
+            flash(() => $_("sonoglyph.notice.reset"));
           }}
         >
-          Reset
+          {$_("sonoglyph.meter.reset")}
         </button>
       </div>
     </Card>
@@ -347,17 +368,6 @@
 <style>
   /* Ce qui reste ici est propre à Sonoglyph : le relevé de mesure. Le reste —
      page, en-tête, rack, pied, boutons, notes — vient de `$lib`. */
-
-  .note b {
-    color: var(--ink);
-    font-weight: 500;
-  }
-
-  /* Le lien de la carte [00] : en pleine encre pour se détacher de la prose
-     grise qui le porte, sinon rien ne dit qu'il se clique. */
-  .note a {
-    color: var(--ink);
-  }
 
   /* Deux colonnes, libellé à gauche et valeur à droite, alignées sur une grille
      et non sur des tabulations : les valeurs sont en chiffres à chasse fixe,

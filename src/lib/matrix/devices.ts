@@ -64,8 +64,12 @@ export type Device = Geometry & {
    * fond de la photo — biseau du verre et reflets compris — qui sert de fond.
    * Une photo qui montrerait encore ses LEDs les laisserait transparaître entre
    * les nôtres.
+   *
+   * Pas de texte de remplacement ici : il se dit « dos d'un Nothing Phone (3) »
+   * dans la langue du visiteur, et une donnée d'appareil n'a pas à en connaître
+   * une. Il est construit par `Preview` — voir `common.photoAlt`.
    */
-  photo: { src: string; alt: string };
+  photo: { src: string };
   disc: Disc;
   /**
    * Cerne entre la découpe de la matrice et la LED la plus proche, **en
@@ -116,7 +120,7 @@ const PHONE3: Device = {
   // fois plus fin **sans toucher à la cellule** — la matrice est identique, c'est
   // le hublot qui se resserre autour d'elle.
   frameWidth: 500,
-  photo: { src: phone3Back, alt: "Dos d'un Nothing Phone (3)" },
+  photo: { src: phone3Back },
   /* Meilleur **cercle inscrit** dans le hublot noirci : rayon 93,3 px centré en
      (560,5 ; 140,5) dans un cadre de 704 × 913.
 
@@ -189,7 +193,7 @@ const PHONE4A_PRO: Device = {
   // cerne fin — voir `margin` : cet appareil le porte large, contrairement au
   // (3), et le resserrer lui allait mal.
   frameWidth: 522,
-  photo: { src: phone4aProBack, alt: "Dos d'un Nothing Phone (4a) Pro" },
+  photo: { src: phone4aProBack },
   // meilleur cercle inscrit dans le hublot noirci : rayon 118,5 px centré en
   // (485,5 ; 210). Inscrit et non englobant, pour la même raison que le (3).
   disc: { left: 0.6896, top: 0.23, pct: 0.3366 },
