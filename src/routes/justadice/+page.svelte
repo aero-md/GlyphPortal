@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DEVICES, DEFAULT_DEVICE, emptyFrame, frameOf, type Device, type Frame, type LedStyle } from "$lib";
+  import { DEFAULT_DEVICE, emptyFrame, frameOf, type Frame, type LedStyle } from "$lib";
   import type { Dict } from "$lib/i18n";
   import { _, number } from "svelte-i18n";
   import Card from "$lib/ui/Card.svelte";
@@ -34,17 +34,14 @@
      d'essai pour devenir la référence d'un toy embarqué. */
   const VERSION = "01";
 
-  /* Les deux appareils, et c'est le seul toy du portail qui puisse se le
-     permettre : le dé est un solide lancé de rayons, pas un dessin de dé. Rien
-     dans le rendu ne connaît la taille de la grille — voir `render.ts`. Sur les
-     13 × 13 du (4a) Pro la culbute est grossière et illisible, et le gros plan
-     final reste net : c'est exactement le compromis que le noyau du portail
-     annonce, à chaque toy de dire s'il le tient. */
-  let device = $state<Device>(DEFAULT_DEVICE);
-  /* La constante et non `device` : le rendu est reconstruit par la boucle quand
-     l'appareil change, et lire l'état ici n'en capturerait de toute façon que la
-     valeur initiale. */
-  let renderer = new DiceRenderer(DEFAULT_DEVICE);
+  /* L'appareil est figé, comme pour les trois autres toys — et ici ce n'est pas
+     le rendu qui l'impose. Le dé est un solide lancé de rayons, pas un dessin de
+     dé : rien dans `render.ts` ne connaît la taille de la grille, et le même code
+     tourne sur les 13 × 13 du (4a) Pro. Mais il y tourne mal — la culbute y est
+     grossière et illisible, seul le gros plan final reste net. Offrir le choix
+     revenait à proposer une version dégradée du toy sans dire qu'elle l'est. */
+  const device = DEFAULT_DEVICE;
+  const renderer = new DiceRenderer(device);
 
   let mode = $state<PreviewMode>("phone");
   let ledStyle = $state<LedStyle>("sharp");
@@ -140,9 +137,6 @@
     let raf = 0;
 
     const step = () => {
-      // L'appareil a changé : la grille sous le dé n'est plus la même.
-      if (renderer.device !== device) renderer = new DiceRenderer(device);
-
       const now = performance.now() / 1000;
 
       if (th) {
@@ -272,8 +266,8 @@
   {#snippet preview()}
     <PreviewPane
       {frame}
-      bind:device
-      devices={DEVICES}
+      {device}
+      devices={[device]}
       bind:mode
       bind:style={ledStyle}
       bind:buttonReachable
