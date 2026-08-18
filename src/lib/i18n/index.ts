@@ -56,10 +56,10 @@ export const LOCALES = Object.keys(loaders)
  * c'est ce que comprend le plus grand nombre de ceux dont la langue n'est pas
  * servie, et un visiteur japonais ou polonais tombe forcément dessus.
  */
-export const FALLBACK = "en";
+const FALLBACK = "en";
 
 /** Même préfixe que `glyph:theme` : c'est le même site, une seule clé de réglages. */
-export const LANG_KEY = "glyph:lang";
+const LANG_KEY = "glyph:lang";
 
 /**
  * Branche un dictionnaire, en le remettant dans la file s'il n'arrive pas.
@@ -103,7 +103,7 @@ for (const path of Object.keys(loaders)) {
  * elle rend la balise complète du navigateur, sans la confronter aux langues
  * qu'on sert ni au réglage déjà enregistré.
  */
-export function detect(): string {
+function detect(): string {
   try {
     const saved = localStorage.getItem(LANG_KEY);
     if (saved && LOCALES.includes(saved)) return saved;
