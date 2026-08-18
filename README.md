@@ -1,12 +1,14 @@
 # GlyphPortal
 
-Le code de **[glyph.suns.red](https://glyph.suns.red)** : un sommaire et les
-préviews web des Glyph Toys pour Nothing Phone.
+Le code de **[glyph.suns.red](https://glyph.suns.red)** : le regroupement de mes
+créations autour de la Glyph Matrix — les toys embarqués sur Nothing Phone, et
+les outils web qui servent à en fabriquer le contenu.
 
-Une préview reproduit un toy dans le navigateur, **posé sur une photo du dos de
-l'appareil** — la Glyph Matrix est rendue à sa position et à son échelle
-réelles. Tout tourne en local : aucune image, aucun son, aucune donnée ne sort
-du navigateur.
+Chacune a sa page ici. Un toy y est **rejoué dans le navigateur, posé sur une
+photo du dos de l'appareil** — la Glyph Matrix est rendue à sa position et à son
+échelle réelles, l'APK se télécharge à côté. Un outil, lui, n'existe nulle part
+ailleurs que sur cette page. Tout tourne en local : aucune image, aucun son,
+aucune donnée ne sort du navigateur.
 
 ## Arborescence
 
