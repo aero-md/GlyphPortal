@@ -292,6 +292,10 @@
        conditionnel décale toute la colonne d'une largeur d'ascenseur */
     scrollbar-gutter: stable;
     padding-right: 0.5rem;
+    /* L'arrondi sous-pixel du flex + gap accumulé fait parfois tomber le bas
+       de `scrollHeight` un poil avant la bordure de la dernière carte, qui se
+       retrouve alors coupée d'un pixel une fois défilé au maximum. */
+    padding-bottom: 1px;
     scrollbar-width: thin;
     scrollbar-color: var(--line-strong) transparent;
     -webkit-mask-image: linear-gradient(

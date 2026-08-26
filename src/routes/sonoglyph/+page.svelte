@@ -265,7 +265,7 @@
       ref="02"
       title={$_("sonoglyph.source.title")}
       stat={source === "mic" ? $_("sonoglyph.source.mic") : $_("sonoglyph.source.sim")}
-      cta={source === "mic" && snap.status !== "ok"}
+      cta={source === "mic"}
     >
       <Seg
         label={$_("sonoglyph.source.seg")}
@@ -279,7 +279,13 @@
       <p class="note">{$_("sonoglyph.source.note")}</p>
     </Card>
 
-    <Card ref="03" title={$_("sonoglyph.sim.title")} stat={timbre.name} locked={source !== "sim"}>
+    <Card
+      ref="03"
+      title={$_("sonoglyph.sim.title")}
+      stat={timbre.name}
+      locked={source !== "sim"}
+      cta={source !== "mic"}
+    >
       <Slider
         label={$_("sonoglyph.sim.target")}
         bind:value={sim.targetDb}

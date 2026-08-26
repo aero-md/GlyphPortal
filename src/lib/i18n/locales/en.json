@@ -162,7 +162,7 @@
       "fiveDaysAgo": "5 days ago",
       "christmas": "Christmas",
       "y2k": "Year 2000",
-      "inTenSeconds": "In 10 s"
+      "inFiveSeconds": "In 5 s"
     },
     "onlyOne": "Only one lapse enabled — the toy has nowhere to switch to",
     "lapse": {
@@ -180,19 +180,17 @@
       "since": "since",
       "until": "until",
       "ref": "Reference instant",
-      "note": "A deadline still ahead flips the toy into a countdown. On crossing it, it plays a four-second arrival — <b>In 10 s</b> is there to see it without waiting."
+      "note": "A deadline still ahead flips the toy into a countdown. On crossing it, it plays a four-second arrival — the <b>In 5 s</b> button is there to see it without waiting."
     },
     "format": {
       "title": "Format",
       "seg": "Layout",
-      "note1": "<b>Dense</b> writes the whole granularity, two units per line when it has to. <b>Compact</b> keeps only the two leading units, in 5×7. <b>Cycle</b> scrolls them one by one. <b>Days</b> gives the total alone.",
-      "note2": "Leading units at zero are dropped: “0Y 0M 3D” would waste two lines of the disc saying that nothing has happened."
+      "note1": "<b>Dense</b> writes the whole granularity, two units per line when it has to. <b>Compact</b> keeps only the two leading units, in 5×7. <b>Cycle</b> scrolls them one by one. <b>Days</b> gives the total alone."
     },
     "seconds": {
       "title": "Seconds",
       "seg": "Minute rendering",
-      "note1": "<b>Ring</b> fills the rim from twelve o'clock — clockwise when time accumulates, anticlockwise when it runs out. <b>Hourglass</b> raises or lowers a level of sand whose surface is a cone: tip at the centre in “since”, funnel in “until”.",
-      "note2": "The height of the sand is found by bisection rather than computed: the area of a disc above a line has no simple expression, and fourteen iterations are enough to land on the right amount to within a cell."
+      "note1": "<b>Ring</b> fills the rim from twelve o'clock — clockwise when time accumulates, anticlockwise when it runs out. <b>Hourglass</b> raises or lowers a level of sand whose surface is a cone: tip at the centre in “since”, funnel in “until”."
     },
     "readout": {
       "title": "Readout",
@@ -250,15 +248,12 @@
       "title": "Reels",
       "stat": "3 × 7 columns",
       "note1": "A reel is not a symbol drawn at the finish: it is a continuous band of five symbols that spins, and stopping it means choosing <b>where</b> to brake. So the neighbours of the winning symbol go past before it settles.",
-      "note2": "The order of the symbols differs from one reel to the next — reel <i>i</i> advances by <i>i</i>+1 modulo 5. The neighbours of an aligned symbol are not the same on all three, and an alignment cannot be read in advance from what goes past above it.",
-      "note3": "On the spin, the reel first backs up slowly — a spring being wound — then releases. Without that recoil the start is a uniform glide that does not say anything was pulled.",
-      "note4": "The braking distance is drawn from a range rather than computed to the shortest: braking over the minimum distance would stop the reel almost immediately whenever the target is already close, and the machine would be seen aiming."
+      "note2": "On the spin, the reel first backs up slowly — a spring being wound — then releases. Without that recoil the start is a uniform glide that does not say anything was pulled."
     },
     "fx": {
       "title": "Effects",
       "stat": "5 phases",
-      "note1": "A plain win pulses the rim ring. The jackpot takes the screen for seven and a half seconds: triple strobe, concentric shock waves, a scrolling <b>JACKPOT</b> banner, fireworks with gravity, then a zooming 7.",
-      "note2": "The shake offsets the frame by a <b>whole cell</b>. The original preview shook the canvas: a Glyph Matrix has its LEDs soldered on, it cannot move by half a pixel — and a transformed canvas would leave the grid of physical pixels the whole preview alignment rests on."
+      "note1": "A plain win pulses the rim ring. The jackpot takes the screen for seven and a half seconds: triple strobe, concentric shock waves, a scrolling <b>JACKPOT</b> banner, fireworks with gravity, then a zooming 7."
     }
   },
   "justadice": {
@@ -313,8 +308,7 @@
       "title": "The render",
       "pips": "3 × 3 pips",
       "digit": "digit",
-      "note1": "On twenty-five LEDs a side, a die seen three-quarters on does not read: the resting pose is the close-up from directly above, and three-quarter views only exist in flight.",
-      "note2": "A pip is 3 × 3 cells, a number is a stretched glyph, and the mark is only printed <b>at the close-up</b> — in flight it would be cut by an edge and change on every bounce."
+      "note1": "On twenty-five LEDs a side, a die seen three-quarters on does not read: the resting pose is the close-up from directly above, and three-quarter views only exist in flight."
     }
   },
   "sonoglyph": {

@@ -422,7 +422,6 @@
       stat={die.faces === 6 ? $_("justadice.render.pips") : $_("justadice.render.digit")}
     >
       <p class="note">{$_("justadice.render.note1")}</p>
-      <p class="note">{@html $_("justadice.render.note2")}</p>
     </Card>
   {/snippet}
 </Shell>

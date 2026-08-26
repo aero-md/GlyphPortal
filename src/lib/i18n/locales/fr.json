@@ -162,7 +162,7 @@
       "fiveDaysAgo": "Il y a 5 jours",
       "christmas": "Noël",
       "y2k": "An 2000",
-      "inTenSeconds": "Dans 10 s"
+      "inFiveSeconds": "Dans 5 s"
     },
     "onlyOne": "Un seul lapse activé — le toy ne bascule nulle part",
     "lapse": {
@@ -173,26 +173,24 @@
       "disabled": "Désactivé",
       "simulate": "Simuler l'appui long",
       "note1": "L'appui long sur le Glyph Button passe au lapse activé suivant. Le lapse <b>I</b> ne se désactive pas : un toy sans aucun lapse actif n'aurait rien à afficher.",
-      "note2": "L'onglet sélectionné <b>est</b> celui que le toy affiche : il n'y a pas d'un côté le lapse qu'on règle et de l'autre celui qui tourne. C'est le comportement de l'app de réglages, où choisir un onglet bascule le toy."
+      "note2": "Le lapse sélectionné (en train d'être configuré) est affiché directement pour voir son rendu en direct — exactement comme dans l'app de réglages du téléphone."
     },
     "deadline": {
       "title": "Échéance",
       "since": "depuis",
       "until": "jusqu'au",
       "ref": "Instant de référence",
-      "note": "Une échéance à venir bascule le toy en compte à rebours. Au franchissement, il joue une arrivée de quatre secondes — <b>Dans 10 s</b> est là pour la voir sans attendre."
+      "note": "Une échéance à venir bascule le toy en compte à rebours. Au franchissement, il joue une arrivée de quatre secondes — le bouton <b>Dans 5 s</b> est là pour la voir sans attendre."
     },
     "format": {
       "title": "Format",
       "seg": "Mise en page",
-      "note1": "<b>Dense</b> écrit toute la granularité, deux unités par ligne quand il le faut. <b>Compact</b> ne garde que les deux unités de tête, en 5×7. <b>Cycle</b> les fait défiler une par une. <b>Jours</b> ne dit que le total.",
-      "note2": "Les unités de tête à zéro sont coupées : « 0A 0M 3J » gâcherait deux lignes de disque pour dire qu'il ne s'est rien passé."
+      "note1": "<b>Dense</b> écrit toute la granularité. <b>Compact</b> ne garde que les deux unités de tête. <b>Cycle</b> les fait défiler une par une. <b>Jours</b> n'affiche que le nombre de jours. Les unités plus grandes que le laps de temps à représenter ne sont jamais affichées."
     },
     "seconds": {
       "title": "Secondes",
       "seg": "Rendu de la minute",
-      "note1": "<b>Anneau</b> remplit le bord depuis midi — horaire quand le temps s'accumule, antihoraire quand il se consomme. <b>Sablier</b> monte ou descend un niveau de sable dont la surface est un cône : pointe au centre en « depuis », entonnoir en « jusqu'à ».",
-      "note2": "La hauteur du sable est trouvée par dichotomie et non calculée : la surface de disque au-dessus d'une ligne n'a pas d'expression simple, et quatorze itérations suffisent à retomber sur la bonne quantité à la cellule près."
+      "note1": "<b>Anneau</b> affiche un cercle qui se forme au bord de la Glyph Matrix au fil de la minute qui passe, ou qui se consume en mode compte à rebours. <b>Sablier</b> remplit tout l'arrière-plan de sable au fil de la minute, ou commence rempli et se vide."
     },
     "readout": {
       "title": "Relevé",
@@ -202,7 +200,7 @@
       "until": "Jusqu'au",
       "breakdown": "Décomposition",
       "totalDays": "Total en jours",
-      "note": "La décomposition suit le calendrier, pas une division : deux mois font 59, 60 ou 62 jours selon lesquels. C'est le même comptage que <code>Period.between</code> côté toy."
+      "note": "La décomposition suit le calendrier, pas une simple division : deux mois peuvent faire 59, 60 ou 62 jours selon lesquels."
     }
   },
   "glyphslot": {
@@ -237,28 +235,25 @@
       "spin": "Lancer",
       "forceWin": "Forcer un gain",
       "forceJackpot": "Forcer le 777",
-      "note1": "Les deux boutons de forçage n'existent pas côté toy : ils sont là pour voir les effets sans attendre. Un jackpot tombe à <b>5 %</b>, un gain simple à <b>15 %</b> — vérifier que l'animation de sept secondes rend bien en la tirant au sort n'est pas une façon de travailler.",
-      "note2": "Sur l'appareil, la seule commande est l'appui long sur le Glyph Button. Maintenir celui de la photo pendant 450 ms fait la même chose."
+      "note1": "Les deux boutons de forçage n'existent pas sur le toy : ils sont là pour voir les effets sans attendre. Sur l'appareil, un jackpot tombe à <b>5 %</b> et un gain simple à <b>15 %</b>.",
+      "note2": "Sur l'appareil, la seule commande est l'appui long sur le Glyph Button. Maintenir celui de la photo une demi-seconde fait la même chose."
     },
     "roll": {
       "title": "Dernier tirage",
       "symbols": "Symboles",
       "result": "Résultat",
-      "note": "La payline est la fenêtre centrale de sept lignes. Les symboles voisins restent affichés au cinquième de l'intensité : c'est ce qui fait lire une fenêtre sur une bande qui tourne, et non trois cases indépendantes."
+      "note": "La payline est la fenêtre centrale. Les symboles voisins restent visibles, plus pâles — comme une fenêtre posée sur une bande qui défile, pas trois cases indépendantes."
     },
     "reels": {
       "title": "Rouleaux",
       "stat": "3 × 7 colonnes",
-      "note1": "Un rouleau n'est pas un symbole tiré au sort à l'arrivée : c'est une bande continue de cinq symboles qui tourne, et l'arrêt consiste à choisir <b>où</b> la freiner. On voit donc passer les voisins du symbole gagnant avant qu'il ne se pose.",
-      "note2": "L'ordre des symboles diffère d'un rouleau à l'autre — le rouleau <i>i</i> avance de <i>i</i>+1 modulo 5. Les voisins d'un symbole aligné ne sont pas les mêmes sur les trois, et un alignement ne se lit pas d'avance en regardant ce qui passe au-dessus.",
-      "note3": "Au lancement, le rouleau recule d'abord lentement — un ressort qu'on arme — puis se détend. Sans ce recul, le départ est un glissement uniforme qui ne dit pas qu'on vient de tirer sur quelque chose.",
-      "note4": "La distance de freinage est tirée dans une plage plutôt que calculée au plus court : freiner sur la distance minimale ferait s'arrêter le rouleau presque tout de suite quand la cible est déjà proche, et on verrait la machine viser."
+      "note1": "L'ordre des symboles diffère d'un rouleau à l'autre : ce n'est pas la même bande qui tourne trois fois côte à côte, chacun a son propre agencement.",
+      "note2": "Au lancement, le rouleau recule d'abord, comme un ressort qu'on arme, avant de partir — une simulation du fonctionnement d'une vraie machine à sous mécanique."
     },
     "fx": {
       "title": "Effets",
       "stat": "5 phases",
-      "note1": "Un gain simple fait pulser l'anneau du bord. Le jackpot prend l'écran pendant sept secondes et demie : triple strobe, ondes de choc concentriques, bandeau <b>JACKPOT</b> qui défile, feux d'artifice avec gravité, puis un 7 qui zoome.",
-      "note2": "La secousse décale la trame d'une <b>cellule entière</b>. La préview d'origine secouait le canvas : une Glyph Matrix a ses LEDs soudées, elle ne peut pas bouger d'un demi-pixel — et un canvas transformé sortirait de la grille de pixels physiques sur laquelle repose tout le calage de la préview."
+      "note1": "Un gain simple fait pulser l'anneau du bord. Le jackpot prend l'écran pendant sept secondes et demie : triple strobe, ondes de choc concentriques, bandeau <b>JACKPOT</b> qui défile, feux d'artifice avec gravité, puis un 7 qui zoome."
     }
   },
   "justadice": {
@@ -313,8 +308,7 @@
       "title": "Le rendu",
       "pips": "pips 3 × 3",
       "digit": "chiffre",
-      "note1": "Sur vingt-cinq LEDs de côté, un dé vu de trois quarts ne se lit pas : la pose de repos est le gros plan à l'aplomb, les trois quarts n'existent qu'en vol.",
-      "note2": "Un pip fait 3 × 3 cellules, un nombre est un glyphe dilaté, et la marque ne s'imprime qu'<b>au gros plan</b> — en vol elle serait rognée par une arête et changerait à chaque rebond."
+      "note1": "Un dé vu de trois quarts ne se lit pas sur une aussi petite matrice : la pose de repos est donc toujours un gros plan à l'aplomb, vu de face. Les trois quarts n'existent qu'en plein vol."
     }
   },
   "sonoglyph": {
@@ -332,23 +326,23 @@
     "timbres": {
       "voice": {
         "name": "Voix",
-        "note": "Bande 200 Hz – 4 kHz, modulation syllabique ~4 Hz"
+        "note": "La bande de fréquence d'une voix qui parle"
       },
       "pink": {
         "name": "Ambiance",
-        "note": "Bruit rose large bande, quasi stationnaire"
+        "note": "Un bruit de fond stable, sans à-coups"
       },
       "traffic": {
         "name": "Trafic",
-        "note": "Grave dominant, passages lents"
+        "note": "Des graves qui dominent, par vagues lentes"
       },
       "music": {
         "name": "Musique",
-        "note": "Pulsation 2 Hz, grave marqué et aigus brefs"
+        "note": "Un rythme marqué, basses appuyées et aigus brefs"
       },
       "sine": {
         "name": "Sinus 1 kHz",
-        "note": "Référence : la pondération A y vaut 0 dB"
+        "note": "Un son pur, la référence de la mesure"
       }
     },
     "action": {
@@ -375,9 +369,9 @@
     "shown": {
       "title": "Toy affiché",
       "styleSeg": "Style",
-      "spectrum1": "Une bande par colonne, 40 Hz à 16 kHz en pas de tiers d'octave, déjà pondérée A — sans quoi le grave écrase les vingt-deux colonnes du haut. Rendu en <b>tout ou rien</b> : une LED est allumée ou éteinte, aucune nuance.",
-      "spectrum2": "La hauteur porte seule le niveau. L'axe médian reste allumé en permanence, c'est la ligne de base — et à bas niveau la seule chose visible.",
-      "needle": "Le cadran est le contour du disque sur ± 90°, donc toute la moitié haute ; le pivot est au centre exact. Graduations majeures : {ticks} dB(A). Une seule aiguille, sur le niveau Fast. Le chiffre en dessous est en 5×7, arrondi à l'entier."
+      "spectrum1": "Une colonne par bande de fréquence, des graves aux aigus, pondérée pour que les basses n'écrasent pas tout le reste. Rendu en <b>tout ou rien</b> : une LED est allumée ou éteinte, sans nuance.",
+      "spectrum2": "La hauteur de chaque colonne porte le niveau. L'axe médian reste allumé en permanence comme ligne de base — à bas volume, c'est tout ce qu'on voit.",
+      "needle": "Les graduations majeures sont : {ticks} dB(A). Le chiffre en dessous donne le niveau sonore, arrondi à l'entier."
     },
     "source": {
       "title": "Source",
@@ -386,7 +380,7 @@
       "seg": "Échantillons",
       "simulation": "Simulation",
       "micLabel": "Micro",
-      "note": "Ni l'une ni l'autre ne calcule de niveau : elles produisent des échantillons, et c'est la chaîne du toy — pondération A, détecteur Fast, banc de bandes — qui en tire un dB. Le micro passe par un AudioWorklet, avec AGC, réduction de bruit et annulation d'écho coupés. Rien ne sort du navigateur."
+      "note": "Le micro reste local : rien n'est envoyé hors du navigateur, et les traitements automatiques du téléphone (réduction de bruit, etc.) sont désactivés pour ne pas fausser la mesure."
     },
     "sim": {
       "title": "Signal simulé",
@@ -398,13 +392,13 @@
       "conversation": "Conversation",
       "street": "Rue",
       "concert": "Concert",
-      "note": "La consigne est en dB(A) et non en dBFS : le gain compense ce que la pondération retirera au timbre choisi, mesuré au changement de timbre. Sans cette compensation le curseur mentirait de 9 dB entre le sinus et le trafic."
+      "note": "Le niveau visé est calibré pour chaque timbre, pour que le curseur affiche vraiment le volume voulu, quel que soit le son choisi."
     },
     "calibration": {
       "title": "Calibration",
       "stat": "K = {k} dB",
       "slider": "dBFS → dB SPL",
-      "note": "<b>Ce chiffre n'est pas mesuré.</b> 120 dB est l'ordre de grandeur d'un MEMS de téléphone, dont la pleine échelle tombe par là. Tant que l'exemplaire n'est pas caractérisé, le niveau affiché est juste à ±5 dB près — les toys sont des indicateurs, pas des sonomètres. Le curseur est ici pour voir ce que la calibration déplace ; sur l'appareil c'est une constante."
+      "note": "<b>Ce chiffre n'est pas mesuré</b> : 120 dB est une estimation typique pour un micro de téléphone. Le niveau affiché reste donc approximatif (±5 dB) — ces toys sont des indicateurs, pas des sonomètres. Le curseur est ici pour voir l'effet du réglage ; sur l'appareil, c'est une valeur fixe."
     },
     "meter": {
       "title": "Mesure",

@@ -162,7 +162,7 @@
       "fiveDaysAgo": "Vor 5 Tagen",
       "christmas": "Weihnachten",
       "y2k": "Jahr 2000",
-      "inTenSeconds": "In 10 s"
+      "inFiveSeconds": "In 5 s"
     },
     "onlyOne": "Nur ein Lapse aktiviert — das Toy hat nichts, worauf es umschalten könnte",
     "lapse": {
@@ -180,19 +180,17 @@
       "since": "seit",
       "until": "bis",
       "ref": "Bezugszeitpunkt",
-      "note": "Ein noch bevorstehender Stichtag schaltet das Toy in den Countdown. Beim Überschreiten spielt es eine vier Sekunden lange Ankunft — <b>In 10 s</b> ist dafür da, sie ohne Warten zu sehen."
+      "note": "Ein noch bevorstehender Stichtag schaltet das Toy in den Countdown. Beim Überschreiten spielt es eine vier Sekunden lange Ankunft — die Schaltfläche <b>In 5 s</b> ist dafür da, sie ohne Warten zu sehen."
     },
     "format": {
       "title": "Format",
       "seg": "Layout",
-      "note1": "<b>Dicht</b> schreibt die ganze Feinheit, notfalls zwei Einheiten pro Zeile. <b>Kompakt</b> behält nur die beiden führenden Einheiten, in 5×7. <b>Zyklus</b> lässt sie einzeln durchlaufen. <b>Tage</b> nennt nur die Gesamtzahl.",
-      "note2": "Führende Einheiten mit Wert null entfallen: „0J 0M 3T“ würde zwei Zeilen der Scheibe dafür verschwenden zu sagen, dass nichts passiert ist."
+      "note1": "<b>Dicht</b> schreibt die ganze Feinheit, notfalls zwei Einheiten pro Zeile. <b>Kompakt</b> behält nur die beiden führenden Einheiten, in 5×7. <b>Zyklus</b> lässt sie einzeln durchlaufen. <b>Tage</b> nennt nur die Gesamtzahl."
     },
     "seconds": {
       "title": "Sekunden",
       "seg": "Darstellung der Minute",
-      "note1": "<b>Ring</b> füllt den Rand ab zwölf Uhr — im Uhrzeigersinn, wenn Zeit sich ansammelt, gegen den Uhrzeigersinn, wenn sie abläuft. <b>Sanduhr</b> hebt oder senkt einen Sandstand, dessen Oberfläche ein Kegel ist: Spitze in der Mitte bei „seit“, Trichter bei „bis“.",
-      "note2": "Die Höhe des Sandes wird durch Bisektion gefunden und nicht berechnet: Die Fläche einer Scheibe oberhalb einer Linie hat keinen einfachen Ausdruck, und vierzehn Iterationen genügen, um zellengenau auf die richtige Menge zu kommen."
+      "note1": "<b>Ring</b> füllt den Rand ab zwölf Uhr — im Uhrzeigersinn, wenn Zeit sich ansammelt, gegen den Uhrzeigersinn, wenn sie abläuft. <b>Sanduhr</b> hebt oder senkt einen Sandstand, dessen Oberfläche ein Kegel ist: Spitze in der Mitte bei „seit“, Trichter bei „bis“."
     },
     "readout": {
       "title": "Ablesung",
@@ -250,15 +248,12 @@
       "title": "Walzen",
       "stat": "3 × 7 Spalten",
       "note1": "Eine Walze ist kein Symbol, das am Ende gezogen wird: Sie ist ein durchgehendes Band aus fünf Symbolen, das sich dreht, und Anhalten heißt zu wählen, <b>wo</b> man bremst. Man sieht also die Nachbarn des Gewinnsymbols vorbeiziehen, bevor es sich setzt.",
-      "note2": "Die Reihenfolge der Symbole unterscheidet sich von Walze zu Walze — Walze <i>i</i> rückt um <i>i</i>+1 modulo 5 vor. Die Nachbarn eines ausgerichteten Symbols sind auf den dreien nicht dieselben, und eine Übereinstimmung lässt sich nicht vorab an dem ablesen, was oben vorbeizieht.",
-      "note3": "Beim Start läuft die Walze zuerst langsam zurück — eine Feder, die gespannt wird — und schnellt dann vor. Ohne diesen Rücklauf ist der Start ein gleichförmiges Gleiten, das nicht sagt, dass gerade an etwas gezogen wurde.",
-      "note4": "Der Bremsweg wird aus einem Bereich gezogen statt kürzestmöglich berechnet: Auf der Mindestdistanz zu bremsen würde die Walze fast sofort anhalten lassen, wenn das Ziel schon nah ist, und man würde den Automaten zielen sehen."
+      "note2": "Beim Start läuft die Walze zuerst langsam zurück — eine Feder, die gespannt wird — und schnellt dann vor. Ohne diesen Rücklauf ist der Start ein gleichförmiges Gleiten, das nicht sagt, dass gerade an etwas gezogen wurde."
     },
     "fx": {
       "title": "Effekte",
       "stat": "5 Phasen",
-      "note1": "Ein einfacher Gewinn lässt den Randring pulsieren. Der Jackpot nimmt siebeneinhalb Sekunden lang den Bildschirm ein: dreifaches Stroboskop, konzentrische Druckwellen, ein durchlaufendes <b>JACKPOT</b>-Band, Feuerwerk mit Schwerkraft, dann eine heranzoomende 7.",
-      "note2": "Das Rütteln versetzt den Frame um eine <b>ganze Zelle</b>. Die ursprüngliche Vorschau rüttelte das Canvas: Bei einer Glyph Matrix sind die LEDs verlötet, sie kann sich nicht um einen halben Pixel bewegen — und ein transformiertes Canvas würde das Raster physischer Pixel verlassen, auf dem die gesamte Ausrichtung der Vorschau beruht."
+      "note1": "Ein einfacher Gewinn lässt den Randring pulsieren. Der Jackpot nimmt siebeneinhalb Sekunden lang den Bildschirm ein: dreifaches Stroboskop, konzentrische Druckwellen, ein durchlaufendes <b>JACKPOT</b>-Band, Feuerwerk mit Schwerkraft, dann eine heranzoomende 7."
     }
   },
   "justadice": {
@@ -313,8 +308,7 @@
       "title": "Die Darstellung",
       "pips": "Augen 3 × 3",
       "digit": "Ziffer",
-      "note1": "Auf fünfundzwanzig LEDs Kantenlänge lässt sich ein von schräg oben gesehener Würfel nicht lesen: Die Ruhelage ist die Nahaufnahme von senkrecht oben, Schrägansichten gibt es nur im Flug.",
-      "note2": "Ein Auge ist 3 × 3 Zellen groß, eine Zahl ist eine gedehnte Glyphe, und die Markierung wird nur <b>in der Nahaufnahme</b> gedruckt — im Flug würde sie von einer Kante beschnitten und bei jedem Sprung wechseln."
+      "note1": "Auf fünfundzwanzig LEDs Kantenlänge lässt sich ein von schräg oben gesehener Würfel nicht lesen: Die Ruhelage ist die Nahaufnahme von senkrecht oben, Schrägansichten gibt es nur im Flug."
     }
   },
   "sonoglyph": {

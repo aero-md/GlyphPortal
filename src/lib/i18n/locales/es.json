@@ -162,7 +162,7 @@
       "fiveDaysAgo": "Hace 5 días",
       "christmas": "Navidad",
       "y2k": "Año 2000",
-      "inTenSeconds": "En 10 s"
+      "inFiveSeconds": "En 5 s"
     },
     "onlyOne": "Solo un lapse activado — el toy no tiene a dónde cambiar",
     "lapse": {
@@ -180,19 +180,17 @@
       "since": "desde",
       "until": "hasta",
       "ref": "Instante de referencia",
-      "note": "Un plazo por venir pone el toy en cuenta atrás. Al cruzarlo, reproduce una llegada de cuatro segundos — <b>En 10 s</b> está ahí para verla sin esperar."
+      "note": "Un plazo por venir pone el toy en cuenta atrás. Al cruzarlo, reproduce una llegada de cuatro segundos — el botón <b>En 5 s</b> está ahí para verla sin esperar."
     },
     "format": {
       "title": "Formato",
       "seg": "Composición",
-      "note1": "<b>Denso</b> escribe toda la granularidad, dos unidades por línea cuando hace falta. <b>Compacto</b> solo conserva las dos unidades de cabeza, en 5×7. <b>Ciclo</b> las hace desfilar una a una. <b>Días</b> solo dice el total.",
-      "note2": "Las unidades de cabeza a cero se recortan: «0A 0M 3D» desperdiciaría dos líneas de disco para decir que no ha pasado nada."
+      "note1": "<b>Denso</b> escribe toda la granularidad, dos unidades por línea cuando hace falta. <b>Compacto</b> solo conserva las dos unidades de cabeza, en 5×7. <b>Ciclo</b> las hace desfilar una a una. <b>Días</b> solo dice el total."
     },
     "seconds": {
       "title": "Segundos",
       "seg": "Representación del minuto",
-      "note1": "<b>Anillo</b> rellena el borde desde las doce — en sentido horario cuando el tiempo se acumula, antihorario cuando se consume. <b>Reloj de arena</b> sube o baja un nivel de arena cuya superficie es un cono: punta en el centro en «desde», embudo en «hasta».",
-      "note2": "La altura de la arena se halla por bisección y no se calcula: el área de un disco por encima de una línea no tiene expresión sencilla, y catorce iteraciones bastan para dar con la cantidad correcta con precisión de celda."
+      "note1": "<b>Anillo</b> rellena el borde desde las doce — en sentido horario cuando el tiempo se acumula, antihorario cuando se consume. <b>Reloj de arena</b> sube o baja un nivel de arena cuya superficie es un cono: punta en el centro en «desde», embudo en «hasta»."
     },
     "readout": {
       "title": "Lectura",
@@ -250,15 +248,12 @@
       "title": "Rodillos",
       "stat": "3 × 7 columnas",
       "note1": "Un rodillo no es un símbolo sorteado a la llegada: es una banda continua de cinco símbolos que gira, y detenerla consiste en elegir <b>dónde</b> frenarla. Se ven pasar por tanto los vecinos del símbolo ganador antes de que se pose.",
-      "note2": "El orden de los símbolos difiere de un rodillo a otro — el rodillo <i>i</i> avanza <i>i</i>+1 módulo 5. Los vecinos de un símbolo alineado no son los mismos en los tres, y una alineación no se lee de antemano mirando lo que pasa por encima.",
-      "note3": "Al lanzarse, el rodillo retrocede primero lentamente — un muelle que se tensa — y luego se suelta. Sin ese retroceso, la salida es un deslizamiento uniforme que no dice que se acaba de tirar de algo.",
-      "note4": "La distancia de frenado se sortea dentro de un rango en lugar de calcularse al mínimo: frenar en la distancia mínima detendría el rodillo casi de inmediato cuando el objetivo ya está cerca, y se vería a la máquina apuntar."
+      "note2": "Al lanzarse, el rodillo retrocede primero lentamente — un muelle que se tensa — y luego se suelta. Sin ese retroceso, la salida es un deslizamiento uniforme que no dice que se acaba de tirar de algo."
     },
     "fx": {
       "title": "Efectos",
       "stat": "5 fases",
-      "note1": "Una ganancia simple hace pulsar el anillo del borde. El jackpot toma la pantalla durante siete segundos y medio: triple estrobo, ondas de choque concéntricas, una banda <b>JACKPOT</b> que desfila, fuegos artificiales con gravedad, y luego un 7 que hace zoom.",
-      "note2": "La sacudida desplaza el frame una <b>celda entera</b>. La vista previa original sacudía el canvas: una Glyph Matrix tiene los LED soldados, no puede moverse medio píxel — y un canvas transformado saldría de la rejilla de píxeles físicos sobre la que descansa toda la alineación de la vista previa."
+      "note1": "Una ganancia simple hace pulsar el anillo del borde. El jackpot toma la pantalla durante siete segundos y medio: triple estrobo, ondas de choque concéntricas, una banda <b>JACKPOT</b> que desfila, fuegos artificiales con gravedad, y luego un 7 que hace zoom."
     }
   },
   "justadice": {
@@ -313,8 +308,7 @@
       "title": "El resultado",
       "pips": "pips 3 × 3",
       "digit": "cifra",
-      "note1": "Sobre veinticinco LED de lado, un dado visto en tres cuartos no se lee: la pose de reposo es el primer plano en vertical, los tres cuartos solo existen en vuelo.",
-      "note2": "Un pip ocupa 3 × 3 celdas, un número es un glifo dilatado, y la marca solo se imprime <b>en el primer plano</b> — en vuelo la recortaría una arista y cambiaría en cada rebote."
+      "note1": "Sobre veinticinco LED de lado, un dado visto en tres cuartos no se lee: la pose de reposo es el primer plano en vertical, los tres cuartos solo existen en vuelo."
     }
   },
   "sonoglyph": {

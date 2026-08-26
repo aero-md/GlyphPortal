@@ -205,7 +205,7 @@
       },
     },
     { key: "y2k", ms: () => new Date(2000, 0, 1).getTime() },
-    { key: "inTenSeconds", ms: () => Date.now() + 10000 },
+    { key: "inFiveSeconds", ms: () => Date.now() + 5000 },
   ];
 
   /* --- relevé --- */
@@ -335,7 +335,6 @@
         onchange={setFormat}
       />
       <p class="note">{@html $_("glyphlapse.format.note1")}</p>
-      <p class="note">{$_("glyphlapse.format.note2")}</p>
     </Card>
 
     <Card
@@ -353,7 +352,6 @@
         onchange={setSec}
       />
       <p class="note">{@html $_("glyphlapse.seconds.note1")}</p>
-      <p class="note">{$_("glyphlapse.seconds.note2")}</p>
     </Card>
 
     <Card

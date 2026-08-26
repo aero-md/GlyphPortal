@@ -162,7 +162,7 @@
       "fiveDaysAgo": "5 giorni fa",
       "christmas": "Natale",
       "y2k": "Anno 2000",
-      "inTenSeconds": "Tra 10 s"
+      "inFiveSeconds": "Tra 5 s"
     },
     "onlyOne": "Un solo lapse attivo — il toy non ha su cosa passare",
     "lapse": {
@@ -180,19 +180,17 @@
       "since": "da",
       "until": "fino al",
       "ref": "Istante di riferimento",
-      "note": "Una scadenza futura mette il toy in conto alla rovescia. Al superamento, riproduce un arrivo di quattro secondi — <b>Tra 10 s</b> è lì per vederlo senza aspettare."
+      "note": "Una scadenza futura mette il toy in conto alla rovescia. Al superamento, riproduce un arrivo di quattro secondi — il pulsante <b>Tra 5 s</b> è lì per vederlo senza aspettare."
     },
     "format": {
       "title": "Formato",
       "seg": "Impaginazione",
-      "note1": "<b>Denso</b> scrive tutta la granularità, due unità per riga quando serve. <b>Compatto</b> tiene solo le due unità di testa, in 5×7. <b>Ciclo</b> le fa scorrere una a una. <b>Giorni</b> dice solo il totale.",
-      "note2": "Le unità di testa a zero vengono tagliate: «0A 0M 3G» sprecherebbe due righe di disco per dire che non è successo nulla."
+      "note1": "<b>Denso</b> scrive tutta la granularità, due unità per riga quando serve. <b>Compatto</b> tiene solo le due unità di testa, in 5×7. <b>Ciclo</b> le fa scorrere una a una. <b>Giorni</b> dice solo il totale."
     },
     "seconds": {
       "title": "Secondi",
       "seg": "Resa del minuto",
-      "note1": "<b>Anello</b> riempie il bordo a partire da mezzogiorno — orario quando il tempo si accumula, antiorario quando si consuma. <b>Clessidra</b> alza o abbassa un livello di sabbia la cui superficie è un cono: punta al centro in «da», imbuto in «fino a».",
-      "note2": "L'altezza della sabbia è trovata per bisezione e non calcolata: l'area di un disco sopra una linea non ha un'espressione semplice, e quattordici iterazioni bastano a ritrovare la quantità giusta alla cella."
+      "note1": "<b>Anello</b> riempie il bordo a partire da mezzogiorno — orario quando il tempo si accumula, antiorario quando si consuma. <b>Clessidra</b> alza o abbassa un livello di sabbia la cui superficie è un cono: punta al centro in «da», imbuto in «fino a»."
     },
     "readout": {
       "title": "Lettura",
@@ -250,15 +248,12 @@
       "title": "Rulli",
       "stat": "3 × 7 colonne",
       "note1": "Un rullo non è un simbolo estratto all'arrivo: è una banda continua di cinque simboli che gira, e fermarsi vuol dire scegliere <b>dove</b> frenare. Si vedono quindi passare i vicini del simbolo vincente prima che si posi.",
-      "note2": "L'ordine dei simboli cambia da un rullo all'altro — il rullo <i>i</i> avanza di <i>i</i>+1 modulo 5. I vicini di un simbolo allineato non sono gli stessi sui tre, e un allineamento non si legge in anticipo guardando ciò che passa sopra.",
-      "note3": "All'avvio il rullo indietreggia prima lentamente — una molla che si carica — poi scatta. Senza questo rinculo la partenza è uno scorrimento uniforme che non dice che si è appena tirato qualcosa.",
-      "note4": "La distanza di frenata è estratta da un intervallo invece che calcolata al minimo: frenare sulla distanza minima fermerebbe il rullo quasi subito quando il bersaglio è già vicino, e si vedrebbe la macchina mirare."
+      "note2": "All'avvio il rullo indietreggia prima lentamente — una molla che si carica — poi scatta. Senza questo rinculo la partenza è uno scorrimento uniforme che non dice che si è appena tirato qualcosa."
     },
     "fx": {
       "title": "Effetti",
       "stat": "5 fasi",
-      "note1": "Una vincita semplice fa pulsare l'anello del bordo. Il jackpot prende lo schermo per sette secondi e mezzo: triplo stroboscopio, onde d'urto concentriche, una banda <b>JACKPOT</b> che scorre, fuochi d'artificio con gravità, poi un 7 che zooma.",
-      "note2": "La scossa sposta il frame di una <b>cella intera</b>. L'anteprima originale scuoteva il canvas: una Glyph Matrix ha i LED saldati, non può muoversi di mezzo pixel — e un canvas trasformato uscirebbe dalla griglia di pixel fisici su cui poggia tutto l'allineamento dell'anteprima."
+      "note1": "Una vincita semplice fa pulsare l'anello del bordo. Il jackpot prende lo schermo per sette secondi e mezzo: triplo stroboscopio, onde d'urto concentriche, una banda <b>JACKPOT</b> che scorre, fuochi d'artificio con gravità, poi un 7 che zooma."
     }
   },
   "justadice": {
@@ -313,8 +308,7 @@
       "title": "La resa",
       "pips": "pip 3 × 3",
       "digit": "cifra",
-      "note1": "Su venticinque LED di lato, un dado visto di tre quarti non si legge: la posa di riposo è il primo piano dall'alto, i tre quarti esistono solo in volo.",
-      "note2": "Un pip occupa 3 × 3 celle, un numero è un glifo dilatato, e il segno si stampa solo <b>al primo piano</b> — in volo sarebbe tagliato da uno spigolo e cambierebbe a ogni rimbalzo."
+      "note1": "Su venticinque LED di lato, un dado visto di tre quarti non si legge: la posa di riposo è il primo piano dall'alto, i tre quarti esistono solo in volo."
     }
   },
   "sonoglyph": {
