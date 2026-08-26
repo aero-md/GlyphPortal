@@ -7,10 +7,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "vite build && bun run scripts/inject-meta.ts",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json && bun run check:locales",
     "check:locales": "bun run scripts/check-locales.ts",
+    "og": "bun scripts/og.ts",
+    "og:serve": "vite dev --config og-render/vite.config.ts",
     "preview:glyphslot": "bun run scripts/glyphslot-preview.ts",
     "preview:sonoglyph": "bun run scripts/sonoglyph-preview.ts",
     "preview:glyphlapse": "bun run scripts/glyphlapse-preview.ts"
