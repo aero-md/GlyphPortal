@@ -63,7 +63,11 @@
 <div class="page">
   <header>
     <p class="sub meta">
-      {$_("home.intro")}
+      <!-- `{@html}` parce que la ligne porte une mise en relief — « Glyph
+           Matrix » à l'accent — et que le nom n'est pas au même endroit dans
+           les cinq langues : le balisage voyage donc avec la traduction, comme
+           pour les notes des préviews. -->
+      {@html $_("home.intro")}
       <a class="by" href="https://github.com/aero-md" target="_blank" rel="noopener noreferrer"
         >aero-md</a
       >
@@ -163,6 +167,19 @@
   .sub {
     margin: 0;
     min-width: 0;
+  }
+
+  /* L'unique accent de la page, sur le seul nom propre de la ligne. `:global`
+     parce que ce `<b>` vient du dictionnaire par `{@html}` : il ne passe pas
+     par le compilateur et ne porte aucune classe de portée — même cas que les
+     mises en relief des notes.
+
+     `font-weight: inherit` : la couleur suffit à le détacher, et un gras dans
+     une ligne en 11 px capitales interlettrées ferait deux signaux pour une
+     seule emphase. */
+  .sub :global(b) {
+    color: var(--accent);
+    font-weight: inherit;
   }
 
   /* Même main, même destination que la signature au pied de chaque préview. */
