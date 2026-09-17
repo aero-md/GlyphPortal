@@ -11,12 +11,15 @@
     "photoAlt": "Back of a {device}",
     "kind": {
       "toy": "Glyph toy",
-      "tool": "Web tool"
+      "tool": "Web tool",
+      "app": "Android app"
     },
     "toyCard": {
       "apk": "is an Android app for {device}. This page reproduces how it works in the browser — the toy itself downloads as an APK on GitHub.",
       "plain": "is an Android app for {device}. This page reproduces how it works in the browser.",
-      "download": "Download"
+      "download": "Download",
+      "pack": "Will also be available in {app}.",
+      "onlyPack": "will be part of {app}. This page reproduces how it works in the browser."
     },
     "pane": {
       "device": "Device",
@@ -48,7 +51,10 @@
       "glyphslot": "A pixelated slot machine",
       "glyphlapse": "A visualisation of time passing",
       "sonoglyph": "The sound of the mic, measured and drawn with a handful of pixels",
-      "justadice": "A die, thrown with a shake",
+      "justadice": "A die with several shapes. Thrown with a shake",
+      "gforce": "A car accelerometer, inspired by sports cars",
+      "float": "A bubble level and a compass. Minimal and effective",
+      "haloglyph": "Future app that will hold the glyph toys, and let you run the glyph matrix as a home screen widget",
       "glyphcast": "Turns an image into a Glyph Matrix render"
     }
   },
@@ -243,22 +249,11 @@
       "symbols": "Symbols",
       "result": "Result",
       "note": "The payline is the central seven-row window. Neighbouring symbols stay lit at a fifth of the intensity: that is what makes it read as a window onto a spinning band rather than three independent cells."
-    },
-    "reels": {
-      "title": "Reels",
-      "stat": "3 × 7 columns",
-      "note1": "A reel is not a symbol drawn at the finish: it is a continuous band of five symbols that spins, and stopping it means choosing <b>where</b> to brake. So the neighbours of the winning symbol go past before it settles.",
-      "note2": "On the spin, the reel first backs up slowly — a spring being wound — then releases. Without that recoil the start is a uniform glide that does not say anything was pulled."
-    },
-    "fx": {
-      "title": "Effects",
-      "stat": "5 phases",
-      "note1": "A plain win pulses the rim ring. The jackpot takes the screen for seven and a half seconds: triple strobe, concentric shock waves, a scrolling <b>JACKPOT</b> banner, fireworks with gravity, then a zooming 7."
     }
   },
   "justadice": {
     "description": "Preview of the Just a dice Glyph Toy: a die thrown with a shake on the Glyph Matrix of a Nothing Phone.",
-    "sub": "A die, and nothing else",
+    "sub": "A die with several shapes",
     "action": "Next die",
     "dieSeg": "Die",
     "solids": {
@@ -303,25 +298,16 @@
       "settle": "Settling",
       "closeup": "Close-up",
       "note2": "Six bounces, then the camera moves in to reveal the top face."
-    },
-    "render": {
-      "title": "The render",
-      "pips": "3 × 3 pips",
-      "digit": "digit",
-      "note1": "On twenty-five LEDs a side, a die seen three-quarters on does not read: the resting pose is the close-up from directly above, and three-quarter views only exist in flight."
     }
   },
   "sonoglyph": {
-    "description": "Preview of the two Sonoglyph Glyph Toys: spectrum visualiser and needle VU meter, on the Glyph Matrix of the Nothing Phone (3).",
-    "sub": "Two Glyph Toys that read the sound level",
+    "description": "Preview of Sono's three ways to read the sound level — spectrum, needle, waveform — on the Glyph Matrix of the Nothing Phone (3).",
+    "sub": "Visualize the sound from your mic",
     "toySeg": "Toy",
     "toys": {
       "needle": "Needle",
-      "spectrum": "Spectrum"
-    },
-    "styles": {
-      "mirror": "Mirror",
-      "bars": "Bars"
+      "spectrum": "Spectrum",
+      "wave": "Wave"
     },
     "timbres": {
       "voice": {
@@ -346,32 +332,16 @@
       }
     },
     "action": {
-      "style": "Next style",
-      "reset": "Reset peak"
+      "next": "Next mode"
     },
     "notice": {
       "micOpen": "Mic open — browser processing disabled",
       "micRefused": "Mic refused: {reason}",
-      "style": "Style: {name}",
-      "engineReset": "Peak, maximum and Leq reset",
-      "reset": "Reset"
-    },
-    "status": {
-      "ok": "measuring",
-      "muted": "silent stream",
-      "noSource": "no source"
+      "mode": "Mode: {name}",
+      "engineReset": "Peak, maximum and Leq reset"
     },
     "toyCard": {
-      "archived": "archived",
-      "note1": "The project was abandoned and archived for technical reasons, but the code is still readable",
-      "noteLink": "on GitHub"
-    },
-    "shown": {
-      "title": "Displayed toy",
-      "styleSeg": "Style",
-      "spectrum1": "One band per column, 40 Hz to 16 kHz in third-octave steps, already A-weighted — without which the bass crushes the twenty-two columns above it. Rendered <b>all or nothing</b>: a LED is on or off, no shades.",
-      "spectrum2": "Height alone carries the level. The centre axis stays lit at all times, it is the baseline — and at low level the only visible thing.",
-      "needle": "The dial is the outline of the disc over ± 90°, so the whole upper half; the pivot is at the exact centre. Major graduations: {ticks} dB(A). A single needle, on the Fast level. The number below is 5×7, rounded to the integer."
+      "note1": "will be part of {app}. The Sono module will carry all three of its displays over. The original repo stays archived, but the code lives on in it."
     },
     "source": {
       "title": "Source",
@@ -393,25 +363,76 @@
       "street": "Street",
       "concert": "Concert",
       "note": "The setting is in dB(A) and not dBFS: the gain makes up for what the weighting will take off the chosen timbre, measured when the timbre changes. Without that compensation the slider would lie by 9 dB between the sine and the traffic."
+    }
+  },
+  "gforce": {
+    "description": "Preview of G-Forces, Haloglyph's car accelerometer: a ball that shows what you're feeling right now, four peaks that show what the drive threw at you.",
+    "sub": "A car accelerometer",
+    "action": "Next dial",
+    "modes": {
+      "vif": "Live",
+      "pics": "Peaks"
     },
-    "calibration": {
-      "title": "Calibration",
-      "stat": "K = {k} dB",
-      "slider": "dBFS → dB SPL",
-      "note": "<b>This figure is not measured.</b> 120 dB is the order of magnitude of a phone MEMS, whose full scale falls around there. Until the unit is characterised, the displayed level is only right to within ±5 dB — the toys are indicators, not sound level meters. The slider is here to see what calibration moves; on the device it is a constant."
+    "pad": {
+      "title": "Acceleration",
+      "seg": "Dial",
+      "label": "Simulated push",
+      "simulate": "Switch dial",
+      "note1": "The pad simulates the push a corner or a braking would give you — toward the top is braking. On the device it is the phone's accelerometer, projected onto the horizontal plane to cancel out the mount's tilt."
     },
-    "meter": {
-      "title": "Measurement",
-      "fast": "Fast (LAF)",
-      "slow": "Slow (LAS)",
-      "leq": "Equivalent (LAeq)",
-      "max": "Maximum",
-      "peak": "Displayed peak",
-      "integration": "Integration",
-      "overload": "Overload",
-      "yes": "yes",
-      "no": "no",
-      "reset": "Reset"
+    "peaks": {
+      "title": "Drive peaks",
+      "stat": "front {front} · rear {rear}",
+      "reset": "Clear peaks",
+      "note1": "Peaks are not kept: on the device as here, closing the toy clears them — a peak is the story of a drive, not a record."
+    }
+  },
+  "float": {
+    "description": "Preview of Float, Haloglyph's bubble level and compass: a logarithmic scale that makes a tenth of a degree visible, and a four-letter rose.",
+    "sub": "A level and a compass",
+    "action": "Next instrument",
+    "modes": {
+      "niveau": "Level",
+      "boussole": "Compass"
+    },
+    "instrument": {
+      "title": "Displayed instrument",
+      "seg": "Instrument",
+      "tilt": "Simulated tilt",
+      "heading": "Simulated heading",
+      "simulate": "Switch instrument",
+      "note1": "The pad simulates the phone's pose: flat at the centre, standing on edge at the rim — which is what flips the level from the flat regime to the plumb one, as on the device."
+    }
+  },
+  "haloglyph": {
+    "description": "Haloglyph: the pack that bundles this repo's Glyph toys into one Android app for the Glyph Matrix of the Nothing Phone (3), and into a widget that emulates it elsewhere.",
+    "sub": "The pack that bundles the toys",
+    "pitch": {
+      "stat": "5 toys",
+      "note1": "<b>HALOGLYPH</b> bundles this repo's Glyph toys into a single Android app: on the Glyph Matrix of the Nothing Phone (3) through Glyph Interface, and — lacking a matrix — into a home-screen widget that emulates it pixel for pixel on any other phone.",
+      "note2": "Still a draft: the five toys are written, registered with the system, and already running in the widget, but the pack isn't published. Glyphslot isn't part of it — a slot machine forces a rating that would contaminate the rest of the pack — and stays a repo of its own.",
+      "repo": "View the repo"
+    },
+    "toys": {
+      "title": "The toys",
+      "note1": "Each one switches on a long press of the Glyph Button — or a tap, in the widget.",
+      "glyphlapse": "A time counter: up to five deadlines, as a ring or an hourglass.",
+      "justadice": "d6, d10, d12, d20 tracked in quaternions — shake to throw.",
+      "sonoglyph": "The mic on the matrix, as spectrum, needle, or wave.",
+      "float": "A bubble level on a logarithmic scale, and a compass as second instrument.",
+      "gforce": "A car accelerometer: a ball for right now, four peaks for the drive."
+    },
+    "widget": {
+      "title": "The widget",
+      "stat": "3 max",
+      "note1": "One widget carries every toy: <b>tap</b> to interact with whichever is shown, <b>double tap</b> to move to the next, <b>long press</b> to change what it shows. Two sizes, 2 × 2 and 1 × 1 — up to three widgets placed at once.",
+      "note2": "A burst lasts thirty seconds; a widget can also run continuously, and suspends itself as soon as the screen turns off."
+    },
+    "build": {
+      "title": "Build",
+      "stat": "MIT",
+      "note1": "Five languages — de, en, es, fr, it, English as fallback — the same set as the rest of the ecosystem: translation reaches down to the unit shown on the matrix.",
+      "note2": "JDK 17, Android SDK 36, no Nothing API key required. The GlyphMatrixSDK downloads itself on the first build."
     }
   }
 }

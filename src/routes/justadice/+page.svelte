@@ -297,6 +297,9 @@
         <b>JUST A DICE</b>
         {$_("common.toyCard.apk", { values: { device: device.name } })}
       </p>
+      <p class="note">
+        {$_("common.toyCard.pack", { values: { app: "Haloglyph" } })}
+      </p>
       <div class="btns">
         <a
           href="https://github.com/aero-md/justadice/releases"
@@ -414,14 +417,6 @@
         <dd>{num(T_LAND)} → {num(T_END)} s</dd>
       </dl>
       <p class="note">{$_("justadice.timing.note2")}</p>
-    </Card>
-
-    <Card
-      ref="03"
-      title={$_("justadice.render.title")}
-      stat={die.faces === 6 ? $_("justadice.render.pips") : $_("justadice.render.digit")}
-    >
-      <p class="note">{$_("justadice.render.note1")}</p>
     </Card>
   {/snippet}
 </Shell>

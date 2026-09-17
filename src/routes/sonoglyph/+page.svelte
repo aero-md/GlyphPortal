@@ -1,7 +1,7 @@
 <script lang="ts">
   import { DEFAULT_DEVICE, frameOf, type Frame, type LedStyle } from "$lib";
   import type { Dict } from "$lib/i18n";
-  import { _, json, number } from "svelte-i18n";
+  import { _, json } from "svelte-i18n";
   import Card from "$lib/ui/Card.svelte";
   import PreviewPane from "$lib/matrix/PreviewPane.svelte";
   import type { PreviewMode } from "$lib/matrix/Preview.svelte";
@@ -18,12 +18,11 @@
     type SimParams,
     type Timbre,
   } from "./lib/source";
-  import { NeedleRenderer, TICKS } from "./lib/toys/needle";
-  import { STYLE_IDS, VisualizerRenderer, type Style } from "./lib/toys/visualizer";
+  import { SonoRenderer, type SonoToy } from "./lib/render";
 
   const VERSION = "01";
 
-  /* Les deux toys sont dessinés pour une matrice 25 × 25 : le (4a) Pro et ses
+  /* Les trois modes sont dessinés pour une matrice 25 × 25 : le (4a) Pro et ses
      13 × 13 n'afficheraient ni les graduations du cadran ni un chiffre lisible,
      et le spectre y tomberait à treize colonnes. L'appareil est donc figé, et
      `PreviewPane` retire le sélecteur de lui-même quand il n'y a qu'un choix.
@@ -32,9 +31,12 @@
   const device = DEFAULT_DEVICE;
 
   /* --- ce qui est affiché --- */
-  type Toy = "spectre" | "aiguille";
+  /* Trois modes d'un seul toy, comme sur l'appareil depuis que Sonoglyph a
+     rejoint Haloglyph : Spectre, Aiguille et Onde y étaient deux Glyph Toys
+     séparés, ils partagent maintenant la même mesure et l'appui long les fait
+     tourner l'un dans l'autre — il n'y a plus de style à choisir à part. */
+  type Toy = SonoToy;
   let toy = $state<Toy>("aiguille");
-  let style = $state<Style>("mirror");
   let mode = $state<PreviewMode>("phone");
   let ledStyle = $state<LedStyle>("sharp");
 
@@ -55,8 +57,7 @@
   const engine = new MeterEngine(FS, DEFAULT_K);
   const simSource = new SimSource(sim);
   const mic = new MicSource();
-  const visualizer = new VisualizerRenderer(device);
-  const needle = new NeedleRenderer(device);
+  const sono = new SonoRenderer(device);
 
   const block = new Float32Array(4096);
   let frame = $state<Frame>(frameOf(device, new Float32Array(device.cells)));
@@ -101,7 +102,7 @@
       snap = engine.snapshot(t);
       /* Copie obligatoire : les renderers réécrivent leur propre grille à chaque
          image, et la préview la lirait au milieu de la passe suivante. */
-      const values = (toy === "spectre" ? visualizer.render(snap, style) : needle.render(snap)).slice();
+      const values = sono.render(snap, toy).slice();
       frame = frameOf(device, values);
       raf = requestAnimationFrame(step);
     };
@@ -114,6 +115,7 @@
     try {
       await mic.start();
       engine.clear();
+      sono.clearHistory();
       engine.status = "ok";
       source = "mic";
       flash(() => $_("sonoglyph.notice.micOpen"));
@@ -127,22 +129,24 @@
   function useSim() {
     mic.stop();
     engine.clear();
+    sono.clearHistory();
     source = "sim";
   }
 
-  /** L'appui long, tel que le système l'enverrait au toy affiché. */
+  /* L'ordre de la rotation, celui du toy : Spectre, Aiguille, Onde — voir
+     `SonoMode.kt`. Sonoglyph en faisait deux Glyph Toys, réunis depuis dans
+     Haloglyph sous un seul appui long qui fait tourner les trois modes. */
+  const ORDER: Toy[] = ["spectre", "aiguille", "onde"];
+
+  /** L'appui long, tel que le système l'enverrait au toy affiché : le mode suivant. */
   function longPress() {
-    if (toy === "spectre") {
-      const i = STYLE_IDS.indexOf(style);
-      style = STYLE_IDS[(i + 1) % STYLE_IDS.length];
-      const next = style;
-      flash(() =>
-        $_("sonoglyph.notice.style", { values: { name: $_(`sonoglyph.styles.${next}`) } }),
-      );
-    } else {
-      engine.reset();
-      flash(() => $_("sonoglyph.notice.engineReset"));
-    }
+    toy = ORDER[(ORDER.indexOf(toy) + 1) % ORDER.length];
+    flash(() => $_("sonoglyph.notice.mode", { values: { name: $_(`sonoglyph.toys.${toyKey(toy)}`) } }));
+  }
+
+  /** La clé de dictionnaire d'un mode : `toys.needle` / `toys.spectrum` / `toys.wave`. */
+  function toyKey(t: Toy): "needle" | "spectrum" | "wave" {
+    return t === "aiguille" ? "needle" : t === "spectre" ? "spectrum" : "wave";
   }
 
   let flashTimer: ReturnType<typeof setTimeout>;
@@ -152,34 +156,12 @@
     if (msg) flashTimer = setTimeout(() => (noticeFn = null), 2600);
   }
 
-  const action = $derived(toy === "spectre" ? $_("sonoglyph.action.style") : $_("sonoglyph.action.reset"));
+  const action = $derived($_("sonoglyph.action.next"));
   /* `$json` et non `$_` : l'entrée porte un nom **et** une note, et les deux
      sont lues séparément par la carte. */
   const timbre = $derived(
     $json(`sonoglyph.timbres.${sim.timbre}`) as Dict["sonoglyph"]["timbres"][Timbre],
   );
-  const statusText = $derived(
-    snap.status === "ok"
-      ? $_("sonoglyph.status.ok")
-      : snap.status === "muted"
-        ? $_("sonoglyph.status.muted")
-        : $_("sonoglyph.status.noSource"),
-  );
-
-  /* Les niveaux s'écrivent à décimales imposées. Le formateur est **lu dans la
-     dérivation**, et non dans la fonction rendue : c'est cette lecture qui
-     abonne le composant, et qui refait passer « 61.4 dB » à « 61,4 dB » au
-     changement de langue. */
-  const num = $derived.by(() => {
-    const fmt = $number;
-    return (v: number, digits = 2) =>
-      fmt(v, { minimumFractionDigits: digits, maximumFractionDigits: digits });
-  });
-
-  const db = $derived.by(() => {
-    const fmt = num;
-    return (v: number) => `${fmt(v, 1)} dB`;
-  });
 </script>
 
 <svelte:head>
@@ -212,8 +194,9 @@
           label={$_("sonoglyph.toySeg")}
           bind:value={toy}
           options={[
-            { v: "aiguille" as Toy, t: $_("sonoglyph.toys.needle") },
             { v: "spectre" as Toy, t: $_("sonoglyph.toys.spectrum") },
+            { v: "aiguille" as Toy, t: $_("sonoglyph.toys.needle") },
+            { v: "onde" as Toy, t: $_("sonoglyph.toys.wave") },
           ]}
         />
       {/snippet}
@@ -222,47 +205,24 @@
 
   {#snippet rack()}
     <!-- [00] parce que c'est ce qui vient avant tout le reste : la page est une
-         préview, le toy est un APK qui s'installe sur le téléphone. Ici il n'y
-         a rien à télécharger — le dire vaut mieux que de laisser chercher. -->
-    <Card ref="00" title={$_("common.kind.toy")} stat={$_("sonoglyph.toyCard.archived")}>
-      <!-- Pas de « se télécharge en APK » ici, contrairement aux deux autres
-           toys : il n'y a rien à télécharger, et le paragraphe suivant dit
-           pourquoi. Promettre un APK au-dessus d'une carte marquée « archivé »
-           enverrait chercher une release qui n'existe pas. -->
+         préview, le toy est un APK qui s'installe sur le téléphone. Le dépôt
+         `sonoglyph` d'origine reste archivé — c'est celui-là qui l'a fait
+         figurer longtemps « abandonné » ici — mais le code n'a pas fini sa vie
+         avec lui : il tourne aujourd'hui dans Haloglyph, sous le nom Sono. -->
+    <Card ref="00" title={$_("common.kind.toy")} stat="Haloglyph">
       <p class="note">
         <b>SONOGLYPH</b>
-        {$_("common.toyCard.plain", { values: { device: device.name } })}
+        {$_("sonoglyph.toyCard.note1", { values: { app: "Haloglyph" } })}
       </p>
-      <p class="note">
-        {$_("sonoglyph.toyCard.note1")}
-        <a href="https://github.com/aero-md/sonoglyph" target="_blank" rel="noopener noreferrer">
-          {$_("sonoglyph.toyCard.noteLink")}</a
-        >.
-      </p>
+      <div class="btns">
+        <a href="https://github.com/aero-md/haloglyph" target="_blank" rel="noopener noreferrer">
+          {$_("common.toyCard.download")}
+        </a>
+      </div>
     </Card>
 
     <Card
       ref="01"
-      title={$_("sonoglyph.shown.title")}
-      stat={toy === "spectre" ? $_("sonoglyph.toys.spectrum") : $_("sonoglyph.toys.needle")}
-    >
-      {#if toy === "spectre"}
-        <Seg
-          label={$_("sonoglyph.shown.styleSeg")}
-          bind:value={style}
-          options={STYLE_IDS.map((v) => ({ v, t: $_(`sonoglyph.styles.${v}`) }))}
-        />
-        <p class="note">{@html $_("sonoglyph.shown.spectrum1")}</p>
-        <p class="note">{$_("sonoglyph.shown.spectrum2")}</p>
-      {:else}
-        <p class="note">
-          {$_("sonoglyph.shown.needle", { values: { ticks: TICKS.join(" · ") } })}
-        </p>
-      {/if}
-    </Card>
-
-    <Card
-      ref="02"
       title={$_("sonoglyph.source.title")}
       stat={source === "mic" ? $_("sonoglyph.source.mic") : $_("sonoglyph.source.sim")}
       cta={source === "mic"}
@@ -280,7 +240,7 @@
     </Card>
 
     <Card
-      ref="03"
+      ref="02"
       title={$_("sonoglyph.sim.title")}
       stat={timbre.name}
       locked={source !== "sim"}
@@ -320,81 +280,5 @@
       </div>
       <p class="note">{$_("sonoglyph.sim.note")}</p>
     </Card>
-
-    <Card
-      ref="04"
-      title={$_("sonoglyph.calibration.title")}
-      stat={$_("sonoglyph.calibration.stat", { values: { k: calibrationK.toFixed(0) } })}
-    >
-      <Slider
-        label={$_("sonoglyph.calibration.slider")}
-        bind:value={calibrationK}
-        range={[100, 140]}
-        reset={DEFAULT_K}
-        digits={0}
-        unit=" dB"
-      />
-      <p class="note">{@html $_("sonoglyph.calibration.note")}</p>
-    </Card>
-
-    <Card ref="05" title={$_("sonoglyph.meter.title")} stat={statusText}>
-      <dl class="readout">
-        <dt>{$_("sonoglyph.meter.fast")}</dt>
-        <dd>{db(snap.laf)}</dd>
-        <dt>{$_("sonoglyph.meter.slow")}</dt>
-        <dd>{db(snap.las)}</dd>
-        <dt>{$_("sonoglyph.meter.leq")}</dt>
-        <dd>{db(snap.laeq)}</dd>
-        <dt>{$_("sonoglyph.meter.max")}</dt>
-        <dd>{db(snap.lafmax)}</dd>
-        <dt>{$_("sonoglyph.meter.peak")}</dt>
-        <dd>{db(snap.peak)}</dd>
-        <dt>{$_("sonoglyph.meter.integration")}</dt>
-        <dd>{num(snap.elapsed, 1)} s</dd>
-        <dt>{$_("sonoglyph.meter.overload")}</dt>
-        <dd class:accent={snap.overload}>
-          {snap.overload ? $_("sonoglyph.meter.yes") : $_("sonoglyph.meter.no")}
-        </dd>
-      </dl>
-      <div class="btns">
-        <button
-          type="button"
-          onclick={() => {
-            engine.reset();
-            flash(() => $_("sonoglyph.notice.reset"));
-          }}
-        >
-          {$_("sonoglyph.meter.reset")}
-        </button>
-      </div>
-    </Card>
   {/snippet}
 </Shell>
-
-<style>
-  /* Ce qui reste ici est propre à Sonoglyph : le relevé de mesure. Le reste —
-     page, en-tête, rack, pied, boutons, notes — vient de `$lib`. */
-
-  /* Deux colonnes, libellé à gauche et valeur à droite, alignées sur une grille
-     et non sur des tabulations : les valeurs sont en chiffres à chasse fixe,
-     elles doivent tomber les unes sous les autres. */
-  .readout {
-    margin: 0;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 0.28rem 1rem;
-    font-size: 11px;
-  }
-
-  .readout dt {
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--faint);
-  }
-
-  .readout dd {
-    margin: 0;
-    text-align: right;
-    color: var(--ink);
-  }
-</style>

@@ -37,7 +37,9 @@ if (!browser) {
 const outDir = join(ROOT, "static", "og");
 mkdirSync(outDir, { recursive: true });
 
-const SLUGS = ["home", "glyphslot", "glyphlapse", "sonoglyph", "justadice", "glyphcast"];
+/* Pas de Haloglyph ici : `ready: false` n'a pas de route dans le portail —
+   voir `inject-meta.ts`, qui l'exclut pour la même raison. */
+const SLUGS = ["home", "glyphslot", "glyphlapse", "sonoglyph", "justadice", "gforce", "float", "glyphcast"];
 
 async function waitReady(timeoutMs = 20000): Promise<void> {
   const start = Date.now();

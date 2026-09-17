@@ -268,6 +268,9 @@
         <b>GLYPHLAPSE</b>
         {$_("common.toyCard.apk", { values: { device: device.name } })}
       </p>
+      <p class="note">
+        {$_("common.toyCard.pack", { values: { app: "Haloglyph" } })}
+      </p>
       <div class="btns">
         <a
           href="https://github.com/aero-md/glyphlapse/releases"

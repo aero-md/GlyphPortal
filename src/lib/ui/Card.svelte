@@ -26,7 +26,7 @@
 
 <section class="card" class:cta>
   <header>
-    <span class="ref">[{ref}]</span>
+    <span class="ref">[{Number(ref)}]</span>
     <h2>{title}</h2>
     {#if stat}<span class="stat">{stat}</span>{/if}
   </header>
@@ -62,13 +62,18 @@
   }
 
   .ref {
-    font-size: 11px;
+    font-size: 13px;
     letter-spacing: 0.06em;
     color: var(--accent);
   }
 
+  /* Seul emploi de la mono hors ce fichier : le titre de carte/section — voir
+     le commentaire sur `--mono` dans app.css. Les capitales interlettrées y
+     gardent leur lisibilité, contrairement à la prose. Taille d'origine,
+     non concernée par l'agrandissement du reste de la page. */
   h2 {
     margin: 0;
+    font-family: var(--mono);
     font-size: 11px;
     font-weight: 500;
     letter-spacing: 0.18em;
@@ -78,7 +83,7 @@
 
   .stat {
     margin-left: auto;
-    font-size: 10px;
+    font-size: 12px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--faint);

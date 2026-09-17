@@ -11,12 +11,15 @@
     "photoAlt": "Dos d'un {device}",
     "kind": {
       "toy": "Glyph toy",
-      "tool": "Outil web"
+      "tool": "Outil web",
+      "app": "App Android"
     },
     "toyCard": {
-      "apk": "est une application Android pour {device}. Cette page en reproduit le fonctionnement dans le navigateur — le toy lui-même se télécharge en APK sur GitHub.",
-      "plain": "est une application Android pour {device}. Cette page en reproduit le fonctionnement dans le navigateur.",
-      "download": "Télécharger"
+      "apk": "est une app Android pour {device}. Cette page en reproduit le fonctionnement dans le navigateur — le toy lui-même se télécharge en APK sur GitHub.",
+      "plain": "est une app Android pour {device}. Cette page en reproduit le fonctionnement dans le navigateur.",
+      "download": "Télécharger",
+      "pack": "Sera aussi disponible dans {app}.",
+      "onlyPack": "fera partie de {app}. Cette page en reproduit le fonctionnement dans le navigateur."
     },
     "pane": {
       "device": "Appareil",
@@ -48,7 +51,10 @@
       "glyphslot": "Une machine à sous pixélisée",
       "glyphlapse": "Une visualisation du temps qui passe",
       "sonoglyph": "Le son du micro, mesuré et représenté avec une poignée de pixels",
-      "justadice": "Un dé, jeté d'une secousse",
+      "justadice": "Un dé de plusieurs formes. Jeté d'une secousse",
+      "gforce": "Un accéléromètre de bord, inspiré des voitures de sport",
+      "float": "Un niveau à bulle et une boussole. Minimalistes et efficaces",
+      "haloglyph": "Future application qui réunira les glyph toys, et permettra d'utiliser la glyph matrix dans un widget sur l'écran d'accueil",
       "glyphcast": "Convertit une image en rendu Glyph Matrix"
     }
   },
@@ -243,22 +249,11 @@
       "symbols": "Symboles",
       "result": "Résultat",
       "note": "La payline est la fenêtre centrale. Les symboles voisins restent visibles, plus pâles — comme une fenêtre posée sur une bande qui défile, pas trois cases indépendantes."
-    },
-    "reels": {
-      "title": "Rouleaux",
-      "stat": "3 × 7 colonnes",
-      "note1": "L'ordre des symboles diffère d'un rouleau à l'autre : ce n'est pas la même bande qui tourne trois fois côte à côte, chacun a son propre agencement.",
-      "note2": "Au lancement, le rouleau recule d'abord, comme un ressort qu'on arme, avant de partir — une simulation du fonctionnement d'une vraie machine à sous mécanique."
-    },
-    "fx": {
-      "title": "Effets",
-      "stat": "5 phases",
-      "note1": "Un gain simple fait pulser l'anneau du bord. Le jackpot prend l'écran pendant sept secondes et demie : triple strobe, ondes de choc concentriques, bandeau <b>JACKPOT</b> qui défile, feux d'artifice avec gravité, puis un 7 qui zoome."
     }
   },
   "justadice": {
     "description": "Préview du Glyph Toy Just a dice : un dé jeté d'une secousse sur la Glyph Matrix d'un Nothing Phone.",
-    "sub": "Un dé, et rien d'autre",
+    "sub": "Un dé de plusieurs formes",
     "action": "Dé suivant",
     "dieSeg": "Dé",
     "solids": {
@@ -303,25 +298,16 @@
       "settle": "Mise en place",
       "closeup": "Gros plan",
       "note2": "Six rebonds, puis la caméra se rapproche pour révéler la face du dessus."
-    },
-    "render": {
-      "title": "Le rendu",
-      "pips": "pips 3 × 3",
-      "digit": "chiffre",
-      "note1": "Un dé vu de trois quarts ne se lit pas sur une aussi petite matrice : la pose de repos est donc toujours un gros plan à l'aplomb, vu de face. Les trois quarts n'existent qu'en plein vol."
     }
   },
   "sonoglyph": {
-    "description": "Préview des deux Glyph Toys de Sonoglyph : visualiseur de spectre et VU-mètre à aiguille, sur la Glyph Matrix du Nothing Phone (3).",
-    "sub": "Deux Glyph Toys qui lisent le niveau sonore",
+    "description": "Préview des trois façons de Sono de lire le niveau sonore — spectre, aiguille, forme d'onde — sur la Glyph Matrix du Nothing Phone (3).",
+    "sub": "Visualisez le son du micro",
     "toySeg": "Toy",
     "toys": {
       "needle": "Aiguille",
-      "spectrum": "Spectre"
-    },
-    "styles": {
-      "mirror": "Miroir",
-      "bars": "Colonnes"
+      "spectrum": "Spectre",
+      "wave": "Onde"
     },
     "timbres": {
       "voice": {
@@ -346,32 +332,16 @@
       }
     },
     "action": {
-      "style": "Style suivant",
-      "reset": "Reset crête"
+      "next": "Mode suivant"
     },
     "notice": {
       "micOpen": "Micro ouvert — traitements du navigateur désactivés",
       "micRefused": "Micro refusé : {reason}",
-      "style": "Style : {name}",
-      "engineReset": "Crête, maximum et Leq remis à zéro",
-      "reset": "Remis à zéro"
-    },
-    "status": {
-      "ok": "mesure",
-      "muted": "flux muet",
-      "noSource": "pas de source"
+      "mode": "Mode : {name}",
+      "engineReset": "Crête, maximum et Leq remis à zéro"
     },
     "toyCard": {
-      "archived": "archivé",
-      "note1": "Le projet a été abandonné et archivé pour raison de contraintes techniques, mais le code est toujours consultable",
-      "noteLink": "sur GitHub"
-    },
-    "shown": {
-      "title": "Toy affiché",
-      "styleSeg": "Style",
-      "spectrum1": "Une colonne par bande de fréquence, des graves aux aigus, pondérée pour que les basses n'écrasent pas tout le reste. Rendu en <b>tout ou rien</b> : une LED est allumée ou éteinte, sans nuance.",
-      "spectrum2": "La hauteur de chaque colonne porte le niveau. L'axe médian reste allumé en permanence comme ligne de base — à bas volume, c'est tout ce qu'on voit.",
-      "needle": "Les graduations majeures sont : {ticks} dB(A). Le chiffre en dessous donne le niveau sonore, arrondi à l'entier."
+      "note1": "fera partie de {app}. Le module Sono y reprendra ses trois affichages. Le dépôt d'origine reste archivé, mais le code continue d'y vivre."
     },
     "source": {
       "title": "Source",
@@ -393,25 +363,76 @@
       "street": "Rue",
       "concert": "Concert",
       "note": "Le niveau visé est calibré pour chaque timbre, pour que le curseur affiche vraiment le volume voulu, quel que soit le son choisi."
+    }
+  },
+  "gforce": {
+    "description": "Préview de G-Forces, l'accéléromètre de bord de Haloglyph : une bille qui dit ce qu'on subit, quatre pics qui disent ce qu'on a pris.",
+    "sub": "Un accéléromètre de bord",
+    "action": "Cadran suivant",
+    "modes": {
+      "vif": "Vif",
+      "pics": "Pics"
     },
-    "calibration": {
-      "title": "Calibration",
-      "stat": "K = {k} dB",
-      "slider": "dBFS → dB SPL",
-      "note": "<b>Ce chiffre n'est pas mesuré</b> : 120 dB est une estimation typique pour un micro de téléphone. Le niveau affiché reste donc approximatif (±5 dB) — ces toys sont des indicateurs, pas des sonomètres. Le curseur est ici pour voir l'effet du réglage ; sur l'appareil, c'est une valeur fixe."
+    "pad": {
+      "title": "Accélération",
+      "seg": "Cadran",
+      "label": "Poussée simulée",
+      "simulate": "Basculer le cadran",
+      "note1": "Le pavé simule la poussée qu'un virage ou un freinage ferait sentir — vers l'avant, c'est un freinage. Sur l'appareil, c'est l'accéléromètre du téléphone, projeté sur le plan horizontal pour ignorer l'inclinaison du support."
     },
-    "meter": {
-      "title": "Mesure",
-      "fast": "Fast (LAF)",
-      "slow": "Slow (LAS)",
-      "leq": "Équivalent (LAeq)",
-      "max": "Maximum",
-      "peak": "Crête affichée",
-      "integration": "Intégration",
-      "overload": "Surcharge",
-      "yes": "oui",
-      "no": "non",
-      "reset": "Reset"
+    "peaks": {
+      "title": "Pics du trajet",
+      "stat": "avant {front} · arrière {rear}",
+      "reset": "Effacer les pics",
+      "note1": "Les pics ne sont pas conservés : sur l'appareil comme ici, fermer le toy les efface — c'est l'histoire d'un trajet, pas un record."
+    }
+  },
+  "float": {
+    "description": "Préview de Float, le niveau à bulle et la boussole de Haloglyph : une échelle logarithmique qui rend visible le dixième de degré, et une rose à quatre lettres.",
+    "sub": "Un niveau et une boussole",
+    "action": "Instrument suivant",
+    "modes": {
+      "niveau": "Niveau",
+      "boussole": "Boussole"
+    },
+    "instrument": {
+      "title": "Instrument affiché",
+      "seg": "Instrument",
+      "tilt": "Inclinaison simulée",
+      "heading": "Cap simulé",
+      "simulate": "Basculer l'instrument",
+      "note1": "Le pavé simule la pose du téléphone : au centre il est à plat, sur le bord il est debout — c'est ce qui fait basculer le niveau du régime plat au régime d'aplomb, comme sur l'appareil."
+    }
+  },
+  "haloglyph": {
+    "description": "Haloglyph : le pack qui réunit les Glyph toys de ce dépôt dans une application Android pour la Glyph Matrix du Nothing Phone (3), et dans un widget qui l'émule ailleurs.",
+    "sub": "Le pack qui embarque les toys",
+    "pitch": {
+      "stat": "5 toys",
+      "note1": "<b>HALOGLYPH</b> réunit les Glyph toys de ce dépôt dans une seule application Android : sur la Glyph Matrix du Nothing Phone (3) via Glyph Interface, et — faute de matrice — dans un widget d'écran d'accueil qui l'émule au pixel près sur n'importe quel autre téléphone.",
+      "note2": "Encore en brouillon : les cinq toys sont écrits, déclarés au système et tournent déjà dans le hublot, mais le pack n'est pas publié. Glyphslot n'en fait pas partie — une machine à sous impose un classement qui contaminerait tout le reste — et reste un dépôt à part.",
+      "repo": "Voir le dépôt"
+    },
+    "toys": {
+      "title": "Les toys",
+      "note1": "Chacun se change à l'appui long sur le Glyph Button — ou au tap, dans le hublot.",
+      "glyphlapse": "Compteur temporel : jusqu'à cinq échéances, en anneau ou en sablier.",
+      "justadice": "d6, d10, d12, d20 suivis en quaternion — secouer pour jeter.",
+      "sonoglyph": "Le micro sur la matrice, en spectre, aiguille ou onde.",
+      "float": "Niveau à bulle à échelle logarithmique, et boussole en second instrument.",
+      "gforce": "Accéléromètre de bord : une bille pour l'instant, quatre pics pour le trajet."
+    },
+    "widget": {
+      "title": "Le hublot",
+      "stat": "3 max",
+      "note1": "Un seul widget porte tous les toys : <b>tap</b> pour interagir avec celui affiché, <b>double tap</b> pour passer au suivant, <b>appui long</b> pour régler ce qu'il montre. Deux formats, 2 × 2 et 1 × 1 — jusqu'à trois hublots posés en même temps.",
+      "note2": "Une rafale dure trente secondes ; un hublot peut aussi tourner en continu, et se suspend dès que l'écran s'éteint."
+    },
+    "build": {
+      "title": "Construire",
+      "stat": "MIT",
+      "note1": "Cinq langues — de, en, es, fr, it, anglais en repli — le même jeu que le reste de l'écosystème : la traduction va jusqu'à l'unité affichée sur la matrice.",
+      "note2": "JDK 17, SDK Android 36, aucune clé API Nothing requise. Le GlyphMatrixSDK se télécharge seul au premier build."
     }
   }
 }

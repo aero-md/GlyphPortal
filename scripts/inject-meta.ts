@@ -36,9 +36,12 @@ type Page = { dir: string; title: string; ogTitle: string; description: string; 
    wordmark très bien sur site, mais fait un titre de lien pauvre dans une
    messagerie — le domaine dit mieux ce qu'on ouvre. Les toys gardent leur
    nom, qui est déjà spécifique. */
+/* `ready: false` — Haloglyph pour l'instant — n'a pas de route : la tuile du
+   sommaire renvoie droit sur le dépôt (voir `toys.ts`), donc il n'existe ni
+   `build/<slug>/index.html` à réécrire ni carte `og/<slug>.png` à référencer. */
 const pages: Page[] = [
   { dir: "", title: "GLYPH", ogTitle: "glyph.suns.red", description: en.home.description, image: "home" },
-  ...TOYS.map((toy) => ({
+  ...TOYS.filter((toy) => toy.ready).map((toy) => ({
     dir: toy.slug,
     title: toy.name,
     ogTitle: toy.name,

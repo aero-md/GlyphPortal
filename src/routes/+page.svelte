@@ -14,7 +14,10 @@
   import LangToggle from "$lib/i18n/LangToggle.svelte";
   import { _ } from "svelte-i18n";
   import ThemeToggle from "$lib/ui/ThemeToggle.svelte";
+  import HaloglyphMark from "$lib/ui/HaloglyphMark.svelte";
   import ToyPreview from "$lib/matrix/ToyPreview.svelte";
+  import { DEFAULT_DEVICE } from "$lib/matrix/devices";
+  import { thumbGrid } from "$lib/matrix/thumb";
   import { TOYS } from "./toys";
 
   /* Encombrement de la mini-prévisu, en px CSS. Déclaré ici et passé au
@@ -32,7 +35,24 @@
      rond aurait laissé le disque plus petit ou décentré d'un demi-pixel. */
   const DISC = 159;
 
-  const num = (i: number) => String(i + 1).padStart(2, "0");
+  /* Diamètre du hublot Haloglyph — celui du disque **réellement peint** par
+     `ToyPreview` pour `DISC` demandés sur l'appareil par défaut, pas `DISC`
+     lui-même : `DISC` est le plafond de la boîte, le disque tombe en dessous
+     (141 px pour un (3) en densité 1, voir le commentaire ci-dessus). Un
+     conteneur calé sur `DISC` rendait le hublot Haloglyph visiblement plus
+     grand que le disque des autres tuiles.
+     Calculé en effet et non en haut du script : `thumbGrid` lit
+     `window.devicePixelRatio`, absent au prérendu. L'icône elle-même garde sa
+     taille propre — voir `ICON_SIZE` — le conteneur n'affecte plus qu'elle-même. */
+  let appDisc = $state(DISC);
+  $effect(() => {
+    appDisc = thumbGrid(DEFAULT_DEVICE, DISC).discCss;
+  });
+
+  /* Taille de la marque, indépendante du hublot qui la porte : elle ne doit
+     pas rétrécir avec lui. Valeur choisie à l'œil pour rester lisible dans un
+     hublot bien plus petit qu'elle. */
+  const ICON_SIZE = Math.round(DISC * 0.92);
 
   /* Une boucle par tuile, tirée au sort parmi celles que le toy propose.
      Résolu **une fois**, au montage de la page, et non dans le balisage : un
@@ -51,7 +71,7 @@
      `index.html` ; ici le `<head>` est commun et chaque route y ajoute ce qui
      lui est propre. -->
 <svelte:head>
-  <title>GLYPH</title>
+  <title>Glyph.suns.red</title>
   <meta name="description" content={$_("home.description")} />
 </svelte:head>
 
@@ -80,23 +100,32 @@
 
   <main>
     <ul class="grid">
-      {#each tuiles as toy, i (toy.slug)}
+      {#each tuiles as toy (toy.slug)}
         <li>
-          <a class="tile" class:soon={!toy.ready} href={toy.ready ? `/${toy.slug}/` : toy.repo}>
+          <!-- Haloglyph n'a ni route ni dépôt à offrir en clic — sa description
+               dit déjà « future application » — donc pas de `href` du tout : un
+               `<a>` sans `href` n'est plus un lien (pas de navigation, pas de
+               focus au clavier), et `.disabled` en CSS éteint aussi le survol.
+               Un `<div>` aurait perdu le reste du balisage partagé avec les
+               autres tuiles pour rien. -->
+          <a
+            class="tile"
+            class:soon={!toy.ready}
+            class:disabled={toy.slug === "haloglyph"}
+            href={toy.slug === "haloglyph" ? undefined : toy.ready ? `/${toy.slug}/` : toy.repo}
+          >
             <!-- La nature de l'entrée, sur la tranche. Première dans le DOM :
                  c'est aussi l'ordre de lecture d'un lecteur d'écran, et
-                 « Glyph toy, 01, GLYPHSLOT, une machine à sous » est la bonne
+                 « Glyph toy, GLYPHSLOT, une machine à sous » est la bonne
                  phrase. Pas d'`aria-hidden` donc — ce n'est pas de la
                  décoration, c'est la seule chose qui distingue un APK d'un
                  outil qui tourne dans cet onglet. -->
             <span class="spine">{$_(`common.kind.${toy.kind}`)}</span>
 
-            <!-- Numéro et nom sur la même ligne de base, sous-titre dessous, le
-                 tout calé en haut : la tuile tire sa hauteur du disque, et un
-                 bloc de deux lignes centré dedans laisserait le numéro flotter
-                 au milieu du bord gauche. -->
+            <!-- Nom et sous-titre calés en haut : la tuile tire sa hauteur du
+                 disque, et un bloc de texte centré dedans le laisserait
+                 flotter au milieu du bord gauche. -->
             <span class="head">
-              <span class="ref">[{num(i)}]</span>
               <span class="body">
                 <span class="name">{toy.name}</span>
                 <span class="line">{$_(`home.lines.${toy.slug}`)}</span>
@@ -108,20 +137,39 @@
                 {/if}
               </span>
             </span>
-            <!-- La préview, quand le toy a exporté sa boucle. Sans `src` le même
-                 composant rend sa matrice éteinte : même forme, même
-                 encombrement, même cerne, donc la tuile garde sa hauteur dans
-                 les deux cas et la grille ne bouge pas quand une boucle arrive.
+            {#if toy.slug === "haloglyph"}
+              <!-- Haloglyph fait exception : ce n'est pas un toy à jouer mais
+                   le pack qui les embarque, il n'a donc pas de boucle. Sa
+                   marque tient la place de la matrice éteinte, dans un hublot
+                   rond de `appDisc` — le diamètre du disque réel des autres
+                   tuiles, pas leur boîte — pour que le hublot Haloglyph tombe
+                   pile sur le leur. Son fond est un blanc/noir plein et non le
+                   verre sombre de l'appareil : c'est une icône d'app, pas une
+                   photo de matrice. Voir `.appicon` pour le pourquoi du fond
+                   plein et de l'ombre. La boîte porteuse reste `DISC` : c'est
+                   elle qui tient la grille, comme pour `ToyPreview`. -->
+              <span class="appicon-box" style:width="{DISC}px" style:height="{DISC}px" aria-hidden="true">
+                <span class="appicon" style:width="{appDisc}px" style:height="{appDisc}px">
+                  <HaloglyphMark size={ICON_SIZE} />
+                </span>
+              </span>
+            {:else}
+              <!-- La préview, quand le toy a exporté sa boucle. Sans `src` le
+                   même composant rend sa matrice éteinte : même forme, même
+                   encombrement, même cerne, donc la tuile garde sa hauteur
+                   dans les deux cas et la grille ne bouge pas quand une
+                   boucle arrive.
 
-                 Le même composant et non un disque en CSS à côté : les deux
-                 devaient tomber sur le même diamètre, et le diamètre se déduit
-                 maintenant de la grille — une feuille de style ne peut pas le
-                 connaître.
+                   Le même composant et non un disque en CSS à côté : les deux
+                   devaient tomber sur le même diamètre, et le diamètre se
+                   déduit maintenant de la grille — une feuille de style ne
+                   peut pas le connaître.
 
-                 Décorative dans les deux cas — pas de `label`. Ce que la tuile
-                 désigne est déjà écrit à côté, en toutes lettres ; le lecteur
-                 d'écran annoncerait le nom du toy deux fois de suite. -->
-            <ToyPreview src={toy.preview} size={DISC} />
+                   Décorative — pas de `label`. Ce que la tuile désigne est
+                   déjà écrit à côté, en toutes lettres ; le lecteur d'écran
+                   annoncerait le nom du toy deux fois de suite. -->
+              <ToyPreview src={toy.preview} size={DISC} />
+            {/if}
           </a>
         </li>
       {/each}
@@ -270,16 +318,69 @@
 
   /* Un jeton dédié plutôt que `--hover`, qui est translucide : posé en fond
      opaque il assombrirait la tuile en thème sombre, c'est-à-dire dans le
-     mauvais sens. Ici la surface se rapproche de l'encre dans les deux thèmes. */
-  .tile:hover,
-  .tile:focus-visible {
+     mauvais sens. Ici la surface se rapproche de l'encre dans les deux thèmes.
+
+     `:not(.disabled)` : Haloglyph n'a pas de `href`, donc pas de survol de
+     lien à afficher — un `:hover` resterait déclenché par la souris sur un
+     `<a>` sans `href` puisque la pseudo-classe ne regarde pas cet attribut. */
+  .tile:not(.disabled):hover,
+  .tile:not(.disabled):focus-visible {
     background: var(--bg-2-hover);
     text-decoration: none;
   }
 
-  /* Deux alignements, qui ne parlent pas de la même chose.
+  /* Curseur neutre : sans lui, le navigateur affiche quand même la main au
+     survol d'un `<a>`, lien ou non. */
+  .tile.disabled {
+    cursor: default;
+  }
 
-     `align-self` place le **bloc de texte** dans la hauteur de la tuile. Il
+  /* `app.css` souligne tout `a:hover`/`a:focus-visible` au global, sans
+     regarder `href` — la règle au-dessus a justement exclu `.disabled` du
+     bloc qui neutralise ce soulignement, donc il faut le refaire ici pour
+     la tuile Haloglyph elle-même. */
+  .tile.disabled:hover,
+  .tile.disabled:focus-visible {
+    text-decoration: none;
+  }
+
+  /* La boîte porteuse : même rôle que `.box` de `ToyPreview`, elle tient la
+     grille à `DISC` px pendant que le hublot lui-même (`.appicon`) est plus
+     petit — voir le commentaire sur `appDisc`. */
+  .appicon-box {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* La marque Haloglyph, dans un hublot rond de la taille du disque **réel**
+     de `ToyPreview` (`appDisc`, pas `DISC`). Fond plein — blanc en clair,
+     noir en sombre — plutôt que transparent : posée à même la tuile, la
+     marque se fondait dans `--bg-2`, l'off-white/off-black de la carte,
+     faute d'assez d'écart de contraste avec elle. Le plein tranche net, et
+     l'ombre portée creuse la tuile pour redonner à l'icône le relief que le
+     disque de LEDs a nativement à côté d'elle.
+
+     Pas d'`overflow: hidden` : la marque garde sa taille propre (`ICON_SIZE`)
+     et déborde légèrement d'un hublot pensé pour rester au diamètre des
+     autres disques plutôt que pour la contenir pile. */
+  .appicon {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+  }
+
+  :global(:root[data-theme="dark"]) .appicon {
+    background: #000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
+  }
+
+  /* `align-self` place le **bloc de texte** dans la hauteur de la tuile. Il
      valait `flex-start` — une exception au `center` de la tuile, héritée du
      temps où le sous-titre tenait sur deux lignes et se calait sur le haut du
      hublot. Ils en font trois ou quatre maintenant, et le disque a pris neuf
@@ -287,23 +388,12 @@
      au sommet d'un cercle. La ligne ci-dessous ne fait donc que rendre au bloc
      l'alignement de la tuile — on pourrait la retirer, elle est gardée parce
      que la requête média plus bas la contredit et qu'il faut voir d'où vient
-     la valeur par défaut.
-
-     `align-items: baseline` aligne, lui, le **numéro et le nom** entre eux :
-     l'un est en 12 px, l'autre en 14, et calés par le haut ils flottaient. La
-     ligne de base d'un bloc étant celle de sa première ligne, c'est celle du
-     nom qui commande. */
+     la valeur par défaut. */
   .head {
     align-self: center;
     flex: 1 1 auto;
     min-width: 0;
     display: flex;
-    align-items: baseline;
-    gap: 0.8rem;
-  }
-
-  .head .ref {
-    flex: none;
   }
 
   .body {
@@ -314,19 +404,19 @@
   }
 
   .name {
-    font-size: 14px;
+    font-size: 16px;
     letter-spacing: 0.22em;
     color: var(--ink);
   }
 
-  .tile:hover .name {
+  .tile:not(.disabled):hover .name {
     color: var(--accent);
   }
 
   /* Sans fioriture : ni capitales, ni interlettrage. C'est une phrase, elle se
      lit comme une phrase — le nom au-dessus tient déjà le registre technique. */
   .line {
-    font-size: 12px;
+    font-size: 14px;
     line-height: 1.6;
     color: var(--dim);
   }

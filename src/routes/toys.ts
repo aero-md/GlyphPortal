@@ -19,7 +19,13 @@
  * décide du dépôt, de la présence d'un bouton de téléchargement, et de ce
  * qu'un visiteur peut espérer en faire.
  */
-export type Kind = "toy" | "tool";
+/*
+ * `app` s'est ajouté pour Haloglyph : ni un toy unique — c'est un pack qui en
+ * embarque plusieurs — ni un outil web comme GlyphCast, qui n'existe que dans
+ * cet onglet. Le libellé de tranche, sous `common.kind.app`, dit « Application
+ * Android » plutôt que de forcer l'un des deux mots existants.
+ */
+export type Kind = "toy" | "tool" | "app";
 
 /*
  * Le libellé de la tranche — « Glyph toy », « Outil web » — vivait ici, dans
@@ -35,7 +41,15 @@ export type Kind = "toy" | "tool";
  * les dictionnaires, et un slug ajouté ici sans sa ligne traduite ne compile
  * plus. C'est exactement le rappel qu'on veut au moment où on ajoute un toy.
  */
-export type Slug = "glyphslot" | "glyphlapse" | "sonoglyph" | "justadice" | "glyphcast";
+export type Slug =
+  | "glyphslot"
+  | "glyphlapse"
+  | "sonoglyph"
+  | "justadice"
+  | "glyphcast"
+  | "haloglyph"
+  | "gforce"
+  | "float";
 
 export type Toy = {
   /** Segment d'URL sous glyph.suns.red, et nom du dossier au déploiement. */
@@ -87,12 +101,14 @@ export type Toy = {
 
 export const TOYS: Toy[] = [
   {
-    slug: "glyphslot",
-    name: "GLYPHSLOT",
-    kind: "toy",
-    repo: "https://github.com/aero-md/glyphslot",
-    ready: true,
-    preview: "/preview/glyphslot.json",
+    slug: "haloglyph",
+    name: "HALOGLYPH",
+    kind: "app",
+    repo: "https://github.com/aero-md/haloglyph",
+    /* `/haloglyph/+page.svelte` existe déjà (pack, cinq toys, hublot) mais
+       reste débranchée pour l'instant — la tuile revient au dépôt en
+       attendant. Repasser `ready` à `true` suffira à la rebrancher. */
+    ready: false,
   },
   {
     slug: "glyphlapse",
@@ -136,6 +152,32 @@ export const TOYS: Toy[] = [
        culbute trois secondes et remontre 20 se lirait comme une animation qui n'a
        rien fait. Générée en rejouant le moteur, voir `scripts/`. */
     preview: "/preview/justadice.json",
+  },
+  {
+    slug: "float",
+    name: "FLOAT",
+    kind: "toy",
+    /* Écrit dans Haloglyph, pas migré : pas de dépôt à lui, il vit dans le
+       monorepo du pack — voir `haloglyph`, en tête du catalogue. */
+    repo: "https://github.com/aero-md/haloglyph",
+    ready: true,
+    preview: "/preview/float.json",
+  },
+  {
+    slug: "gforce",
+    name: "G-METER",
+    kind: "toy",
+    repo: "https://github.com/aero-md/haloglyph",
+    ready: true,
+    preview: "/preview/gforce.json",
+  },
+  {
+    slug: "glyphslot",
+    name: "GLYPHSLOT",
+    kind: "toy",
+    repo: "https://github.com/aero-md/glyphslot",
+    ready: true,
+    preview: "/preview/glyphslot.json",
   },
   {
     slug: "glyphcast",

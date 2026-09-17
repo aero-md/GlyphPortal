@@ -16,12 +16,13 @@
  * qu'on veut montrer. Ici elle est dans la boucle parce qu'elle est dans le
  * moteur.
  *
- * Le scénario : **quatre secondes de VU-mètre, quatre secondes de spectre**, sur
- * une seule et même prise de son. Le toy en a deux, l'appui long bascule de l'un
- * à l'autre, et une mini-prévisu qui n'en montrerait qu'un mentirait par
- * omission. Les faire suivre la même source plutôt que deux prises distinctes
- * évite en plus l'effet catalogue : c'est le même instant sonore vu de deux
- * façons.
+ * Le scénario : **quatre secondes de spectre, quatre secondes d'aiguille, quatre
+ * secondes d'onde**, sur une seule et même prise de son. Le toy a trois modes
+ * depuis qu'il a rejoint Haloglyph — Sonoglyph en faisait deux Glyph Toys — et
+ * l'appui long les fait tourner l'un dans l'autre ; une mini-prévisu qui n'en
+ * montrerait qu'un mentirait par omission. Les faire suivre la même source
+ * plutôt que trois prises distinctes évite en plus l'effet catalogue : c'est le
+ * même instant sonore vu de trois façons.
  */
 
 import { mkdir, writeFile } from "node:fs/promises";
@@ -71,16 +72,18 @@ Math.random = () => {
 const { DEFAULT_DEVICE } = await import("../src/lib/index");
 const { MeterEngine, DEFAULT_K } = await import("../src/routes/sonoglyph/lib/engine");
 const { FS, SimSource } = await import("../src/routes/sonoglyph/lib/source");
-const { NeedleRenderer } = await import("../src/routes/sonoglyph/lib/toys/needle");
-const { VisualizerRenderer } = await import("../src/routes/sonoglyph/lib/toys/visualizer");
+const { SonoRenderer } = await import("../src/routes/sonoglyph/lib/render");
 
 const device = DEFAULT_DEVICE;
 
 /** Même cadence que GlyphSlot — 40 ms rond, le format compte en entiers. */
 const FPS = 25;
 
-/** Secondes par toy. Le sujet de la boucle, et le seul réglage de durée. */
+/** Secondes par mode. Le sujet de la boucle, et le seul réglage de durée. */
 const PAR_TOY = 4;
+
+/** L'ordre de la rotation, celui du toy — voir `SonoMode.kt`. */
+const MODES = ["spectre", "aiguille", "onde"] as const;
 
 /**
  * Timbre de la prise. C'est celui que la préview ouvre par défaut.
@@ -109,26 +112,18 @@ const TIMBRE = "voice" as const;
  * cadran — 30 à 110 dB sur l'appareil — sans jamais taper les butées, où
  * l'aiguille se coince contre l'arc et où le chiffre cesse de changer.
  *
- * **Le centre est réglé par le spectre, pas par l'aiguille.** Les deux toys
+ * **Le centre est réglé par le spectre, pas par l'aiguille.** Les trois modes
  * partagent la prise, et le visualiseur sature bien avant que l'aiguille n'aille
- * en butée. Le relevé sur la boucle générée, en LEDs par demi-colonne sur les
- * douze disponibles :
+ * en butée. 71 est le compromis retenu à l'œil : le spectre garde sa silhouette,
+ * et l'aiguille ne perd qu'un vingtième de sa course par rapport à 74.
  *
- *     centre 74 dB   moyenne 4,5   crête 8    la bosse touche le bord
- *     centre 71 dB   moyenne 3,7   crête 6    deux LEDs de garde
- *     centre 68 dB   moyenne 3,0   crête 5    le spectre s'écrase sur son axe
- *
- * 71 est le compromis : le spectre garde sa silhouette, et l'aiguille ne perd
- * qu'un vingtième de sa course par rapport à 74.
- *
- * **Un cycle entier par toy**, et non un sur la boucle. Étalée sur les huit
- * secondes, la courbe faisait passer toute son excursion basse pendant la moitié
- * spectre : l'aiguille ne voyait que le haut et ne descendait jamais sous la
- * verticale — 0 à 41° relevés sur un cadran qui en fait 180. Chaque toy a
- * maintenant la course complète, 53 à 89 dB, soit −38° à +43°.
+ * **Un cycle entier par mode**, et non un sur la boucle entière : étalée sur les
+ * douze secondes, la courbe ferait passer toute son excursion basse pendant un
+ * seul tiers de la rotation, et les deux autres n'en verraient jamais le creux.
+ * Chaque mode a donc la course complète, 53 à 89 dB.
  *
  * Périodique sur la boucle, valeur et pente : le raccord de fin est un
- * changement de toy, mais la mesure, elle, doit enchaîner sans marche.
+ * changement de mode, mais la mesure, elle, doit enchaîner sans marche.
  */
 function niveau(t: number): number {
   const u = (2 * Math.PI * t) / PAR_TOY;
@@ -144,12 +139,11 @@ const sim = new SimSource({
   dynamics: 1,
   overdrive: false,
 });
-const needle = new NeedleRenderer(device);
-const visualizer = new VisualizerRenderer(device);
+const sono = new SonoRenderer(device);
 
 const frames: { p: number[]; d: number }[] = [];
 const MS = Math.round(1000 / FPS);
-const BOUCLE = 2 * PAR_TOY;
+const BOUCLE = MODES.length * PAR_TOY;
 const PAR_IMAGE = Math.round(FS / FPS);
 const block = new Float32Array(PAR_IMAGE);
 
@@ -198,12 +192,15 @@ for (let tour = 0; tour < TOURS; tour++) {
     engine.feed(block, PAR_IMAGE, t);
 
     const snap = engine.snapshot(t);
-    if (tour < TOURS - 1) continue;
 
-    /* Le VU-mètre d'abord : c'est le toy que le sonomètre ouvre, et une aiguille
-       se lit immédiatement là où un spectre demande une seconde d'observation. */
-    const values =
-      local < PAR_TOY ? needle.render(snap) : visualizer.render(snap, "mirror");
+    /* Le spectre d'abord — c'est le premier de la rotation sur l'appareil,
+       voir `SonoMode.kt` — puis l'aiguille, puis l'onde. Rendu dans les deux
+       tours et pas seulement le second : `render` est aussi ce qui nourrit
+       `bandFloor` et `waveform`, et les laisser froids au premier tour ferait
+       repartir leur convergence à zéro pile pendant le tour qu'on garde. */
+    const modeIndex = Math.min(MODES.length - 1, Math.floor(local / PAR_TOY));
+    const values = sono.render(snap, MODES[modeIndex]);
+    if (tour < TOURS - 1) continue;
     push(toP(values));
   }
 }

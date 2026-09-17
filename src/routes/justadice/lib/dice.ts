@@ -277,12 +277,30 @@ const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 export const REVEAL_OFF = 0.35;
 export const REVEAL_FULL = 0.7;
 
+/**
+ * L'avancement de la **pose** : `0` cadrage de vol, `1` caméra arrivée.
+ *
+ * Ce n'est pas `zoomAt`. La caméra finit sa course à `REVEAL_OFF` et tient
+ * ensuite, là où `z` continue jusqu'à 1 : le rapprochement est donc **terminé
+ * avant qu'il y ait quoi que ce soit à lire**, ce qui est tout l'objet de
+ * cette fonction.
+ *
+ * Un seuil plus haut — `REVEAL_FULL`, comme un ancien port le faisait —
+ * laissait le recentrage se terminer *pendant* que la marque s'allume : sur
+ * un d6 posé sur 5, quatre pips sur cinq sautaient encore d'une cellule au
+ * moment précis où ils devenaient lisibles.
+ */
+function posed(z: number): number {
+  return smooth(z / REVEAL_OFF);
+}
+
 /** `z = 0` en vol, `z = 1` posé. */
 export function camAt(z: number, close: number): Cam {
+  const p = posed(z);
   return {
-    yaw: mix(WIDE.yaw, CLOSE.yaw, z),
-    elev: mix(WIDE.elev, CLOSE.elev, z),
-    half: mix(WIDE.half, close, z),
+    yaw: mix(WIDE.yaw, CLOSE.yaw, p),
+    elev: mix(WIDE.elev, CLOSE.elev, p),
+    half: mix(WIDE.half, close, p),
     z,
   };
 }
@@ -294,16 +312,16 @@ export function camAt(z: number, close: number): Cam {
  * lancer lui-même. Les intervalles se resserrent et les hauteurs s'écrasent,
  * comme n'importe quoi qui rebondit.
  */
-const CONTACT = [0, 0.42, 0.78, 1.06, 1.28, 1.45, 1.58];
+const CONTACT = [0, 0.42, 0.78, 1.06, 1.28, 1.45];
 /** Sommet de chaque vol, en unités de dé (le dé fait 2 de côté). */
-const PEAK = [0.38, 0.21, 0.12, 0.07, 0.04, 0.02];
+const PEAK = [0.38, 0.21, 0.12, 0.07, 0.04];
 
 /** Fin de l'impulsion : la caméra a fini de reculer, le dé est en l'air. */
 export const T_TOSS = 0.35;
 /** Dernier rebond — au-delà, le dé roule et ne saute plus. */
 export const T_BRAKE = CONTACT[CONTACT.length - 1];
 /** Le dé est posé. */
-export const T_LAND = 2.55;
+export const T_LAND = 2.42;
 /** Durée du gros plan de révélation. */
 export const T_ZOOM = 0.6;
 /** Fin de l'animation : le dé est posé **et** lisible. */
@@ -542,16 +560,15 @@ export type View = {
  * dé sur le côté, soit cinq cellules au gros plan, et le chiffre partait se
  * coller dans un coin du hublot.
  *
- * Le décalage est pesé par le rapprochement : nul en vol, où c'est le solide
- * entier qu'on regarde, entier au gros plan, où c'est la face. Mais il est
- * **terminé à `REVEAL_FULL`** et non à `z = 1`, ce qui ne change presque rien au
- * mouvement — la glissade se fait en 380 ms au lieu de 600 — et change tout à la
- * marque : une fois le décalage entier, le centre de la face tombe exactement au
- * milieu du hublot, donc le nombre est **fixe** pendant tout le temps où il est
- * plein. Réglé sur `z = 1`, il finissait sa course sous les yeux du lecteur.
+ * Le décalage est pesé par `posed(z)` — le même avancement que la caméra, et
+ * pas un réglage voisin : nul en vol, où c'est le solide entier qu'on
+ * regarde, entier une fois la pose terminée (`z = REVEAL_OFF`), où c'est la
+ * face. Une fois le décalage entier, le centre de la face tombe exactement au
+ * milieu du hublot, donc le nombre est **fixe** pendant tout le temps où il
+ * est plein — la marque n'a alors plus une seule cellule à parcourir.
  */
 function centering(die: Die, q: Quat, z: number): Vec3 {
-  const w = smooth(z / REVEAL_FULL);
+  const w = posed(z);
   if (w <= 0) return [0, 0, 0];
   const m = qMat(q);
   const c = toWorld(m, die.face[topIndex(die, m)].c);

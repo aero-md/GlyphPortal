@@ -11,12 +11,15 @@
     "photoAlt": "Retro di un {device}",
     "kind": {
       "toy": "Glyph toy",
-      "tool": "Strumento web"
+      "tool": "Strumento web",
+      "app": "App Android"
     },
     "toyCard": {
       "apk": "è un'app Android per {device}. Questa pagina ne riproduce il funzionamento nel browser — il toy vero e proprio si scarica come APK su GitHub.",
       "plain": "è un'app Android per {device}. Questa pagina ne riproduce il funzionamento nel browser.",
-      "download": "Scarica"
+      "download": "Scarica",
+      "pack": "Sarà disponibile anche in {app}.",
+      "onlyPack": "farà parte di {app}. Questa pagina ne riproduce il funzionamento nel browser."
     },
     "pane": {
       "device": "Dispositivo",
@@ -48,7 +51,10 @@
       "glyphslot": "Una slot machine pixellata",
       "glyphlapse": "Una visualizzazione del tempo che passa",
       "sonoglyph": "Il suono del microfono, misurato e rappresentato con una manciata di pixel",
-      "justadice": "Un dado, lanciato con una scossa",
+      "justadice": "Un dado con più forme. Lanciato con una scossa",
+      "gforce": "Un accelerometro di bordo, ispirato alle auto sportive",
+      "float": "Una livella a bolla e una bussola. Minimalisti ed efficaci",
+      "haloglyph": "Futura app che riunirà i glyph toy, e permetterà di usare la glyph matrix come widget nella schermata home",
       "glyphcast": "Converte un'immagine in una resa Glyph Matrix"
     }
   },
@@ -243,22 +249,11 @@
       "symbols": "Simboli",
       "result": "Risultato",
       "note": "La payline è la finestra centrale di sette righe. I simboli vicini restano accesi a un quinto dell'intensità: è questo che fa leggere una finestra su una banda che gira, e non tre caselle indipendenti."
-    },
-    "reels": {
-      "title": "Rulli",
-      "stat": "3 × 7 colonne",
-      "note1": "Un rullo non è un simbolo estratto all'arrivo: è una banda continua di cinque simboli che gira, e fermarsi vuol dire scegliere <b>dove</b> frenare. Si vedono quindi passare i vicini del simbolo vincente prima che si posi.",
-      "note2": "All'avvio il rullo indietreggia prima lentamente — una molla che si carica — poi scatta. Senza questo rinculo la partenza è uno scorrimento uniforme che non dice che si è appena tirato qualcosa."
-    },
-    "fx": {
-      "title": "Effetti",
-      "stat": "5 fasi",
-      "note1": "Una vincita semplice fa pulsare l'anello del bordo. Il jackpot prende lo schermo per sette secondi e mezzo: triplo stroboscopio, onde d'urto concentriche, una banda <b>JACKPOT</b> che scorre, fuochi d'artificio con gravità, poi un 7 che zooma."
     }
   },
   "justadice": {
     "description": "Anteprima del Glyph Toy Just a dice: un dado lanciato con una scossa sulla Glyph Matrix di un Nothing Phone.",
-    "sub": "Un dado, e nient'altro",
+    "sub": "Un dado con più forme",
     "action": "Dado successivo",
     "dieSeg": "Dado",
     "solids": {
@@ -303,25 +298,16 @@
       "settle": "Assestamento",
       "closeup": "Primo piano",
       "note2": "Sei rimbalzi, poi la camera si avvicina per rivelare la faccia superiore."
-    },
-    "render": {
-      "title": "La resa",
-      "pips": "pip 3 × 3",
-      "digit": "cifra",
-      "note1": "Su venticinque LED di lato, un dado visto di tre quarti non si legge: la posa di riposo è il primo piano dall'alto, i tre quarti esistono solo in volo."
     }
   },
   "sonoglyph": {
-    "description": "Anteprima dei due Glyph Toys di Sonoglyph: visualizzatore di spettro e VU-meter ad ago, sulla Glyph Matrix del Nothing Phone (3).",
-    "sub": "Due Glyph Toys che leggono il livello sonoro",
+    "description": "Anteprima dei tre modi in cui Sono legge il livello sonoro — spettro, ago, forma d'onda — sulla Glyph Matrix del Nothing Phone (3).",
+    "sub": "Visualizza il suono del microfono",
     "toySeg": "Toy",
     "toys": {
       "needle": "Ago",
-      "spectrum": "Spettro"
-    },
-    "styles": {
-      "mirror": "Specchio",
-      "bars": "Colonne"
+      "spectrum": "Spettro",
+      "wave": "Onda"
     },
     "timbres": {
       "voice": {
@@ -346,32 +332,16 @@
       }
     },
     "action": {
-      "style": "Stile successivo",
-      "reset": "Reset picco"
+      "next": "Modalità successiva"
     },
     "notice": {
       "micOpen": "Microfono aperto — elaborazioni del browser disattivate",
       "micRefused": "Microfono rifiutato: {reason}",
-      "style": "Stile: {name}",
-      "engineReset": "Picco, massimo e Leq azzerati",
-      "reset": "Azzerato"
-    },
-    "status": {
-      "ok": "misura",
-      "muted": "flusso muto",
-      "noSource": "nessuna sorgente"
+      "mode": "Modalità: {name}",
+      "engineReset": "Picco, massimo e Leq azzerati"
     },
     "toyCard": {
-      "archived": "archiviato",
-      "note1": "Il progetto è stato abbandonato e archiviato per vincoli tecnici, ma il codice resta consultabile",
-      "noteLink": "su GitHub"
-    },
-    "shown": {
-      "title": "Toy visualizzato",
-      "styleSeg": "Stile",
-      "spectrum1": "Una banda per colonna, da 40 Hz a 16 kHz a passi di terzo d'ottava, già ponderata A — altrimenti i bassi schiacciano le ventidue colonne superiori. Resa in <b>tutto o niente</b>: un LED è acceso o spento, nessuna sfumatura.",
-      "spectrum2": "L'altezza porta da sola il livello. L'asse mediano resta acceso in permanenza, è la linea di base — e a basso livello l'unica cosa visibile.",
-      "needle": "Il quadrante è il contorno del disco su ± 90°, quindi tutta la metà superiore; il perno è al centro esatto. Tacche principali: {ticks} dB(A). Un solo ago, sul livello Fast. La cifra sotto è in 5×7, arrotondata all'intero."
+      "note1": "farà parte di {app}. Il modulo Sono vi riprenderà tutte e tre le sue visualizzazioni. Il repository originale resta archiviato, ma il codice continua a viverci."
     },
     "source": {
       "title": "Sorgente",
@@ -393,25 +363,76 @@
       "street": "Strada",
       "concert": "Concerto",
       "note": "La consegna è in dB(A) e non in dBFS: il guadagno compensa ciò che la ponderazione toglierà al timbro scelto, misurato al cambio di timbro. Senza questa compensazione il cursore mentirebbe di 9 dB tra la sinusoide e il traffico."
+    }
+  },
+  "gforce": {
+    "description": "Anteprima di G-Forces, l'accelerometro di bordo di Haloglyph: una pallina che dice cosa si subisce ora, quattro picchi che dicono cosa ha dato il tragitto.",
+    "sub": "Un accelerometro di bordo",
+    "action": "Quadrante successivo",
+    "modes": {
+      "vif": "Live",
+      "pics": "Picchi"
     },
-    "calibration": {
-      "title": "Calibrazione",
-      "stat": "K = {k} dB",
-      "slider": "dBFS → dB SPL",
-      "note": "<b>Questa cifra non è misurata.</b> 120 dB è l'ordine di grandezza di un MEMS da telefono, il cui fondo scala cade da quelle parti. Finché l'esemplare non è caratterizzato, il livello mostrato è giusto a ±5 dB — i toy sono indicatori, non fonometri. Il cursore è qui per vedere cosa sposta la calibrazione; sul dispositivo è una costante."
+    "pad": {
+      "title": "Accelerazione",
+      "seg": "Quadrante",
+      "label": "Spinta simulata",
+      "simulate": "Cambia quadrante",
+      "note1": "Il pad simula la spinta che una curva o una frenata farebbero sentire — verso l'alto è una frenata. Sul dispositivo è l'accelerometro del telefono, proiettato sul piano orizzontale per ignorare l'inclinazione del supporto."
     },
-    "meter": {
-      "title": "Misura",
-      "fast": "Fast (LAF)",
-      "slow": "Slow (LAS)",
-      "leq": "Equivalente (LAeq)",
-      "max": "Massimo",
-      "peak": "Picco mostrato",
-      "integration": "Integrazione",
-      "overload": "Sovraccarico",
-      "yes": "sì",
-      "no": "no",
-      "reset": "Reset"
+    "peaks": {
+      "title": "Picchi del tragitto",
+      "stat": "avanti {front} · dietro {rear}",
+      "reset": "Cancella i picchi",
+      "note1": "I picchi non vengono conservati: sul dispositivo come qui, chiudere il toy li cancella — è la storia di un tragitto, non un record."
+    }
+  },
+  "float": {
+    "description": "Anteprima di Float, la livella a bolla e la bussola di Haloglyph: una scala logaritmica che rende visibile il decimo di grado, e una rosa a quattro lettere.",
+    "sub": "Una livella e una bussola",
+    "action": "Strumento successivo",
+    "modes": {
+      "niveau": "Livella",
+      "boussole": "Bussola"
+    },
+    "instrument": {
+      "title": "Strumento visualizzato",
+      "seg": "Strumento",
+      "tilt": "Inclinazione simulata",
+      "heading": "Rotta simulata",
+      "simulate": "Cambia strumento",
+      "note1": "Il pad simula la posa del telefono: al centro è piatto, sul bordo è in piedi — è ciò che fa passare la livella dal regime piatto a quello a piombo, come sul dispositivo."
+    }
+  },
+  "haloglyph": {
+    "description": "Haloglyph: il pack che riunisce i Glyph toy di questo repository in un'app Android per la Glyph Matrix del Nothing Phone (3), e in un widget che la emula altrove.",
+    "sub": "Il pack che riunisce i toy",
+    "pitch": {
+      "stat": "5 toy",
+      "note1": "<b>HALOGLYPH</b> riunisce i Glyph toy di questo repository in un'unica app Android: sulla Glyph Matrix del Nothing Phone (3) tramite Glyph Interface, e — in mancanza di una matrice — in un widget della schermata Home che la emula pixel per pixel su qualsiasi altro telefono.",
+      "note2": "Ancora in bozza: i cinque toy sono scritti, dichiarati al sistema e già funzionanti nel widget, ma il pack non è pubblicato. Glyphslot non ne fa parte — una slot machine impone una classificazione che contaminerebbe il resto — e resta un repository a sé.",
+      "repo": "Vedi il repository"
+    },
+    "toys": {
+      "title": "I toy",
+      "note1": "Ognuno si cambia con una pressione lunga sul Glyph Button — o con un tap, nel widget.",
+      "glyphlapse": "Contatore temporale: fino a cinque scadenze, ad anello o a clessidra.",
+      "justadice": "d6, d10, d12, d20 seguiti in quaternioni — scuoti per lanciare.",
+      "sonoglyph": "Il microfono sulla matrice, in spettro, ago o onda.",
+      "float": "Livella a bolla a scala logaritmica, e bussola come secondo strumento.",
+      "gforce": "Accelerometro di bordo: una biglia per l'istante, quattro picchi per il tragitto."
+    },
+    "widget": {
+      "title": "Il widget",
+      "stat": "3 max",
+      "note1": "Un solo widget porta tutti i toy: <b>tap</b> per interagire con quello mostrato, <b>doppio tap</b> per passare al successivo, <b>pressione lunga</b> per regolare cosa mostra. Due formati, 2 × 2 e 1 × 1 — fino a tre widget posati insieme.",
+      "note2": "Una raffica dura trenta secondi; un widget può anche girare in continuo, e si sospende non appena lo schermo si spegne."
+    },
+    "build": {
+      "title": "Compilare",
+      "stat": "MIT",
+      "note1": "Cinque lingue — de, en, es, fr, it, inglese di riserva — lo stesso insieme del resto dell'ecosistema: la traduzione arriva fino all'unità mostrata sulla matrice.",
+      "note2": "JDK 17, SDK Android 36, nessuna chiave API Nothing richiesta. Il GlyphMatrixSDK si scarica da solo alla prima build."
     }
   }
 }

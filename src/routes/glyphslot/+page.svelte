@@ -236,15 +236,6 @@
       </dl>
       <p class="note">{$_("glyphslot.roll.note")}</p>
     </Card>
-
-    <Card ref="03" title={$_("glyphslot.reels.title")} stat={$_("glyphslot.reels.stat")}>
-      <p class="note">{@html $_("glyphslot.reels.note1")}</p>
-      <p class="note">{$_("glyphslot.reels.note2")}</p>
-    </Card>
-
-    <Card ref="04" title={$_("glyphslot.fx.title")} stat={$_("glyphslot.fx.stat")}>
-      <p class="note">{@html $_("glyphslot.fx.note1")}</p>
-    </Card>
   {/snippet}
 </Shell>
 

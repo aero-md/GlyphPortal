@@ -59,6 +59,31 @@ export const F3: Font = {
 };
 
 /**
+ * 4×5 arrondie — port de `Fonts.R4` (Haloglyph) : les chiffres de G-Forces et de
+ * la boussole de Float, plus les points cardinaux en bas de casse (`n e s w`).
+ * Pas de virgule : le renderer la pose d'un pixel sous la ligne de base.
+ */
+export const R4: Font = {
+  height: 5,
+  glyphs: {
+    "0": ["0110", "1001", "1001", "1001", "0110"],
+    "1": ["0010", "0110", "0010", "0010", "0111"],
+    "2": ["0110", "1001", "0010", "0100", "1111"],
+    "3": ["1110", "0001", "0110", "0001", "1110"],
+    "4": ["0010", "0110", "1010", "1111", "0010"],
+    "5": ["1111", "1000", "1110", "0001", "1110"],
+    "6": ["0110", "1000", "1110", "1001", "0110"],
+    "7": ["1111", "0001", "0010", "0100", "0100"],
+    "8": ["0110", "1001", "0110", "1001", "0110"],
+    "9": ["0110", "1001", "0111", "0001", "0110"],
+    n: ["0111", "1001", "1001", "1001", "1001"],
+    e: ["0110", "1001", "1111", "1000", "0110"],
+    s: ["0111", "1000", "0110", "0001", "1110"],
+    w: ["10001", "10001", "10101", "10101", "01010"],
+  },
+};
+
+/**
  * 5×7 — le chiffre du VU-mètre, en toutes circonstances.
  *
  * Elle avait sauté quand le cadran était centré plus bas : ses deux lignes de

@@ -126,10 +126,9 @@
 <div class="page" class:dragging>
   <header>
     <!-- Registre « plaque d'instrument » : le nom, puis ce que fait l'outil.
-         Séparateur : la puce, pas le point médian. Elle est dans Geist Mono à la
-         chasse de la fonte — donc rien à grossir en CSS — et c'est le seul
-         séparateur rond, ce qui est la règle de la page : le cercle est réservé
-         aux points et aux LEDs. -->
+         Séparateur : la puce, pas le point médian — et c'est le seul séparateur
+         rond, ce qui est la règle de la page : le cercle est réservé aux points
+         et aux LEDs. -->
     <div class="h-row">
       <p class="sub meta"><span class="name">{title}</span> • {sub}</p>
       <div class="h-tools">
@@ -333,8 +332,13 @@
     flex-wrap: wrap;
   }
 
+  /* Geist Mono et taille d'origine, non concernée par le passage du reste de
+     la page en Geist : ce sont des chiffres et des unités techniques, la
+     chasse fixe y sert à quelque chose. */
   .f-row .meta {
     flex: 1 1 320px;
+    font-family: var(--mono);
+    font-size: 11px;
     text-transform: none;
     letter-spacing: 0.04em;
     line-height: 1.6;
