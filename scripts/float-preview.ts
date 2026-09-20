@@ -1,6 +1,6 @@
 /**
- * Fabrique la boucle de mini-prévisu de Float (Haloglyph), au format du Glyph
- * Museum.
+ * Fabrique les boucles de mini-prévisu de Float (Haloglyph), au format du
+ * Glyph Museum — une par appareil.
  *
  *     bun run scripts/float-preview.ts
  *
@@ -8,6 +8,11 @@
  * bulle qui se pose dans la couronne, et qui repart — suivi d'un tour de
  * boussole complet à un rythme choisi pour la vignette et non pour le hub de
  * l'app : à 9°/s comme sur l'appareil, le tour prendrait quarante secondes.
+ *
+ * Les deux appareils rejouent la même scène : `render.ts` bascule seul sur
+ * son rendu compact (couronne en losanges, boussole à répères et lettre
+ * centrale) selon `device.id`, il n'y a rien de plus à écrire ici pour le
+ * (4a) Pro.
  */
 
 import { mkdir, writeFile } from "node:fs/promises";
@@ -15,7 +20,6 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const OUT = path.join(ROOT, "static/preview/float.json");
 
 Bun.plugin({
   name: "hors-vite",
@@ -30,11 +34,9 @@ Bun.plugin({
   },
 });
 
-const { DEFAULT_DEVICE } = await import("../src/lib/index");
+const { DEVICES } = await import("../src/lib/index");
 const { PlumbRenderer } = await import("../src/routes/float/lib/render");
 const { PlumbScale, RANGES, Heading } = await import("../src/routes/float/lib/engine");
-const device = DEFAULT_DEVICE;
-const renderer = new PlumbRenderer(device);
 
 const FPS = 25;
 const MS = Math.round(1000 / FPS);
@@ -86,40 +88,52 @@ function compassReadingAt(seconds: number) {
   };
 }
 
-function toP(values: Float32Array): number[] {
+function toP(device: (typeof DEVICES)[number], values: Float32Array): number[] {
   return device.inside.map((i) => {
     const v = values[i];
     return v <= 0 ? 0 : v >= 1 ? 255 : Math.round(v * 255);
   });
 }
 
-const frames: { p: number[]; d: number }[] = [];
-
-function push(p: number[]): void {
-  const last = frames[frames.length - 1];
-  if (last && last.p.length === p.length && last.p.every((v, i) => v === p[i])) {
-    last.d += MS;
-    return;
+function makeFrames() {
+  const frames: { p: number[]; d: number }[] = [];
+  function push(p: number[]): void {
+    const last = frames[frames.length - 1];
+    if (last && last.p.length === p.length && last.p.every((v, i) => v === p[i])) {
+      last.d += MS;
+      return;
+    }
+    frames.push({ p, d: MS });
   }
-  frames.push({ p, d: MS });
+  return { frames, push };
 }
 
-for (let f = 0; f * (1 / FPS) < LEVEL_PERIOD; f++) {
-  const t = f / FPS;
-  push(toP(renderer.renderLevel(levelReadingAt(t), range)));
+for (const device of DEVICES) {
+  const renderer = new PlumbRenderer(device);
+  const { frames, push } = makeFrames();
+
+  for (let f = 0; f * (1 / FPS) < LEVEL_PERIOD; f++) {
+    const t = f / FPS;
+    push(toP(device, renderer.renderLevel(levelReadingAt(t), range)));
+  }
+
+  for (let f = 0; f * (1 / FPS) < COMPASS_PERIOD; f++) {
+    const t = f / FPS;
+    push(toP(device, renderer.renderCompass(compassReadingAt(t), t)));
+  }
+
+  const json = JSON.stringify({ v: 1, frames });
+  const OUT = path.join(
+    ROOT,
+    "static/preview",
+    device.id === "phone4apro" ? "float4apro.json" : "float.json",
+  );
+
+  await mkdir(path.dirname(OUT), { recursive: true });
+  await writeFile(OUT, json);
+
+  const total = frames.reduce((s, f) => s + f.d, 0);
+  console.log(
+    `${path.relative(ROOT, OUT)} — ${frames.length} trames, ${(total / 1000).toFixed(2)} s, ${(json.length / 1024).toFixed(0)} Ko`,
+  );
 }
-
-for (let f = 0; f * (1 / FPS) < COMPASS_PERIOD; f++) {
-  const t = f / FPS;
-  push(toP(renderer.renderCompass(compassReadingAt(t), t)));
-}
-
-const json = JSON.stringify({ v: 1, frames });
-
-await mkdir(path.dirname(OUT), { recursive: true });
-await writeFile(OUT, json);
-
-const total = frames.reduce((s, f) => s + f.d, 0);
-console.log(
-  `${path.relative(ROOT, OUT)} — ${frames.length} trames, ${(total / 1000).toFixed(2)} s, ${(json.length / 1024).toFixed(0)} Ko`,
-);

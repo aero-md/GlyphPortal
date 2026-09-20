@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DEFAULT_DEVICE, frameOf, type Frame, type LedStyle } from "$lib";
+  import { DEFAULT_DEVICE, frameOf, resolveDevice, type Device, type Frame, type LedStyle } from "$lib";
   import type { Dict } from "$lib/i18n";
   import { _, date, json } from "svelte-i18n";
   import Card from "$lib/ui/Card.svelte";
@@ -21,11 +21,16 @@
 
   const VERSION = "01";
 
-  /* Le toy écrit du texte dans le disque : trois lignes de 3×5, ou deux de 5×7.
-     Sur les 13 × 13 du (4a) Pro il ne reste pas de quoi poser un chiffre à deux
-     caractères, encore moins une étiquette. L'appareil est donc figé. */
-  const device = DEFAULT_DEVICE;
-  const renderer = new LapseRenderer(device);
+  /* Le toy écrit du texte dans le disque : trois lignes de 3×5, ou deux de 5×7
+     sur le (3). Le (4a) Pro ne porte plus qu'un format dégradé — voir
+     `compact` dans `render.ts` — mais il en porte un : l'appareil n'est donc
+     plus figé, et suit le réglage global comme les autres toys qui dessinent
+     les deux matrices. */
+  let device = $state<Device>(resolveDevice());
+  /* `DEFAULT_DEVICE` et non `device` : l'initial d'un `$state` ne se lit pas
+     hors passe réactive, et `device` ne vaut de toute façon rien d'autre au
+     montage — l'`$effect` plus bas reconstruit tout de suite après. */
+  let renderer = new LapseRenderer(DEFAULT_DEVICE);
 
   /* Une préférence système, pas un réglage : quelqu'un qui a demandé moins
      d'animations n'a pas à retrouver un glissement à chaque changement d'onglet.
@@ -41,6 +46,12 @@
   let active = $state(0);
 
   const current = $derived(lapses[active]);
+
+  /* Port compact (4a) Pro — voir `compact` dans `render.ts`. Le format reste
+     celui du réglage, il n'est simplement plus visible que sur le (3) : le
+     rendu l'ignore sur l'autre appareil, la carte Format le dit plutôt que de
+     laisser un sélecteur sans effet. */
+  const compact = $derived(device.id === "phone4apro");
 
   /* --- animation --- */
   let mode = $state<PreviewMode>("phone");
@@ -59,8 +70,13 @@
      tromperait au premier changement de photo. */
   let buttonReachable = $state(true);
 
-  let frame = $state<Frame>(frameOf(device, new Float32Array(device.cells)));
+  let frame = $state<Frame>(frameOf(DEFAULT_DEVICE, new Float32Array(DEFAULT_DEVICE.cells)));
   let readout = $state<Breakdown>(breakdown(lapses[0].ref, Date.now()));
+
+  $effect(() => {
+    renderer = new LapseRenderer(device);
+    frame = frameOf(device, new Float32Array(device.cells));
+  });
 
   /* Glissement et arrivée sont hors de l'état réactif : ils sont lus et écrits
      soixante fois par seconde par la boucle, et les passer en `$state` ferait
@@ -242,15 +258,14 @@
   title="Glyphlapse"
   sub={$_("glyphlapse.sub")}
   stamp={VERSION}
-  {device}
+  bind:device
   repo="https://github.com/aero-md/glyphlapse"
   {notice}
 >
   {#snippet preview()}
     <PreviewPane
       {frame}
-      {device}
-      devices={[device]}
+      bind:device
       bind:mode
       bind:style={ledStyle}
       action={$_("glyphlapse.action")}
@@ -327,17 +342,25 @@
       <p class="note">{@html $_("glyphlapse.deadline.note")}</p>
     </Card>
 
-    <Card ref="03" title={$_("glyphlapse.format.title")} stat={$_(`glyphlapse.formats.${current.format}`)}>
-      <Seg
-        label={$_("glyphlapse.format.seg")}
-        value={current.format}
-        options={($json("glyphlapse.formats") as Dict["glyphlapse"]["formats"]).map((label, i) => ({
-          v: i as Format,
-          t: label,
-        }))}
-        onchange={setFormat}
-      />
-      <p class="note">{@html $_("glyphlapse.format.note1")}</p>
+    <Card
+      ref="03"
+      title={$_("glyphlapse.format.title")}
+      stat={compact ? $_("glyphlapse.formats.2") : $_(`glyphlapse.formats.${current.format}`)}
+    >
+      {#if compact}
+        <p class="note">{@html $_("glyphlapse.format.compactNote")}</p>
+      {:else}
+        <Seg
+          label={$_("glyphlapse.format.seg")}
+          value={current.format}
+          options={($json("glyphlapse.formats") as Dict["glyphlapse"]["formats"]).map((label, i) => ({
+            v: i as Format,
+            t: label,
+          }))}
+          onchange={setFormat}
+        />
+        <p class="note">{@html $_("glyphlapse.format.note1")}</p>
+      {/if}
     </Card>
 
     <Card

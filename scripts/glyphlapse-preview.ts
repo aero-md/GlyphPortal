@@ -1,5 +1,6 @@
 /**
- * Fabrique la boucle de mini-prévisu de GlyphLapse, au format du Glyph Museum.
+ * Fabrique les boucles de mini-prévisu de GlyphLapse, au format du Glyph
+ * Museum — une par appareil.
  *
  *     bun run scripts/glyphlapse-preview.ts
  *
@@ -7,6 +8,12 @@
  * `breakdown` fait la décomposition calendaire, `LapseRenderer` dessine, et le
  * script ne fait qu'avancer une horloge et changer de lapse au bon moment —
  * exactement ce que fait `+page.svelte` à l'écran.
+ *
+ * Le (4a) Pro rejoue les mêmes trois lapses, dans le même format dégradé que
+ * l'appareil impose à l'écran — voir `compact` dans `render.ts` : Cycle
+ * partout, quel que soit le format réglé sur chaque lapse. Les trois restent
+ * distincts malgré tout, puisque ce sont les valeurs et les unités qui
+ * changent, pas seulement la mise en page.
  *
  * **Les trois lapses sont ceux de `defaultLapses`**, importés et non recopiés.
  * Ce sont donc les mêmes que ceux sur lesquels la préview interactive ouvre, et
@@ -39,7 +46,6 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const OUT = path.join(ROOT, "static/preview/glyphlapse.json");
 
 /* Même greffon que les deux autres générateurs : `$lib` est un alias résolu par
    SvelteKit, et le catalogue d'appareils importe des photos dont on n'a que
@@ -57,12 +63,9 @@ Bun.plugin({
   },
 });
 
-const { DEFAULT_DEVICE } = await import("../src/lib/index");
+const { DEVICES } = await import("../src/lib/index");
 const { breakdown, defaultLapses } = await import("../src/routes/glyphlapse/lib/lapse");
 const { LAPSE_SLIDE, LapseRenderer } = await import("../src/routes/glyphlapse/lib/render");
-
-const device = DEFAULT_DEVICE;
-const renderer = new LapseRenderer(device);
 
 /** Même cadence que les deux autres — 40 ms rond, le format compte en entiers. */
 const FPS = 25;
@@ -99,79 +102,92 @@ const depart = new Date();
 depart.setSeconds(SECONDE_DEPART, 0);
 const DEPART_MS = depart.getTime();
 
-const frames: { p: number[]; d: number }[] = [];
 const MS = Math.round(1000 / FPS);
 const IMAGES_PAR_LAPSE = PAR_LAPSE * FPS;
 
 /** Les LEDs du disque en consignes 0-255, dans l'ordre de lecture. */
-function toP(values: Float32Array): number[] {
+function toP(device: (typeof DEVICES)[number], values: Float32Array): number[] {
   return device.inside.map((i) => {
     const v = values[i];
     return v <= 0 ? 0 : v >= 1 ? 255 : Math.round(v * 255);
   });
 }
 
-/** Ajoute une trame, ou allonge la précédente si rien n'a changé. */
-function push(p: number[]): void {
-  const last = frames[frames.length - 1];
-  if (last && last.p.length === p.length && last.p.every((v, i) => v === p[i])) {
-    last.d += MS;
-    return;
+function makeFrames() {
+  const frames: { p: number[]; d: number }[] = [];
+  function push(p: number[]): void {
+    const last = frames[frames.length - 1];
+    if (last && last.p.length === p.length && last.p.every((v, i) => v === p[i])) {
+      last.d += MS;
+      return;
+    }
+    frames.push({ p, d: MS });
   }
-  frames.push({ p, d: MS });
+  return { frames, push };
 }
 
-/** Le rendu d'un lapse à l'instant `t` de l'animation, sans transition. */
-function rendu(k: number, t: number): Float32Array {
-  const l = lapses[k];
-  return renderer.render(breakdown(l.ref, DEPART_MS + t * 1000), l.format, l.sec, t, null, null);
-}
+for (const device of DEVICES) {
+  const renderer = new LapseRenderer(device);
+  const { frames, push } = makeFrames();
 
-/* Le glissement du premier lapse vient du **dernier**, pas d'un écran noir :
-   c'est ce qui referme la boucle. La dernière image de III sort par la gauche
-   pendant que la première de I entre par la droite, comme entre II et III. */
-let sortant = rendu(lapses.length - 1, 0).slice();
+  /** Le rendu d'un lapse à l'instant `t` de l'animation, sans transition. */
+  const rendu = (k: number, t: number): Float32Array => {
+    const l = lapses[k];
+    return renderer.render(breakdown(l.ref, DEPART_MS + t * 1000), l.format, l.sec, t, null, null);
+  };
 
-for (let k = 0; k < lapses.length; k++) {
-  const l = lapses[k];
-  const t0 = k * PAR_LAPSE;
+  /* Le glissement du premier lapse vient du **dernier**, pas d'un écran noir :
+     c'est ce qui referme la boucle. La dernière image de III sort par la
+     gauche pendant que la première de I entre par la droite, comme entre II
+     et III. */
+  let sortant = rendu(lapses.length - 1, 0).slice();
 
-  for (let f = 0; f < IMAGES_PAR_LAPSE; f++) {
-    const t = t0 + f / FPS;
-    const age = f / FPS;
+  for (let k = 0; k < lapses.length; k++) {
+    const l = lapses[k];
+    const t0 = k * PAR_LAPSE;
 
-    /* Glissement d'entrée, sur les 0,35 s du toy. `render` compose lui-même
-       l'ancien et le nouveau : on lui passe la trame sortante et l'avancement,
-       il fait le reste. */
-    const slide = age < LAPSE_SLIDE ? { from: sortant, progress: age / LAPSE_SLIDE } : null;
+    for (let f = 0; f < IMAGES_PAR_LAPSE; f++) {
+      const t = t0 + f / FPS;
+      const age = f / FPS;
 
-    const values = renderer.render(
-      breakdown(l.ref, DEPART_MS + t * 1000),
-      l.format,
-      l.sec,
-      t,
-      slide,
-      null,
-    );
-    push(toP(values));
+      /* Glissement d'entrée, sur les 0,35 s du toy. `render` compose lui-même
+         l'ancien et le nouveau : on lui passe la trame sortante et
+         l'avancement, il fait le reste. */
+      const slide = age < LAPSE_SLIDE ? { from: sortant, progress: age / LAPSE_SLIDE } : null;
 
-    /* La dernière image **sans** glissement du lapse courant : c'est elle qui
-       sortira par la gauche au changement suivant. Prise à la fin de la boucle
-       plutôt qu'après, pour ne pas rendre deux fois la même trame. */
-    if (f === IMAGES_PAR_LAPSE - 1) sortant = rendu(k, t).slice();
+      const values = renderer.render(
+        breakdown(l.ref, DEPART_MS + t * 1000),
+        l.format,
+        l.sec,
+        t,
+        slide,
+        null,
+      );
+      push(toP(device, values));
+
+      /* La dernière image **sans** glissement du lapse courant : c'est elle
+         qui sortira par la gauche au changement suivant. Prise à la fin de la
+         boucle plutôt qu'après, pour ne pas rendre deux fois la même trame. */
+      if (f === IMAGES_PAR_LAPSE - 1) sortant = rendu(k, t).slice();
+    }
   }
+
+  /* La version de format identifie la matrice visée, pas une révision : 1
+     pour le (3), 137 LEDs pour le (4a) Pro — voir `deviceForDesign`. */
+  const design = { v: 1, frames };
+  const json = JSON.stringify(design);
+  const OUT = path.join(
+    ROOT,
+    "static/preview",
+    device.id === "phone4apro" ? "glyphlapse4apro.json" : "glyphlapse.json",
+  );
+
+  await mkdir(path.dirname(OUT), { recursive: true });
+  await writeFile(OUT, json);
+
+  const total = frames.reduce((s, f) => s + f.d, 0);
+  console.log(
+    `${path.relative(ROOT, OUT)} — ${frames.length} trames, ` +
+      `${(total / 1000).toFixed(2)} s, ${(json.length / 1024).toFixed(0)} Ko`,
+  );
 }
-
-/* La version de format identifie la matrice visée, pas une révision : 1 pour le
-   Phone (3). */
-const design = { v: 1, frames };
-const json = JSON.stringify(design);
-
-await mkdir(path.dirname(OUT), { recursive: true });
-await writeFile(OUT, json);
-
-const total = frames.reduce((s, f) => s + f.d, 0);
-console.log(
-  `${path.relative(ROOT, OUT)} — ${frames.length} trames, ` +
-    `${(total / 1000).toFixed(2)} s, ${(json.length / 1024).toFixed(0)} Ko`,
-);

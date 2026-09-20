@@ -260,6 +260,7 @@
   sub={$_("justadice.sub")}
   stamp={VERSION}
   {device}
+  devices={[device]}
   repo="https://github.com/aero-md/justadice"
   {notice}
 >

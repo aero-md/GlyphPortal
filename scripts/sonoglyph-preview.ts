@@ -23,6 +23,11 @@
  * montrerait qu'un mentirait par omission. Les faire suivre la même source
  * plutôt que trois prises distinctes évite en plus l'effet catalogue : c'est le
  * même instant sonore vu de trois façons.
+ *
+ * Rejouée pour chaque appareil — voir `compact` dans `render.ts`, qui sait
+ * déjà dessiner les trois modes sur treize colonnes. La graine du bruit rose
+ * est remise à zéro avant chaque tour : les deux boucles montrent alors la
+ * même prise, pas deux instants qui ont dérivé l'un de l'autre.
  */
 
 import { mkdir, writeFile } from "node:fs/promises";
@@ -30,7 +35,6 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const OUT = path.join(ROOT, "static/preview/sonoglyph.json");
 
 /* Même greffon que pour GlyphSlot, et pour les mêmes deux raisons : `$lib` est
    un alias résolu par SvelteKit, et le catalogue d'appareils importe des photos
@@ -62,6 +66,12 @@ Bun.plugin({
  * fixée.
  */
 let graine = 0x9e3779b9;
+/* Remise à zéro avant chaque appareil — voir l'en-tête du fichier — plutôt
+   qu'une seule fois au chargement : les deux boucles doivent tirer la même
+   suite, pas deux moitiés d'une suite deux fois plus longue. */
+function semer(): void {
+  graine = 0x9e3779b9;
+}
 Math.random = () => {
   graine ^= graine << 13;
   graine ^= graine >>> 17;
@@ -69,12 +79,10 @@ Math.random = () => {
   return ((graine >>> 0) % 0xffffff) / 0xffffff;
 };
 
-const { DEFAULT_DEVICE } = await import("../src/lib/index");
+const { DEVICES } = await import("../src/lib/index");
 const { MeterEngine, DEFAULT_K } = await import("../src/routes/sonoglyph/lib/engine");
 const { FS, SimSource } = await import("../src/routes/sonoglyph/lib/source");
 const { SonoRenderer } = await import("../src/routes/sonoglyph/lib/render");
-
-const device = DEFAULT_DEVICE;
 
 /** Même cadence que GlyphSlot — 40 ms rond, le format compte en entiers. */
 const FPS = 25;
@@ -132,37 +140,29 @@ function niveau(t: number): number {
 
 /* -------------------------------------------------------------------------- */
 
-const engine = new MeterEngine(FS, DEFAULT_K);
-const sim = new SimSource({
-  targetDb: niveau(0),
-  timbre: TIMBRE,
-  dynamics: 1,
-  overdrive: false,
-});
-const sono = new SonoRenderer(device);
-
-const frames: { p: number[]; d: number }[] = [];
 const MS = Math.round(1000 / FPS);
 const BOUCLE = MODES.length * PAR_TOY;
 const PAR_IMAGE = Math.round(FS / FPS);
-const block = new Float32Array(PAR_IMAGE);
 
 /** Les LEDs du disque en consignes 0-255, dans l'ordre de lecture. */
-function toP(values: Float32Array): number[] {
+function toP(device: (typeof DEVICES)[number], values: Float32Array): number[] {
   return device.inside.map((i) => {
     const v = values[i];
     return v <= 0 ? 0 : v >= 1 ? 255 : Math.round(v * 255);
   });
 }
 
-/** Ajoute une trame, ou allonge la précédente si rien n'a changé. */
-function push(p: number[]): void {
-  const last = frames[frames.length - 1];
-  if (last && last.p.length === p.length && last.p.every((v, i) => v === p[i])) {
-    last.d += MS;
-    return;
+function makeFrames() {
+  const frames: { p: number[]; d: number }[] = [];
+  function push(p: number[]): void {
+    const last = frames[frames.length - 1];
+    if (last && last.p.length === p.length && last.p.every((v, i) => v === p[i])) {
+      last.d += MS;
+      return;
+    }
+    frames.push({ p, d: MS });
   }
-  frames.push({ p, d: MS });
+  return { frames, push };
 }
 
 /**
@@ -178,45 +178,58 @@ function push(p: number[]): void {
 const TOURS = 2;
 const IMAGES = Math.round(BOUCLE * FPS);
 
-for (let tour = 0; tour < TOURS; tour++) {
-  for (let f = 0; f < IMAGES; f++) {
-    const local = f / FPS;
-    const t = tour * BOUCLE + local;
+for (const device of DEVICES) {
+  semer();
+  const engine = new MeterEngine(FS, DEFAULT_K);
+  const sim = new SimSource({ targetDb: niveau(0), timbre: TIMBRE, dynamics: 1, overdrive: false });
+  const sono = new SonoRenderer(device);
+  const block = new Float32Array(PAR_IMAGE);
+  const { frames, push } = makeFrames();
 
-    /* Source simulée : le toy pose lui-même l'état « ok », il n'y a pas de
-       micro à attendre. Sans ça le moteur resterait en « pas de source » et les
-       deux renderers dessineraient leur écran d'attente. */
-    engine.status = "ok";
-    sim.setParams({ targetDb: niveau(t), timbre: TIMBRE, dynamics: 1, overdrive: false });
-    sim.fill(block, PAR_IMAGE, engine.calibrationK);
-    engine.feed(block, PAR_IMAGE, t);
+  for (let tour = 0; tour < TOURS; tour++) {
+    for (let f = 0; f < IMAGES; f++) {
+      const local = f / FPS;
+      const t = tour * BOUCLE + local;
 
-    const snap = engine.snapshot(t);
+      /* Source simulée : le toy pose lui-même l'état « ok », il n'y a pas de
+         micro à attendre. Sans ça le moteur resterait en « pas de source » et
+         les deux renderers dessineraient leur écran d'attente. */
+      engine.status = "ok";
+      sim.setParams({ targetDb: niveau(t), timbre: TIMBRE, dynamics: 1, overdrive: false });
+      sim.fill(block, PAR_IMAGE, engine.calibrationK);
+      engine.feed(block, PAR_IMAGE, t);
 
-    /* Le spectre d'abord — c'est le premier de la rotation sur l'appareil,
-       voir `SonoMode.kt` — puis l'aiguille, puis l'onde. Rendu dans les deux
-       tours et pas seulement le second : `render` est aussi ce qui nourrit
-       `bandFloor` et `waveform`, et les laisser froids au premier tour ferait
-       repartir leur convergence à zéro pile pendant le tour qu'on garde. */
-    const modeIndex = Math.min(MODES.length - 1, Math.floor(local / PAR_TOY));
-    const values = sono.render(snap, MODES[modeIndex]);
-    if (tour < TOURS - 1) continue;
-    push(toP(values));
+      const snap = engine.snapshot(t);
+
+      /* Le spectre d'abord — c'est le premier de la rotation sur l'appareil,
+         voir `SonoMode.kt` — puis l'aiguille, puis l'onde. Rendu dans les deux
+         tours et pas seulement le second : `render` est aussi ce qui nourrit
+         `bandFloor` et `waveform`, et les laisser froids au premier tour
+         ferait repartir leur convergence à zéro pile pendant le tour qu'on
+         garde. */
+      const modeIndex = Math.min(MODES.length - 1, Math.floor(local / PAR_TOY));
+      const values = sono.render(snap, MODES[modeIndex]);
+      if (tour < TOURS - 1) continue;
+      push(toP(device, values));
+    }
   }
+
+  /* La version de format identifie la matrice visée, pas une révision : 1
+     pour le (3), 137 LEDs pour le (4a) Pro — voir `deviceForDesign`. */
+  const design = { v: 1, frames };
+  const json = JSON.stringify(design);
+  const OUT = path.join(
+    ROOT,
+    "static/preview",
+    device.id === "phone4apro" ? "sonoglyph4apro.json" : "sonoglyph.json",
+  );
+
+  await mkdir(path.dirname(OUT), { recursive: true });
+  await writeFile(OUT, json);
+
+  const total = frames.reduce((s, f) => s + f.d, 0);
+  console.log(
+    `${path.relative(ROOT, OUT)} — ${frames.length} trames, ` +
+      `${(total / 1000).toFixed(2)} s, ${(json.length / 1024).toFixed(0)} Ko`,
+  );
 }
-
-/* La version de format identifie la matrice visée, pas une révision : 1 pour le
-   Phone (3). Les deux toys de Sonoglyph sont dessinés pour cette matrice-là —
-   sur 13 × 13 le cadran est illisible, c'est pourquoi la préview n'y propose
-   qu'un appareil. */
-const design = { v: 1, frames };
-const json = JSON.stringify(design);
-
-await mkdir(path.dirname(OUT), { recursive: true });
-await writeFile(OUT, json);
-
-const total = frames.reduce((s, f) => s + f.d, 0);
-console.log(
-  `${path.relative(ROOT, OUT)} — ${frames.length} trames, ` +
-    `${(total / 1000).toFixed(2)} s, ${(json.length / 1024).toFixed(0)} Ko`,
-);

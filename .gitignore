@@ -4,6 +4,7 @@ build/
 *.local
 .DS_Store
 .vite/
+references/
 
 # Le script de deploy : adresses et chemins de machine, pas du code.
 deploy.ps1

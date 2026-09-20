@@ -18,7 +18,7 @@
  * « colonnes » de l'ancien Sonoglyph ne survit pas au passage à trois modes —
  * l'appui long a mieux à faire que proposer deux fois le même spectre.
  */
-import { F3, F5, Grid, discMap, type Device } from "$lib";
+import { F3, F3D, F5, Grid, discMap, type Device } from "$lib";
 import { PEAK_SLICE_SECONDS, position, type Snapshot } from "./engine";
 import { NoiseFloor } from "./noiseFloor";
 import { Waveform } from "./waveform";
@@ -35,6 +35,16 @@ const VALUE_Y = 15;
 /** Graduations majeures, en dB(A) — 30 / 50 / 70 / 90 / 110. */
 export const TICKS = [30, 50, 70, 90, 110];
 
+/**
+ * Le croissant `compact` — voir `dome()`. Centre du cercle intérieur décalé
+ * sous le centre de la matrice, rayon fixe : la forme au niveau plein est
+ * donc bornée une fois pour toutes, jamais un disque complet. C'est le
+ * « rognage » voulu, pas un défaut à corriger — et le pivot de l'aiguille
+ * imaginaire qui balaie le croissant.
+ */
+const CRESCENT_CY_OFFSET = 1.25;
+const CRESCENT_INNER_R = 4.6;
+
 /** Pas de temps maximal pris en compte pour le suivi du plancher. */
 const MAX_DT = 0.25;
 /** Secondes par tour de la comète d'attente. */
@@ -47,6 +57,25 @@ export class SonoRenderer {
   private readonly CX: number;
   private readonly CY: number;
   private readonly SPAN: number;
+  /**
+   * (4a) Pro et ses 13 colonnes : ni les graduations ni une aiguille fine n'y
+   * restent lisibles (voir `draw.ts`). L'aiguille y devient un dôme plein —
+   * voir `dome()` — et le chiffre passe de trois colonnes (F5) à deux (F3).
+   */
+  private readonly compact: boolean;
+  /**
+   * Les cellules du croissant `compact` — indices row-major — voir `dome()`.
+   * Fixe : c'est la forme, jamais ce qui est allumé dedans. Vide sur un
+   * appareil non `compact`.
+   */
+  private readonly crescentCells: Int32Array;
+  /**
+   * L'angle de chaque cellule de `crescentCells` (même index), vu depuis le
+   * pivot de l'aiguille imaginaire — le centre du cercle intérieur qui
+   * découpe le croissant, pas le centre de la matrice. `dome()` compare cet
+   * angle à celui de l'aiguille : à gauche d'elle, allumé : à droite, masqué.
+   */
+  private readonly crescentAngle: Float64Array;
 
   /** Le fond de la scène, une bande à la fois — décide de ce qui s'allume dans le spectre. */
   private readonly bandFloor: NoiseFloor;
@@ -68,6 +97,20 @@ export class SonoRenderer {
     this.SPAN = device.radius;
     this.bandFloor = new NoiseFloor(25);
     this.waveform = new Waveform(device.size, PEAK_SLICE_SECONDS);
+    this.compact = device.id === "phone4apro";
+    const icy = this.CY + CRESCENT_CY_OFFSET;
+    const cells = Array.from(this.disc.geo.inside).filter((i) => {
+      const x = i % this.SIZE;
+      const y = Math.floor(i / this.SIZE);
+      if (y >= this.CY) return false;
+      return Math.hypot(x - this.CX, y - icy) >= CRESCENT_INNER_R;
+    });
+    this.crescentCells = Int32Array.from(cells);
+    this.crescentAngle = Float64Array.from(cells, (i) => {
+      const x = i % this.SIZE;
+      const y = Math.floor(i / this.SIZE);
+      return Math.atan2(x - this.CX, -(y - icy));
+    });
   }
 
   clearHistory(): void {
@@ -87,7 +130,12 @@ export class SonoRenderer {
     if (toy === "spectre") this.renderSpectrum(snap);
     else if (toy === "onde") this.renderWave();
     else this.renderNeedle(snap);
-    if (snap.overload) for (const i of this.disc.ring) this.grid.g[i] = 1;
+    /* Le halo sur tout l'anneau est le signal de surcharge du (3). Sur le
+       dôme `compact`, la surcharge a son propre signal — voir `renderNeedle`
+       — et l'anneau entier par-dessus le brouillerait plus qu'il n'aiderait. */
+    if (snap.overload && !(this.compact && toy === "aiguille")) {
+      for (const i of this.disc.ring) this.grid.g[i] = 1;
+    }
     return this.grid.g;
   }
 
@@ -137,11 +185,26 @@ export class SonoRenderer {
   // ---------- mode 2 : l'aiguille ----------
 
   private renderNeedle(snap: Snapshot): void {
+    if (this.compact) {
+      if (snap.overload) {
+        this.dome(1);
+        this.grid.centeredText(F3D, "99+", this.CY, 1);
+      } else {
+        this.dome(position(snap.laf));
+        this.grid.centeredText(F3D, this.valueText(snap.laf), this.CY, 1);
+      }
+      return;
+    }
     this.arc();
     this.ticks();
     this.needle(position(snap.laf));
     this.hub();
     this.grid.centeredText(F5, String(Math.min(199, Math.max(0, Math.round(snap.laf)))), VALUE_Y, 1);
+  }
+
+  /** Deux chiffres tiennent sur treize colonnes, pas trois — voir `compact`. */
+  private valueText(db: number): string {
+    return String(Math.min(99, Math.max(0, Math.round(db)))).padStart(2, "0");
   }
 
   private angle(p: number): number {
@@ -181,6 +244,21 @@ export class SonoRenderer {
   private needle(p: number): void {
     const a = this.angle(p);
     this.grid.line(this.CX, this.CY, this.px(R_NEEDLE, a), this.py(R_NEEDLE, a), 1);
+  }
+
+  /**
+   * Le croissant `compact` : une aiguille imaginaire, pivotée au centre du
+   * cercle intérieur qui découpe le croissant (pas celui de la matrice),
+   * balaie de -`SWEEP` à +`SWEEP` comme celle du (3) — voir `angle()`. Une
+   * cellule du croissant s'allume si elle est à gauche de l'aiguille
+   * (angle inférieur), masquée sinon. La forme du croissant ne bouge jamais,
+   * seule la frontière gauche/droite se déplace.
+   */
+  private dome(p: number): void {
+    const needle = this.angle(p);
+    for (let k = 0; k < this.crescentCells.length; k++) {
+      if (this.crescentAngle[k] <= needle) this.grid.g[this.crescentCells[k]] = 1;
+    }
   }
 
   /** Moyeu en croix : l'aiguille a besoin d'un axe visible à tout angle. */
@@ -224,6 +302,11 @@ export class SonoRenderer {
   private idle(snap: Snapshot, toy: SonoToy): void {
     const label = snap.status === "muted" ? "---" : "MIC";
     if (toy === "aiguille") {
+      if (this.compact) {
+        this.dome(0);
+        this.grid.centeredText(F3, label, this.CY, 1);
+        return;
+      }
       this.arc();
       this.ticks();
       this.needle(0);

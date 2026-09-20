@@ -26,7 +26,7 @@ export { buildGeometry, type Geometry } from "./matrix/matrix";
    s'appelaient `Grid`, ce qui ne pouvait pas cohabiter dans un même barrel et,
    surtout, laissait croire qu'elles avaient un rapport. */
 export { Grid, discMap, type DiscMap } from "./matrix/draw";
-export { F3, F5, R4, charWidth, extend, textWidth, type Font } from "./matrix/fonts";
+export { F3, F3D, F5, R3, R4, charWidth, extend, textWidth, type Font } from "./matrix/fonts";
 export {
   DEFAULT_DEVICE,
   DEVICES,
@@ -36,6 +36,7 @@ export {
   type DeviceId,
   type Disc,
 } from "./matrix/devices";
+export { DEVICE_KEY, readDevicePref, resolveDevice, setDevicePref } from "./matrix/devicePref";
 export { emptyFrame, frameOf, toBytes, type Frame } from "./matrix/frame";
 /* Le format de dessin du Glyph Museum — le seul format d'échange public d'une
    matrice, en lecture comme en écriture. Voir `matrix/design.ts`. */

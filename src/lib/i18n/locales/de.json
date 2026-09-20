@@ -45,8 +45,9 @@
   },
   "home": {
     "description": "Arbeiten rund um die Glyph Matrix: Nothing-Phone-Toys, im Browser in Originalgröße nachgespielt, und die Web-Tools dazu.",
-    "intro": "Verzeichnis von Arbeiten rund um die <b>Glyph Matrix</b>, von",
+    "intro": "Verzeichnis von Arbeiten rund um die <b>Glyph Matrix</b>.",
     "soon": "bald",
+    "phone3only": "Exklusiv für Phone (3)",
     "lines": {
       "glyphslot": "Ein pixeliger Spielautomat",
       "glyphlapse": "Eine Darstellung der vergehenden Zeit",
@@ -191,12 +192,13 @@
     "format": {
       "title": "Format",
       "seg": "Layout",
-      "note1": "<b>Dicht</b> schreibt die ganze Feinheit, notfalls zwei Einheiten pro Zeile. <b>Kompakt</b> behält nur die beiden führenden Einheiten, in 5×7. <b>Zyklus</b> lässt sie einzeln durchlaufen. <b>Tage</b> nennt nur die Gesamtzahl."
+      "note1": "<b>Dicht</b> schreibt die ganze Feinheit, notfalls zwei Einheiten pro Zeile. <b>Kompakt</b> behält nur die beiden führenden Einheiten, in 5×7. <b>Zyklus</b> lässt sie einzeln durchlaufen. <b>Tage</b> nennt nur die Gesamtzahl.",
+      "compactNote": "Auf dem Phone (4a) Pro passt in dreizehn Spalten nur <b>Zyklus</b> — als einziges Layout."
     },
     "seconds": {
       "title": "Sekunden",
       "seg": "Darstellung der Minute",
-      "note1": "<b>Ring</b> füllt den Rand ab zwölf Uhr — im Uhrzeigersinn, wenn Zeit sich ansammelt, gegen den Uhrzeigersinn, wenn sie abläuft. <b>Sanduhr</b> hebt oder senkt einen Sandstand, dessen Oberfläche ein Kegel ist: Spitze in der Mitte bei „seit“, Trichter bei „bis“."
+      "note1": "<b>Ring</b> füllt den Rand ab zwölf Uhr — im Uhrzeigersinn, wenn Zeit sich ansammelt, gegen den Uhrzeigersinn, wenn sie abläuft. <b>Sanduhr</b> hebt oder senkt einen Sandstand, dessen Oberfläche ein Kegel ist: Spitze in der Mitte bei „seit\", Trichter bei „bis\"."
     },
     "readout": {
       "title": "Ablesung",

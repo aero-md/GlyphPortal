@@ -171,6 +171,7 @@
   sub={$_("glyphslot.sub")}
   stamp={VERSION}
   {device}
+  devices={[device]}
   repo="https://github.com/aero-md/glyphslot"
   {notice}
 >

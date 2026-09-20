@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DEFAULT_DEVICE, frameOf, type Frame, type LedStyle } from "$lib";
+  import { DEFAULT_DEVICE, frameOf, resolveDevice, type Device, type Frame, type LedStyle } from "$lib";
   import { _ } from "svelte-i18n";
   import Card from "$lib/ui/Card.svelte";
   import PreviewPane from "$lib/matrix/PreviewPane.svelte";
@@ -12,9 +12,20 @@
 
   const VERSION = "01";
 
-  const device = DEFAULT_DEVICE;
+  /* Niveau et onde tournent sur n'importe quelle géométrie sans y changer une
+     ligne. La boussole, elle, a deux rendus — voir `compact` dans
+     `render.ts` — parce que treize colonnes ne portent ni rose de lettres ni
+     aiguille fine : sur le (4a) Pro les répères deviennent des points (un
+     losange pour le nord), et la lettre courante s'affiche au centre. */
+  /* `resolveDevice()` et non `DEFAULT_DEVICE` : Float dessine les deux
+     appareils, donc c'est le réglage global (thème, langue, appareil) qui
+     pilote l'appareil d'ouverture — voir `devicePref.ts`. */
+  let device = $state<Device>(resolveDevice());
   const engine = new PlumbEngine();
-  const renderer = new PlumbRenderer(device);
+  /* `DEFAULT_DEVICE` et non `device` : l'initial d'un `$state` ne se lit pas
+     hors passe réactive, et `device` ne vaut de toute façon rien d'autre au
+     montage — l'`$effect` ci-dessous reconstruit tout de suite après. */
+  let renderer = new PlumbRenderer(DEFAULT_DEVICE);
 
   /* La portée n'a plus de réglage côté app (Haloglyph, 2026-09-16) : un fil à
      plomb sans réglage de portée reste un fil à plomb. `engine.range` garde
@@ -79,8 +90,13 @@
   let ledStyle = $state<LedStyle>("sharp");
   let buttonReachable = $state(true);
 
-  let frame = $state<Frame>(frameOf(device, new Float32Array(device.cells)));
+  let frame = $state<Frame>(frameOf(DEFAULT_DEVICE, new Float32Array(DEFAULT_DEVICE.cells)));
   let reading = $state<PlumbReading>(engine.snapshot());
+
+  $effect(() => {
+    renderer = new PlumbRenderer(device);
+    frame = frameOf(device, new Float32Array(device.cells));
+  });
 
   $effect(() => {
     let raf = 0;
@@ -110,14 +126,13 @@
   title="Float"
   sub={$_("float.sub")}
   stamp={VERSION}
-  {device}
+  bind:device
   repo="https://github.com/aero-md/haloglyph"
 >
   {#snippet preview()}
     <PreviewPane
       {frame}
-      {device}
-      devices={[device]}
+      bind:device
       bind:mode={previewMode}
       bind:style={ledStyle}
       action={$_("float.action")}

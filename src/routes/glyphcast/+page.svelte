@@ -2,6 +2,7 @@
   import {
     DEFAULT_DEVICE,
     emptyFrame,
+    resolveDevice,
     type Device,
     type Frame,
     type LedStyle,
@@ -44,7 +45,10 @@
      exprimé en LEDs, ils sont tous photographiques. Basculer préserve donc la
      source, le cadrage et toute la tonalité — c'est ce qui rend la comparaison
      entre les deux matrices utile plutôt que théorique. */
-  let device = $state<Device>(DEFAULT_DEVICE);
+  /* `resolveDevice()` et non `DEFAULT_DEVICE` : GlyphCast dessine les deux
+     appareils, donc c'est le réglage global (thème, langue, appareil) qui
+     pilote l'appareil d'ouverture — voir `devicePref.ts`. */
+  let device = $state<Device>(resolveDevice());
   let params = $state<Params>({ ...DEFAULTS });
   let mode = $state<PreviewMode>("phone");
   let ledStyle = $state<LedStyle>("sharp");
@@ -257,7 +261,7 @@
   title="Glyphcast"
   sub={$_("glyphcast.sub")}
   stamp={VERSION}
-  {device}
+  bind:device
   repo="https://github.com/aero-md/GlyphPortal"
   {notice}
   {dragging}

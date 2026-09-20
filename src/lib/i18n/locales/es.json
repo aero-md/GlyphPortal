@@ -45,8 +45,9 @@
   },
   "home": {
     "description": "Creaciones en torno a la Glyph Matrix: los toys de Nothing Phone reproducidos en el navegador, a tamaño real, y las herramientas web que los acompañan.",
-    "intro": "Índice de creaciones en torno a la <b>Glyph Matrix</b>, por",
+    "intro": "Índice de creaciones en torno a la <b>Glyph Matrix</b>.",
     "soon": "próximamente",
+    "phone3only": "Exclusivo de Phone (3)",
     "lines": {
       "glyphslot": "Una máquina tragaperras pixelada",
       "glyphlapse": "Una visualización del paso del tiempo",
@@ -191,7 +192,8 @@
     "format": {
       "title": "Formato",
       "seg": "Composición",
-      "note1": "<b>Denso</b> escribe toda la granularidad, dos unidades por línea cuando hace falta. <b>Compacto</b> solo conserva las dos unidades de cabeza, en 5×7. <b>Ciclo</b> las hace desfilar una a una. <b>Días</b> solo dice el total."
+      "note1": "<b>Denso</b> escribe toda la granularidad, dos unidades por línea cuando hace falta. <b>Compacto</b> solo conserva las dos unidades de cabeza, en 5×7. <b>Ciclo</b> las hace desfilar una a una. <b>Días</b> solo dice el total.",
+      "compactNote": "En Phone (4a) Pro, trece columnas solo dan para <b>Ciclo</b>: es el único formato que cabe."
     },
     "seconds": {
       "title": "Segundos",

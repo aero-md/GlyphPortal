@@ -2,14 +2,19 @@
   /* La colonne de préview complète : les réglages de préview, la matrice, et la
      place d'une note sous celle-ci.
 
-     Les trois sélecteurs sont ici et non dans les apps parce qu'ils ne règlent
-     pas le toy — ils règlent la façon de le regarder. « Appareil », « Échelle de
-     préview » et « Rendu des LED » ont exactement le même sens pour une image
-     convertie, un spectre audio ou une horloge, et chaque préview qui les
-     redessinait pour son compte les redessinait un peu différemment.
+     Les deux sélecteurs de la rangée sont ici et non dans les apps parce
+     qu'ils ne règlent pas le toy — ils règlent la façon de le regarder.
+     « Échelle de préview » et « Rendu des LED » ont exactement le même sens
+     pour une image convertie, un spectre audio ou une horloge, et chaque
+     préview qui les redessinait pour son compte les redessinait un peu
+     différemment. Le choix de l'appareil, lui, a rejoint l'en-tête —
+     `Shell` — avec le thème et la langue : c'est un réglage de la page, pas
+     de cette rangée (changement structurel, 2026-09-20).
 
-     L'appareil, lui, est `$bindable` : il change la grille sous le toy, donc
-     l'app doit le voir pour recalculer sa trame.
+     `device` reste `$bindable` ici malgré tout : la grille qu'il change est
+     celle que cette colonne dessine, donc l'app doit le voir pour recalculer
+     sa trame — que le choix vienne de `Shell` ou d'ailleurs ne change rien à
+     ça.
 
      C'est aussi ici que vit la compaction de la rangée en colonne unique, avec
      les échappées `:global` qu'elle réclame. Elles ne sortent pas du composant,
@@ -18,7 +23,7 @@
   import { _ } from "svelte-i18n";
   import Seg from "../ui/Seg.svelte";
 
-  import { DEVICES, deviceById, type Device } from "./devices";
+  import { DEVICES, type Device } from "./devices";
   import type { Frame } from "./frame";
   import type { LedStyle } from "./render";
   import Preview, { type PreviewMode } from "./Preview.svelte";
@@ -30,15 +35,16 @@
     device: Device;
     mode?: PreviewMode;
     style?: LedStyle;
-    /** Restreindre le choix d'appareil — un toy 25 × 25 seul, par exemple. */
+    /**
+     * Les appareils que `Preview` précharge — un toy 25 × 25 seul, par
+     * exemple. Le sélecteur qui s'appuyait dessus a déménagé dans `Shell`,
+     * qui prend la même liste ; celle-ci ne sert donc plus qu'au préchargement.
+     */
     devices?: Device[];
     /**
-     * Sélecteurs propres au toy, posés **en tête** de la rangée.
-     *
-     * L'ordre suit une règle : d'abord ce qui change ce qui tourne sur
-     * l'appareil, ensuite ce qui ne change que la façon de le regarder. Le choix
-     * du toy passe donc avant celui de l'appareil, qui passe avant l'échelle et
-     * le rendu des LED.
+     * Sélecteurs propres au toy, posés **en tête** de la rangée : ce qui change
+     * ce qui tourne sur l'appareil passe avant ce qui ne change que la façon
+     * de le regarder (échelle, rendu des LED).
      */
     controls?: Snippet;
     /** Note sous la matrice — consigne d'usage, état vide. */
@@ -77,18 +83,6 @@
 <div class="pane" bind:clientWidth={colW}>
   <div class="scale">
     {@render controls?.()}
-    <!-- L'appareil vient avant l'échelle et le rendu : c'est le seul des trois
-         qui change ce qui sort de l'outil, les deux autres ne changent que ce
-         qu'on en voit. Un seul appareil disponible, et le sélecteur disparaît —
-         un choix entre une option n'est pas un choix. -->
-    {#if devices.length > 1}
-      <Seg
-        label={$_("common.pane.device")}
-        value={device.id}
-        options={devices.map((d) => ({ v: d.id, t: d.ref }))}
-        onchange={(id) => (device = deviceById(id))}
-      />
-    {/if}
     <Seg
       label={$_("common.pane.scale")}
       bind:value={mode}

@@ -67,7 +67,8 @@ export type Toy = {
   /** La préview est-elle servie sur ce domaine ? */
   ready: boolean;
   /**
-   * Boucle exportée du toy, servie depuis `public/preview/`.
+   * Boucles exportées du toy, servies depuis `public/preview/`, une par
+   * appareil qu'il sait dessiner.
    *
    * Deux formats sont lus, reconnus à la forme du fichier et non à son
    * extension :
@@ -88,15 +89,14 @@ export type Toy = {
    * exportée occupe la même place et la même hauteur que les autres, et la
    * grille ne bougera pas le jour où elle arrive.
    *
-   * **Plusieurs boucles : la tuile en tire une au sort à l'ouverture de la
-   * page**, à chances égales, et la garde pour toute sa durée de vie. C'est ce
-   * qui laisse GlyphCast montrer tantôt un rendu de Phone (3), tantôt un de
-   * (4a) Pro — un outil qui convertit vers les deux matrices ne devrait pas
-   * n'en montrer qu'une. La grille de la mini-prévisu se déduit du fichier lui-
-   * même (voir `deviceForDesign`), il n'y a donc rien à déclarer ici : c'est la
-   * longueur des trames qui dit l'appareil.
+   * `phone3` est la seule clé garantie : c'est la matrice d'origine, celle que
+   * tous les toys prêts savent encore dessiner. `phone4apro` absente, la tuile
+   * garde la boucle du (3) quel que soit le réglage d'appareil du visiteur, et
+   * le sommaire ajoute la mention « Exclusif au Phone (3) » à sa ligne — voir
+   * `+page.svelte`. La grille de chaque boucle se déduit du fichier lui-même
+   * (voir `deviceForDesign`), il n'y a donc rien de plus à déclarer ici.
    */
-  preview?: string | string[];
+  preview?: { phone3: string; phone4apro?: string };
 };
 
 export const TOYS: Toy[] = [
@@ -123,7 +123,7 @@ export const TOYS: Toy[] = [
        Les nombres sont ceux du jour de génération et ne bougeront plus — une
        vignette de sommaire montre à quoi ressemble le toy, elle ne donne pas
        l'heure. C'est la préview qui compte juste. */
-    preview: "/preview/glyphlapse.json",
+    preview: { phone3: "/preview/glyphlapse.json", phone4apro: "/preview/glyphlapse4apro.json" },
   },
   {
     slug: "sonoglyph",
@@ -134,7 +134,7 @@ export const TOYS: Toy[] = [
     /* Quatre secondes de VU-mètre puis quatre de spectre, sur une seule prise
        de son : le toy a deux affichages et l'appui long bascule de l'un à
        l'autre, une vignette qui n'en montrerait qu'un mentirait par omission. */
-    preview: "/preview/sonoglyph.json",
+    preview: { phone3: "/preview/sonoglyph.json", phone4apro: "/preview/sonoglyph4apro.json" },
   },
   {
     slug: "justadice",
@@ -151,7 +151,7 @@ export const TOYS: Toy[] = [
        l'appui long, et aucun jet ne retombe sur ce nombre-là : un dé qui montre 20,
        culbute trois secondes et remontre 20 se lirait comme une animation qui n'a
        rien fait. Générée en rejouant le moteur, voir `scripts/`. */
-    preview: "/preview/justadice.json",
+    preview: { phone3: "/preview/justadice.json" },
   },
   {
     slug: "float",
@@ -161,7 +161,7 @@ export const TOYS: Toy[] = [
        monorepo du pack — voir `haloglyph`, en tête du catalogue. */
     repo: "https://github.com/aero-md/haloglyph",
     ready: true,
-    preview: "/preview/float.json",
+    preview: { phone3: "/preview/float.json", phone4apro: "/preview/float4apro.json" },
   },
   {
     slug: "gforce",
@@ -169,7 +169,7 @@ export const TOYS: Toy[] = [
     kind: "toy",
     repo: "https://github.com/aero-md/haloglyph",
     ready: true,
-    preview: "/preview/gforce.json",
+    preview: { phone3: "/preview/gforce.json", phone4apro: "/preview/gforce4apro.json" },
   },
   {
     slug: "glyphslot",
@@ -177,7 +177,7 @@ export const TOYS: Toy[] = [
     kind: "toy",
     repo: "https://github.com/aero-md/glyphslot",
     ready: true,
-    preview: "/preview/glyphslot.json",
+    preview: { phone3: "/preview/glyphslot.json" },
   },
   {
     slug: "glyphcast",
@@ -191,10 +191,10 @@ export const TOYS: Toy[] = [
     repo: "https://github.com/aero-md/GlyphPortal",
     ready: true,
     /* Deux dessins fixes sortis de GlyphCast lui-même, la même image projetée
-       sur les deux matrices — 489 LEDs sur le (3), 137 sur le (4a) Pro. La
-       tuile en tire un au sort : c'est le seul endroit du sommaire où la
-       différence entre les deux appareils se voit, et elle est le sujet de cet
-       outil-là. */
-    preview: ["/preview/squirtle.json", "/preview/squirtle4apro.json"],
+       sur les deux matrices — 489 LEDs sur le (3), 137 sur le (4a) Pro. Suit
+       le réglage d'appareil du visiteur comme les autres tuiles depuis que le
+       sommaire porte le sélecteur (changement structurel, 2026-09-20) — avant,
+       elle en tirait une au sort faute d'un réglage global à suivre. */
+    preview: { phone3: "/preview/squirtle.json", phone4apro: "/preview/squirtle4apro.json" },
   },
 ];

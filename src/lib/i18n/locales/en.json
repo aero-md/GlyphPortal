@@ -45,8 +45,9 @@
   },
   "home": {
     "description": "A collection of Aéro's works around the Glyph Matrix of the Nothing Phone (3) and (4a) Pro. Glyph toys faithfully simulated in the browser, plus the tools that go with them.",
-    "intro": "Index of work around the <b>Glyph Matrix</b>, by",
+    "intro": "Index of work around the <b>Glyph Matrix</b>.",
     "soon": "coming",
+    "phone3only": "Exclusive to Phone (3)",
     "lines": {
       "glyphslot": "A pixelated slot machine",
       "glyphlapse": "A visualisation of time passing",
@@ -191,7 +192,8 @@
     "format": {
       "title": "Format",
       "seg": "Layout",
-      "note1": "<b>Dense</b> writes the whole granularity, two units per line when it has to. <b>Compact</b> keeps only the two leading units, in 5×7. <b>Cycle</b> scrolls them one by one. <b>Days</b> gives the total alone."
+      "note1": "<b>Dense</b> writes the whole granularity, two units per line when it has to. <b>Compact</b> keeps only the two leading units, in 5×7. <b>Cycle</b> scrolls them one by one. <b>Days</b> gives the total alone.",
+      "compactNote": "On Phone (4a) Pro, thirteen columns only fit <b>Cycle</b> — that's the only layout that does."
     },
     "seconds": {
       "title": "Seconds",

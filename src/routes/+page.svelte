@@ -13,12 +13,22 @@
      sommaire se lit comme un rack, ce qui est exactement ce qu'il est. */
   import LangToggle from "$lib/i18n/LangToggle.svelte";
   import { _ } from "svelte-i18n";
+  import DeviceToggle from "$lib/ui/DeviceToggle.svelte";
   import ThemeToggle from "$lib/ui/ThemeToggle.svelte";
   import HaloglyphMark from "$lib/ui/HaloglyphMark.svelte";
   import ToyPreview from "$lib/matrix/ToyPreview.svelte";
-  import { DEFAULT_DEVICE } from "$lib/matrix/devices";
+  import { deviceById, type Device } from "$lib/matrix/devices";
+  import { resolveDevice } from "$lib/matrix/devicePref";
   import { thumbGrid } from "$lib/matrix/thumb";
   import { TOYS } from "./toys";
+
+  const YEAR = new Date().getFullYear();
+
+  /* Même réglage global que les pages de toy — voir `devicePref.ts` — et même
+     sélecteur qu'elles, posé au même endroit de l'en-tête : le sommaire est
+     l'endroit où ce choix se fait le plus naturellement, avant même d'ouvrir
+     un toy. */
+  let device = $state<Device>(resolveDevice());
 
   /* Encombrement de la mini-prévisu, en px CSS. Déclaré ici et passé au
      composant plutôt que laissé à son défaut : c'est la mise en page de la tuile
@@ -43,10 +53,15 @@
      grand que le disque des autres tuiles.
      Calculé en effet et non en haut du script : `thumbGrid` lit
      `window.devicePixelRatio`, absent au prérendu. L'icône elle-même garde sa
-     taille propre — voir `ICON_SIZE` — le conteneur n'affecte plus qu'elle-même. */
+     taille propre — voir `ICON_SIZE` — le conteneur n'affecte plus qu'elle-même.
+
+     Dépend de `device` et non figé sur un appareil par défaut : le disque des
+     autres tuiles change de diamètre avec l'appareil choisi (13 × 13 et 25 × 25
+     ne tombent pas sur le même compte), et le hublot Haloglyph doit le suivre
+     pour rester calé dessus. */
   let appDisc = $state(DISC);
   $effect(() => {
-    appDisc = thumbGrid(DEFAULT_DEVICE, DISC).discCss;
+    appDisc = thumbGrid(device, DISC).discCss;
   });
 
   /* Taille de la marque, indépendante du hublot qui la porte : elle ne doit
@@ -54,17 +69,32 @@
      hublot bien plus petit qu'elle. */
   const ICON_SIZE = Math.round(DISC * 0.92);
 
-  /* Une boucle par tuile, tirée au sort parmi celles que le toy propose.
-     Résolu **une fois**, au montage de la page, et non dans le balisage : un
-     `$derived` ou un appel dans le `{#each}` se réévaluerait à chaque rendu, et
-     la mini-prévisu changerait d'appareil sous le curseur au premier survol. Ce
-     tirage-là doit tenir tant que la page est ouverte. */
-  const tuiles = TOYS.map((toy) => ({
-    ...toy,
-    preview: Array.isArray(toy.preview)
-      ? toy.preview[Math.floor(Math.random() * toy.preview.length)]
-      : toy.preview,
-  }));
+  /* Une boucle par tuile, celle de l'appareil choisi.
+   *
+   * Avant le sélecteur d'appareil du sommaire, la boucle était tirée au sort
+   * parmi celles que le toy proposait — c'était le seul moyen de montrer les
+   * deux matrices de GlyphCast sans faire de choix arbitraire. Le tirage a
+   * disparu avec lui : il y a maintenant un réglage à suivre, le hasard n'a
+   * plus rien à décider.
+   *
+   * `$derived` et non figé au montage : c'est un changement délibéré du
+   * visiteur sur le sélecteur, pas une réévaluation parasite au fil du rendu —
+   * rien à voir avec ce que l'ancien commentaire évitait. */
+  const tuiles = $derived(
+    TOYS.map((toy) => {
+      const has4aPro = !!toy.preview?.phone4apro;
+      const usePro = device.id === "phone4apro" && has4aPro;
+      return {
+        ...toy,
+        src: usePro ? toy.preview!.phone4apro : toy.preview?.phone3,
+        tileDevice: toy.preview ? deviceById(usePro ? "phone4apro" : "phone3") : device,
+        /* Vrai dès que le toy est prêt mais n'a qu'une boucle Phone (3) —
+           indépendant de l'appareil choisi : c'est une propriété du toy, pas
+           de la tuile du moment, voir `home.phone3only`. */
+        exclusive: !!toy.preview && !has4aPro,
+      };
+    }),
+  );
 </script>
 
 <!-- Titre et description par page. Le monorepo les portait dans cinq
@@ -86,15 +116,14 @@
       <!-- `{@html}` parce que la ligne porte une mise en relief — « Glyph
            Matrix » à l'accent — et que le nom n'est pas au même endroit dans
            les cinq langues : le balisage voyage donc avec la traduction, comme
-           pour les notes des préviews. -->
+           pour les notes des préviews. La signature elle-même est au pied,
+           avec le thème et la langue — voir `footer`. -->
       {@html $_("home.intro")}
-      <a class="by" href="https://github.com/aero-md" target="_blank" rel="noopener noreferrer"
-        >aero-md</a
-      >
     </p>
     <div class="h-tools">
-      <ThemeToggle />
-      <LangToggle />
+      <!-- Même endroit que sur chaque page de toy — voir `Shell` — et pour la
+           même raison : c'est un réglage de la page, pas de la tuile. -->
+      <DeviceToggle bind:device />
     </div>
   </header>
 
@@ -135,6 +164,13 @@
                        dépôt. Ce mot est la seule chose qui les sépare. -->
                   <span class="tag label">{$_("home.soon")}</span>
                 {/if}
+                {#if toy.exclusive}
+                  <!-- Propriété du toy, pas de l'appareil choisi en ce moment —
+                       voir `tuiles` : elle reste affichée même quand Phone (3)
+                       est le réglage courant, comme un fait de la tuile plutôt
+                       qu'un avertissement ponctuel. -->
+                  <span class="tag label">{$_("home.phone3only")}</span>
+                {/if}
               </span>
             </span>
             {#if toy.slug === "haloglyph"}
@@ -168,13 +204,29 @@
                    Décorative — pas de `label`. Ce que la tuile désigne est
                    déjà écrit à côté, en toutes lettres ; le lecteur d'écran
                    annoncerait le nom du toy deux fois de suite. -->
-              <ToyPreview src={toy.preview} size={DISC} />
+              <ToyPreview src={toy.src} device={toy.tileDevice} size={DISC} />
             {/if}
           </a>
         </li>
       {/each}
     </ul>
   </main>
+
+  <!-- Même pied que chaque page de toy — voir `Shell` — thème, langue et
+       signature vers le dépôt, pour la même raison de cohérence : ce sont des
+       réglages et une mention de site, pas quelque chose de propre au
+       sommaire. -->
+  <footer>
+    <div class="f-row">
+      <div class="f-tools">
+        <ThemeToggle />
+        <LangToggle />
+      </div>
+      <a class="sig" href="https://github.com/aero-md" target="_blank" rel="noopener noreferrer">
+        © {YEAR} aero-md
+      </a>
+    </div>
+  </footer>
 </div>
 
 <style>
@@ -230,14 +282,10 @@
     font-weight: inherit;
   }
 
-  /* Même main, même destination que la signature au pied de chaque préview. */
-  .by {
-    color: var(--ink);
-  }
-
-  /* Les deux commandes de l'en-tête, groupées comme dans la coquille des
-     préviews : sans conteneur, le `space-between` du bandeau les écarterait
-     l'une de l'autre au lieu de les tenir ensemble à droite. */
+  /* Le sélecteur d'appareil de l'en-tête — un seul enfant depuis que le thème
+     et la langue ont rejoint le pied (changement structurel, 2026-09-20) — le
+     conteneur reste : c'est lui que le `space-between` du bandeau tient à
+     droite. */
   .h-tools {
     flex: none;
     display: flex;
@@ -247,6 +295,48 @@
 
   main {
     flex: none;
+  }
+
+  /* Même pied que la coquille des préviews — voir `Shell` — repris ici plutôt
+     que partagé : le sommaire n'a ni `stamp` ni spec d'appareil unique à
+     montrer, juste le thème, la langue et la signature. */
+  footer {
+    flex: none;
+    margin-top: 2.5rem;
+    border-top: 1px solid var(--line);
+    padding-top: 1.2rem;
+  }
+
+  .f-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .f-tools {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  /* Même signature que redsunshome, même lien : c'est la même main. */
+  .sig {
+    flex: none;
+    margin-left: auto;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--faint);
+    white-space: nowrap;
+    transition: color 0.12s;
+  }
+
+  .sig:hover,
+  .sig:focus-visible {
+    color: var(--ink);
   }
 
   /* Deux par ligne, en colonnes fixes de 500 px : les tuiles ont toutes le même

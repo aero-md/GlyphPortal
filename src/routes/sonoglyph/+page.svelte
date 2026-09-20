@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DEFAULT_DEVICE, frameOf, type Frame, type LedStyle } from "$lib";
+  import { DEFAULT_DEVICE, frameOf, resolveDevice, type Device, type Frame, type LedStyle } from "$lib";
   import type { Dict } from "$lib/i18n";
   import { _, json } from "svelte-i18n";
   import Card from "$lib/ui/Card.svelte";
@@ -22,13 +22,15 @@
 
   const VERSION = "01";
 
-  /* Les trois modes sont dessinés pour une matrice 25 × 25 : le (4a) Pro et ses
-     13 × 13 n'afficheraient ni les graduations du cadran ni un chiffre lisible,
-     et le spectre y tomberait à treize colonnes. L'appareil est donc figé, et
-     `PreviewPane` retire le sélecteur de lui-même quand il n'y a qu'un choix.
-     C'est l'app qui tranche, pas les renderers : eux tournent sur n'importe
-     quelle géométrie. */
-  const device = DEFAULT_DEVICE;
+  /* Le spectre et l'onde tournent sur n'importe quelle géométrie sans y
+     changer une ligne. L'aiguille, elle, a deux rendus — voir `compact` dans
+     `render.ts` — parce que treize colonnes ne portent ni graduations ni
+     aiguille fine (voir `draw.ts`) : sur le (4a) Pro elle devient un dôme
+     plein, chiffré sur deux colonnes au lieu de trois. */
+  /* `resolveDevice()` et non `DEFAULT_DEVICE` : Sonoglyph dessine les deux
+     appareils, donc c'est le réglage global (thème, langue, appareil) qui
+     pilote l'appareil d'ouverture — voir `devicePref.ts`. */
+  let device = $state<Device>(resolveDevice());
 
   /* --- ce qui est affiché --- */
   /* Trois modes d'un seul toy, comme sur l'appareil depuis que Sonoglyph a
@@ -57,11 +59,23 @@
   const engine = new MeterEngine(FS, DEFAULT_K);
   const simSource = new SimSource(sim);
   const mic = new MicSource();
-  const sono = new SonoRenderer(device);
+  /* `DEFAULT_DEVICE` et non `device` : l'initial d'un `$state` ne se lit pas
+     hors passe réactive, et `device` ne vaut de toute façon rien d'autre au
+     montage — l'`$effect` ci-dessous reconstruit tout de suite après. */
+  let sono = new SonoRenderer(DEFAULT_DEVICE);
 
   const block = new Float32Array(4096);
-  let frame = $state<Frame>(frameOf(device, new Float32Array(device.cells)));
+  let frame = $state<Frame>(frameOf(DEFAULT_DEVICE, new Float32Array(DEFAULT_DEVICE.cells)));
   let snap = $state(engine.snapshot(0));
+
+  /* Le renderer porte l'histoire propre à une géométrie (bandFloor, waveform)
+     et ne peut donc pas changer d'appareil sous lui — il est reconstruit à
+     neuf. `engine`, lui, ne connaît que du son : aucune géométrie à y refléter,
+     donc aucune raison de perdre le Leq en cours en changeant d'appareil. */
+  $effect(() => {
+    sono = new SonoRenderer(device);
+    frame = frameOf(device, new Float32Array(device.cells));
+  });
 
   $effect(() => {
     simSource.setParams(sim);
@@ -173,15 +187,14 @@
   title="Sonoglyph"
   sub={$_("sonoglyph.sub")}
   stamp={VERSION}
-  {device}
+  bind:device
   repo="https://github.com/aero-md/sonoglyph"
   {notice}
 >
   {#snippet preview()}
     <PreviewPane
       {frame}
-      {device}
-      devices={[device]}
+      bind:device
       bind:mode
       bind:style={ledStyle}
       {action}

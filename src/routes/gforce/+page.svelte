@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DEFAULT_DEVICE, frameOf, type Frame, type LedStyle } from "$lib";
+  import { DEFAULT_DEVICE, frameOf, resolveDevice, type Device, type Frame, type LedStyle } from "$lib";
   import { _ } from "svelte-i18n";
   import Card from "$lib/ui/Card.svelte";
   import PreviewPane from "$lib/matrix/PreviewPane.svelte";
@@ -13,10 +13,19 @@
   const VERSION = "01";
 
   /* Comme Lapse et Just a dice, le toy écrit du texte — les pics tiennent sur
-     quatre valeurs de deux chiffres, calées pour les 25 × 25 du (3). */
-  const device = DEFAULT_DEVICE;
+     quatre valeurs de deux chiffres, calées pour les 25 × 25 du (3). Sur le
+     (4a) Pro treize colonnes ne portent qu'un pic à la fois : voir `compact`
+     dans `render.ts`, qui les fait défiler un par un, flèche et valeur,
+     plutôt que de les caser dans les quatre coins. */
+  /* `resolveDevice()` et non `DEFAULT_DEVICE` : G-Meter dessine les deux
+     appareils, donc c'est le réglage global (thème, langue, appareil) qui
+     pilote l'appareil d'ouverture — voir `devicePref.ts`. */
+  let device = $state<Device>(resolveDevice());
   const engine = new GForceEngine();
-  const renderer = new GForceRenderer(device);
+  /* `DEFAULT_DEVICE` et non `device` : l'initial d'un `$state` ne se lit pas
+     hors passe réactive, et `device` ne vaut de toute façon rien d'autre au
+     montage — l'`$effect` ci-dessous reconstruit tout de suite après. */
+  let renderer = new GForceRenderer(DEFAULT_DEVICE);
 
   /** Le pavé simule une poussée : ce qu'on subirait dans un virage ou un freinage. */
   const MAX_G = 2;
@@ -41,19 +50,27 @@
   let ledStyle = $state<LedStyle>("sharp");
   let buttonReachable = $state(true);
 
-  let frame = $state<Frame>(frameOf(device, new Float32Array(device.cells)));
+  let frame = $state<Frame>(frameOf(DEFAULT_DEVICE, new Float32Array(DEFAULT_DEVICE.cells)));
   let reading = $state<GForceReading>(engine.snapshot());
+
+  $effect(() => {
+    renderer = new GForceRenderer(device);
+    frame = frameOf(device, new Float32Array(device.cells));
+  });
 
   $effect(() => {
     let raf = 0;
     let last = performance.now();
+    let t = 0;
 
     const step = () => {
       const now = performance.now();
-      engine.step(Math.min(0.1, (now - last) / 1000));
+      const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
+      t += dt;
+      engine.step(dt);
       reading = engine.snapshot();
-      const values = mode === "vif" ? renderer.renderLive(reading) : renderer.renderPeaks(reading);
+      const values = mode === "vif" ? renderer.renderLive(reading) : renderer.renderPeaks(reading, t);
       frame = frameOf(device, values.slice());
       raf = requestAnimationFrame(step);
     };
@@ -72,15 +89,14 @@
   title="G-Meter"
   sub={$_("gforce.sub")}
   stamp={VERSION}
-  {device}
+  bind:device
   repo="https://github.com/aero-md/haloglyph"
   home={true}
 >
   {#snippet preview()}
     <PreviewPane
       {frame}
-      {device}
-      devices={[device]}
+      bind:device
       bind:mode={previewMode}
       bind:style={ledStyle}
       action={$_("gforce.action")}

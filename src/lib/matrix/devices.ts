@@ -184,15 +184,22 @@ const PHONE4A_PRO: Device = {
   name: "Nothing Phone (4a) Pro",
   ref: "(4a) Pro",
   aspect: 704 / 913,
-  // 522 px → hublot inscrit de 175,71 pour un champ de 143 (13 cellules de
-  // 11 px), soit 16,35 px de cerne de chaque côté. La LED y fait 9 px pour 2
+  // 560 px → hublot inscrit de 188,5 pour un champ de 169 (13 cellules de
+  // 13 px), soit 13 px de cerne de chaque côté. La LED y fait 11 px pour 2
   // d'écart.
   //
   // Valait 739 px (cellule de 16), ramené une première fois parce que le dos ne
   // tenait pas en hauteur sur un écran 1080. Puis 513, le temps d'un essai à
-  // cerne fin — voir `margin` : cet appareil le porte large, contrairement au
-  // (3), et le resserrer lui allait mal.
-  frameWidth: 522,
+  // cerne fin. Puis 522, plafonné par `margin` à 1,5 pas — cellule de 11,
+  // LED de 9 pour 2 d'écart.
+  //
+  // Remonté à 560 (sept. 2026), de pair avec `margin` resserrée : la demande
+  // était que la matrice occupe davantage le hublot. `frameWidth` seul ne fait
+  // rien gagner — la cellule reste bloquée à 11 tant que `margin` ne bouge pas,
+  // quel que soit `frameWidth`. Les deux ensemble font franchir la cellule de
+  // 11 à 13 : la LED passe de 9 à 11 px et l'écart reste à 2, la proportion
+  // mesurée sur la photo (voir `duty`) n'a pas eu besoin de changer.
+  frameWidth: 560,
   photo: { src: phone4aProBack },
   // meilleur cercle inscrit dans le hublot noirci : rayon 118,5 px centré en
   // (485,5 ; 210). Inscrit et non englobant, pour la même raison que le (3).
@@ -210,12 +217,22 @@ const PHONE4A_PRO: Device = {
      Les deux appareils ont donc des consignes très différentes, et c'est normal :
      le (3) est à 0,75 parce que son relevé se fait sur le verre entier, biseau
      compris, ce qui surestime ; celui-ci est à 1,5 parce que sa cote vient du
-     pas des LEDs lui-même. */
-  margin: 1.5,
+     pas des LEDs lui-même.
+
+     Resserrée à 1,0 (sept. 2026) : la demande était que la matrice occupe
+     davantage le hublot, pas que le cerne reste à sa cote mesurée. Encore loin
+     du plancher géométrique (0,61 ici, voir `cerneMin`) : aucun coin de LED ne
+     sort du hublot, le cerne reste net à l'œil, juste moins épais. Combinée à
+     `frameWidth`, c'est ce qui fait franchir la cellule de 11 à 13 px. */
+  margin: 1.0,
   /* La même mesure donnait une LED de 17 px sur ces 18,67, soit 0,911. C'est
      surestimé : une LED allumée déborde sur la photo, et le seuil de détection
      ramasse son halo autant qu'elle. La valeur retenue est celle qui rend
-     3 px d'écart à la cellule de référence de 16 px, ce qui se tient à l'œil. */
+     3 px d'écart à la cellule de référence de 16 px, ce qui se tient à l'œil.
+     Cette proportion n'a pas bougé quand la matrice a été agrandie (voir
+     `frameWidth`, `margin`) : c'est la cellule qui a grossi, pas ce ratio-là,
+     et 13 × 0,8125 = 10,5625 arrondit déjà à 11 sans qu'il y ait besoin d'y
+     toucher. */
   duty: 13 / 16,
 };
 

@@ -45,8 +45,9 @@
   },
   "home": {
     "description": "Créations autour de la Glyph Matrix : les toys Nothing Phone rejoués dans le navigateur, à leur échelle réelle, et les outils web qui vont avec.",
-    "intro": "Index de créations autour de la <b>Glyph Matrix</b>, par",
+    "intro": "Index de créations autour de la <b>Glyph Matrix</b>.",
     "soon": "à venir",
+    "phone3only": "Exclusif au Phone (3)",
     "lines": {
       "glyphslot": "Une machine à sous pixélisée",
       "glyphlapse": "Une visualisation du temps qui passe",
@@ -191,7 +192,8 @@
     "format": {
       "title": "Format",
       "seg": "Mise en page",
-      "note1": "<b>Dense</b> écrit toute la granularité. <b>Compact</b> ne garde que les deux unités de tête. <b>Cycle</b> les fait défiler une par une. <b>Jours</b> n'affiche que le nombre de jours. Les unités plus grandes que le laps de temps à représenter ne sont jamais affichées."
+      "note1": "<b>Dense</b> écrit toute la granularité. <b>Compact</b> ne garde que les deux unités de tête. <b>Cycle</b> les fait défiler une par une. <b>Jours</b> n'affiche que le nombre de jours. Les unités plus grandes que le laps de temps à représenter ne sont jamais affichées.",
+      "compactNote": "Sur Phone (4a) Pro, treize colonnes ne portent que <b>Cycle</b> : c'est le seul format qui y tient."
     },
     "seconds": {
       "title": "Secondes",

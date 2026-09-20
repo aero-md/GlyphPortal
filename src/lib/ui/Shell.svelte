@@ -16,7 +16,8 @@
   import type { Snippet } from "svelte";
   import LangToggle from "$lib/i18n/LangToggle.svelte";
   import { _, number } from "svelte-i18n";
-  import type { Device } from "../matrix/devices";
+  import { DEVICES, type Device } from "../matrix/devices";
+  import DeviceToggle from "./DeviceToggle.svelte";
   import ThemeToggle from "./ThemeToggle.svelte";
 
   type Props = {
@@ -37,6 +38,13 @@
      * un mot de la matrice, et que le rack disait déjà mieux.
      */
     device?: Device;
+    /**
+     * Appareils proposés au sélecteur de l'en-tête — un toy 25 × 25 seul, par
+     * exemple. Même restriction que celle passée à `PreviewPane`, dont c'est
+     * la copie : les deux composants pilotent le même `device` et doivent
+     * s'accorder sur ce qui est choisissable.
+     */
+    devices?: Device[];
     /** Message éphémère, en accent, sous la ligne de pied. */
     notice?: string;
     /** Cadre en accent : un fichier survole la page. */
@@ -59,7 +67,8 @@
     title,
     sub,
     stamp,
-    device,
+    device = $bindable(),
+    devices = DEVICES,
     notice = "",
     dragging = false,
     home = true,
@@ -132,11 +141,9 @@
     <div class="h-row">
       <p class="sub meta"><span class="name">{title}</span> • {sub}</p>
       <div class="h-tools">
-        {#if home}
-          <a class="home" href="/">◂ {$_("common.home")}</a>
+        {#if device}
+          <DeviceToggle bind:device {devices} />
         {/if}
-        <ThemeToggle />
-        <LangToggle />
       </div>
     </div>
   </header>
@@ -156,7 +163,13 @@
 
   <footer>
     <div class="f-row">
-      {#if stamp}<span class="ref">[{stamp}]</span>{/if}
+      <div class="f-tools">
+        {#if home}
+          <a class="home" href="/">◂ {$_("common.home")}</a>
+        {/if}
+        <ThemeToggle />
+        <LangToggle />
+      </div>
       {#if spec}<span class="meta">{spec}</span>{/if}
       <a class="sig" href={repo} target="_blank" rel="noopener noreferrer">
         © {YEAR} aero-md
@@ -228,6 +241,16 @@
   }
 
   .h-tools {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  /* Même rangée que `.h-tools`, redescendue au pied : accueil, thème et
+     langue y ont cédé leur place à l'en-tête au sélecteur d'appareil
+     (changement structurel, 2026-09-20). */
+  .f-tools {
     flex: none;
     display: flex;
     align-items: center;

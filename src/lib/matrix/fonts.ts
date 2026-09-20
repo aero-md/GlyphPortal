@@ -59,9 +59,53 @@ export const F3: Font = {
 };
 
 /**
+ * 3×5 — le chiffre du dôme de Sono sur (4a) Pro. Pas une variante de `F3` :
+ * dessin fourni au pixel près pour ce cadran précis (deux chiffres, rangées
+ * 6 à 10 d'une grille de 13), pas de lettres — l'état sans micro y reste
+ * porté par `F3` (« MIC », « --- »). Le `+` de la surcharge (« 99+ ») est
+ * centré sur les cinq rangées, contrairement aux chiffres qui les occupent
+ * toutes.
+ */
+export const F3D: Font = {
+  height: 5,
+  glyphs: {
+    "0": ["110", "101", "101", "101", "011"],
+    "1": ["001", "011", "101", "001", "001"],
+    "2": ["110", "001", "010", "100", "111"],
+    "3": ["110", "001", "010", "001", "110"],
+    "4": ["101", "101", "011", "001", "001"],
+    "5": ["111", "100", "110", "001", "110"],
+    "6": ["011", "100", "111", "101", "011"],
+    "7": ["111", "001", "001", "010", "010"],
+    "8": ["110", "101", "111", "101", "011"],
+    "9": ["110", "101", "111", "001", "110"],
+    "+": ["000", "010", "111", "010", "000"],
+  },
+};
+
+/**
+ * 3×4 — la lettre au centre de la boussole de Float sur (4a) Pro. Dessin
+ * pixel-exact tiré de quatre relevés N/E/S/W (rangées 5 à 8 d'une grille de
+ * 13) et confirmé par un cinquième (« SW ») où S et W réapparaissent
+ * identiques, juste réécartés pour tenir à deux — `centeredText` fait le
+ * reste (largeur 3, un blanc entre lettres) sans qu'il y ait eu besoin de
+ * dessiner les combinaisons mineures (NE, SE, SW, NW) à la main.
+ */
+export const R3: Font = {
+  height: 4,
+  glyphs: {
+    N: ["110", "101", "101", "101"],
+    E: ["011", "111", "100", "011"],
+    S: ["011", "110", "001", "110"],
+    W: ["101", "101", "111", "111"],
+  },
+};
+
+/**
  * 4×5 arrondie — port de `Fonts.R4` (Haloglyph) : les chiffres de G-Forces et de
- * la boussole de Float, plus les points cardinaux en bas de casse (`n e s w`).
- * Pas de virgule : le renderer la pose d'un pixel sous la ligne de base.
+ * la boussole de Float sur le (3), plus les points cardinaux en bas de casse
+ * (`n e s w`). Pas de virgule : le renderer la pose d'un pixel sous la ligne de
+ * base.
  */
 export const R4: Font = {
   height: 5,

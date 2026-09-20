@@ -1,13 +1,17 @@
 /**
- * Fabrique la boucle de mini-prévisu de G-Meter (Haloglyph), au format du Glyph
- * Museum.
+ * Fabrique les boucles de mini-prévisu de G-Meter (Haloglyph), au format du
+ * Glyph Museum — une par appareil.
  *
  *     bun run scripts/gforce-preview.ts
  *
  * Port de `GForceDemo.kt` : un tour de circuit, freinages dégressifs et
  * virages qui se recouvrent plutôt qu'une arche isolée par axe — rejoué à
- * travers le vrai renderer. Seize secondes en mode vif, puis les quatre pics,
- * comme le fait l'appui long sur l'appareil.
+ * travers le vrai renderer. Seize secondes en mode vif, puis les pics.
+ *
+ * Le (3) les affiche d'un coup, dans les quatre coins, tenus quatre secondes —
+ * comme le fait l'appui long sur l'appareil. Le (4a) Pro les fait défiler un
+ * par un (voir `compact` dans `render.ts`) ; la boucle y tient donc un cycle
+ * complet — `PEAK_PER * 4` — pour montrer les quatre avant de reboucler.
  */
 
 import { mkdir, writeFile } from "node:fs/promises";
@@ -15,7 +19,6 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const OUT = path.join(ROOT, "static/preview/gforce.json");
 
 Bun.plugin({
   name: "hors-vite",
@@ -30,10 +33,8 @@ Bun.plugin({
   },
 });
 
-const { DEFAULT_DEVICE } = await import("../src/lib/index");
-const { GForceRenderer } = await import("../src/routes/gforce/lib/render");
-const device = DEFAULT_DEVICE;
-const renderer = new GForceRenderer(device);
+const { DEVICES } = await import("../src/lib/index");
+const { GForceRenderer, PEAK_PER } = await import("../src/routes/gforce/lib/render");
 
 const FPS = 25;
 const MS = Math.round(1000 / FPS);
@@ -104,41 +105,59 @@ function readingAt(seconds: number) {
   };
 }
 
-function toP(values: Float32Array): number[] {
+function toP(device: (typeof DEVICES)[number], values: Float32Array): number[] {
   return device.inside.map((i) => {
     const v = values[i];
     return v <= 0 ? 0 : v >= 1 ? 255 : Math.round(v * 255);
   });
 }
 
-const frames: { p: number[]; d: number }[] = [];
-
-function push(p: number[]): void {
-  const last = frames[frames.length - 1];
-  if (last && last.p.length === p.length && last.p.every((v, i) => v === p[i])) {
-    last.d += MS;
-    return;
+function makeFrames() {
+  const frames: { p: number[]; d: number }[] = [];
+  function push(p: number[]): void {
+    const last = frames[frames.length - 1];
+    if (last && last.p.length === p.length && last.p.every((v, i) => v === p[i])) {
+      last.d += MS;
+      return;
+    }
+    frames.push({ p, d: MS });
   }
-  frames.push({ p, d: MS });
+  return { frames, push };
 }
 
-for (let f = 0; f * (1 / FPS) < PERIOD; f++) {
-  push(toP(renderer.renderLive(readingAt(f / FPS))));
+for (const device of DEVICES) {
+  const renderer = new GForceRenderer(device);
+  const compact = device.id === "phone4apro";
+  const { frames, push } = makeFrames();
+
+  for (let f = 0; f * (1 / FPS) < PERIOD; f++) {
+    push(toP(device, renderer.renderLive(readingAt(f / FPS))));
+  }
+
+  const peaks = readingAt(PERIOD - 0.01);
+  if (compact) {
+    /* Un cycle complet du défilement compact — voir l'en-tête du fichier. */
+    const CYCLE = PEAK_PER * 4;
+    for (let f = 0; f * (1 / FPS) < CYCLE; f++) {
+      const t = f / FPS;
+      push(toP(device, renderer.renderPeaks(peaks, t)));
+    }
+  } else {
+    /* Les pics, tenus quatre secondes — le temps de les lire, comme un appui
+       long sur l'appareil laisserait le temps de le faire. */
+    for (let f = 0; f * (1 / FPS) < 4; f++) {
+      push(toP(device, renderer.renderPeaks(peaks)));
+    }
+  }
+
+  const json = JSON.stringify({ v: 1, frames });
+  const OUT = path.join(ROOT, "static/preview", compact ? "gforce4apro.json" : "gforce.json");
+
+  await mkdir(path.dirname(OUT), { recursive: true });
+  await writeFile(OUT, json);
+
+  const total = frames.reduce((s, f) => s + f.d, 0);
+  console.log(
+    `${path.relative(ROOT, OUT)} — ${frames.length} trames, ${(total / 1000).toFixed(2)} s, ${(json.length / 1024).toFixed(0)} Ko`,
+  );
 }
-
-/* Les pics, tenus quatre secondes — le temps de les lire, comme un appui long
-   sur l'appareil laisserait le temps de le faire. */
-const peaks = readingAt(PERIOD - 0.01);
-for (let f = 0; f * (1 / FPS) < 4; f++) {
-  push(toP(renderer.renderPeaks(peaks)));
-}
-
-const json = JSON.stringify({ v: 1, frames });
-
-await mkdir(path.dirname(OUT), { recursive: true });
-await writeFile(OUT, json);
-
-const total = frames.reduce((s, f) => s + f.d, 0);
-console.log(
-  `${path.relative(ROOT, OUT)} — ${frames.length} trames, ${(total / 1000).toFixed(2)} s, ${(json.length / 1024).toFixed(0)} Ko`,
-);
