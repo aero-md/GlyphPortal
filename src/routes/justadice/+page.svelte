@@ -15,6 +15,7 @@
   import type { PreviewMode } from "$lib/matrix/Preview.svelte";
   import Shell from "$lib/ui/Shell.svelte";
   import Seg from "$lib/ui/Seg.svelte";
+  import RenderSeg from "$lib/ui/RenderSeg.svelte";
   import { DIE_ICON } from "./lib/icons";
   import { DiceRenderer } from "./lib/render";
   import {
@@ -358,8 +359,8 @@
     <PreviewPane
       {frame}
       bind:device
-      bind:mode
-      bind:style={ledStyle}
+      {mode}
+      style={ledStyle}
       bind:buttonReachable
       action={$_("justadice.action")}
       onlongpress={nextDie}
@@ -372,15 +373,13 @@
          le téléphone — les autres cartes ne changent que la façon de le
          regarder ou reprennent son geste. -->
     <Card ref="00" title={$_("common.kind.toy")} stat={device.name}>
-      {#if compact}
-        <p class="note">{@html $_("justadice.compactNote")}</p>
-      {/if}
       <Seg
         label={$_("justadice.dieSeg")}
         value={die.id}
         options={DICE.map((d) => ({ v: d.id, t: d.id }))}
         onchange={pick}
       />
+      <RenderSeg bind:mode bind:style={ledStyle} />
     </Card>
 
     <!-- Jeter et lire le résultat sont le même geste, et c'était deux cartes

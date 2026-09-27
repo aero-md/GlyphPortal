@@ -4,6 +4,7 @@
   import Card from "$lib/ui/Card.svelte";
   import PreviewPane from "$lib/matrix/PreviewPane.svelte";
   import type { PreviewMode } from "$lib/matrix/Preview.svelte";
+  import RenderSeg from "$lib/ui/RenderSeg.svelte";
   import Seg from "$lib/ui/Seg.svelte";
   import Shell from "$lib/ui/Shell.svelte";
   import TiltPad from "$lib/ui/TiltPad.svelte";
@@ -97,8 +98,8 @@
     <PreviewPane
       {frame}
       bind:device
-      bind:mode={previewMode}
-      bind:style={ledStyle}
+      mode={previewMode}
+      style={ledStyle}
       action={$_("gforce.action")}
       onlongpress={longPress}
       bind:buttonReachable
@@ -111,9 +112,6 @@
         <b>G-FORCES</b>
         {$_("common.toyCard.onlyPack", { values: { app: "Haloglyph" } })}
       </p>
-    </Card>
-
-    <Card ref="01" title={$_("gforce.pad.title")} stat={$_(`gforce.modes.${mode}`)}>
       <Seg
         label={$_("gforce.pad.seg")}
         value={mode}
@@ -123,6 +121,10 @@
         ]}
         onchange={(m) => (mode = m)}
       />
+      <RenderSeg bind:mode={previewMode} bind:style={ledStyle} />
+    </Card>
+
+    <Card ref="01" title={$_("gforce.pad.title")} stat={$_(`gforce.modes.${mode}`)}>
       <TiltPad
         label={$_("gforce.pad.label")}
         bind:x={padX}
@@ -130,11 +132,6 @@
         springBack
         onchange={onPad}
       />
-      {#if !buttonReachable}
-        <div class="btns">
-          <button type="button" onclick={longPress}>{$_("gforce.pad.simulate")}</button>
-        </div>
-      {/if}
       <p class="note">{@html $_("gforce.pad.note1")}</p>
     </Card>
 

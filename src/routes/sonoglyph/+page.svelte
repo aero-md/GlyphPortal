@@ -5,6 +5,7 @@
   import Card from "$lib/ui/Card.svelte";
   import PreviewPane from "$lib/matrix/PreviewPane.svelte";
   import type { PreviewMode } from "$lib/matrix/Preview.svelte";
+  import RenderSeg from "$lib/ui/RenderSeg.svelte";
   import Seg from "$lib/ui/Seg.svelte";
   import Shell from "$lib/ui/Shell.svelte";
   import Slider from "$lib/ui/Slider.svelte";
@@ -195,43 +196,28 @@
     <PreviewPane
       {frame}
       bind:device
-      bind:mode
-      bind:style={ledStyle}
+      {mode}
+      style={ledStyle}
       {action}
       onlongpress={longPress}
-    >
-      {#snippet controls()}
-        <!-- Le toy vient en premier : c'est le seul réglage de cette rangée qui
-             change ce qui tourne sur l'appareil. -->
-        <Seg
-          label={$_("sonoglyph.toySeg")}
-          bind:value={toy}
-          options={[
-            { v: "spectre" as Toy, t: $_("sonoglyph.toys.spectrum") },
-            { v: "aiguille" as Toy, t: $_("sonoglyph.toys.needle") },
-            { v: "onde" as Toy, t: $_("sonoglyph.toys.wave") },
-          ]}
-        />
-      {/snippet}
-    </PreviewPane>
+    />
   {/snippet}
 
   {#snippet rack()}
-    <!-- [00] parce que c'est ce qui vient avant tout le reste : la page est une
-         préview, le toy est un APK qui s'installe sur le téléphone. Le dépôt
-         `sonoglyph` d'origine reste archivé — c'est celui-là qui l'a fait
-         figurer longtemps « abandonné » ici — mais le code n'a pas fini sa vie
-         avec lui : il tourne aujourd'hui dans Haloglyph, sous le nom Sono. -->
+    <!-- [00] parce que c'est ce qui vient avant tout le reste : le toy vient en
+         premier, c'est le seul réglage qui change ce qui tourne sur
+         l'appareil — les autres cartes ne changent que ce qui l'alimente. -->
     <Card ref="00" title={$_("common.kind.toy")} stat="Haloglyph">
-      <p class="note">
-        <b>SONOGLYPH</b>
-        {$_("sonoglyph.toyCard.note1", { values: { app: "Haloglyph" } })}
-      </p>
-      <div class="btns">
-        <a href="https://github.com/aero-md/haloglyph" target="_blank" rel="noopener noreferrer">
-          {$_("common.toyCard.download")}
-        </a>
-      </div>
+      <Seg
+        label={$_("sonoglyph.toySeg")}
+        bind:value={toy}
+        options={[
+          { v: "spectre" as Toy, t: $_("sonoglyph.toys.spectrum") },
+          { v: "aiguille" as Toy, t: $_("sonoglyph.toys.needle") },
+          { v: "onde" as Toy, t: $_("sonoglyph.toys.wave") },
+        ]}
+      />
+      <RenderSeg bind:mode bind:style={ledStyle} />
     </Card>
 
     <Card

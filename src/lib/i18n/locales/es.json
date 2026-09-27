@@ -23,16 +23,13 @@
     },
     "pane": {
       "device": "Dispositivo",
+      "render": "Representación",
       "scale": "Escala de vista previa",
       "phone": "Teléfono",
       "large": "Grande",
       "led": "Representación de los LED",
       "sharp": "Sharp",
-      "soft": "Soft",
-      "toPhone": "Cambiar a teléfono",
-      "toLarge": "Cambiar a grande",
-      "toSharp": "Cambiar a sharp",
-      "toSoft": "Cambiar a soft"
+      "soft": "Soft"
     },
     "button": {
       "longPress": "Pulsación larga",
@@ -260,7 +257,6 @@
     "description": "Vista previa del Glyph Toy Just a dice: un dado lanzado con una sacudida en la Glyph Matrix de un Nothing Phone.",
     "sub": "Un dado con varias formas",
     "action": "Dado siguiente",
-    "compactNote": "En Phone (4a) Pro, la matriz muestra un icono del sólido en reposo y el resultado en cifras — trece columnas no dan para una voltereta legible de un poliedro.",
     "dieSeg": "Dado",
     "solids": {
       "d6": "cubo",

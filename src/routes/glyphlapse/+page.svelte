@@ -5,6 +5,7 @@
   import Card from "$lib/ui/Card.svelte";
   import PreviewPane from "$lib/matrix/PreviewPane.svelte";
   import type { PreviewMode } from "$lib/matrix/Preview.svelte";
+  import RenderSeg from "$lib/ui/RenderSeg.svelte";
   import Seg from "$lib/ui/Seg.svelte";
   import Shell from "$lib/ui/Shell.svelte";
   import {
@@ -266,8 +267,8 @@
     <PreviewPane
       {frame}
       bind:device
-      bind:mode
-      bind:style={ledStyle}
+      {mode}
+      style={ledStyle}
       action={$_("glyphlapse.action")}
       onlongpress={longPress}
       bind:buttonReachable
@@ -275,29 +276,13 @@
   {/snippet}
 
   {#snippet rack()}
-    <!-- [00] parce que c'est ce qui vient avant tout le reste : la page est une
-         préview, le toy est un APK qui s'installe sur le téléphone. Sans cette
-         carte, rien ne dit où il se récupère. -->
-    <Card ref="00" title={$_("common.kind.toy")} stat={device.name}>
-      <p class="note">
-        <b>GLYPHLAPSE</b>
-        {$_("common.toyCard.apk", { values: { device: device.name } })}
-      </p>
-      <p class="note">
-        {$_("common.toyCard.pack", { values: { app: "Haloglyph" } })}
-      </p>
-      <div class="btns">
-        <a
-          href="https://github.com/aero-md/glyphlapse/releases"
-          target="_blank"
-          rel="noopener noreferrer">{$_("common.toyCard.download")}</a
-        >
-      </div>
-    </Card>
-
+    <!-- [00] parce que c'est ce qui vient avant tout le reste : le lapse
+         affiché est le seul réglage qui change ce qui tourne sur le
+         téléphone — les autres cartes ne changent que ce que ce lapse-là
+         montre. -->
     <Card
-      ref="01"
-      title={$_("glyphlapse.lapse.title")}
+      ref="00"
+      title={$_("common.kind.toy")}
       stat="{ROMAN[active]} · {$_('glyphlapse.lapse.stat', {
         values: { enabled: enabledCount, total: LAPSE_COUNT },
       })}"
@@ -308,16 +293,14 @@
         options={ROMAN.map((r, i) => ({ v: i, t: r }))}
         onchange={switchLapse}
       />
+      <RenderSeg bind:mode bind:style={ledStyle} />
+    </Card>
+
+    <Card ref="01" title={$_("glyphlapse.lapse.title")} stat={device.name}>
       <div class="btns">
         <button type="button" class:on={current.enabled} disabled={active === 0} onclick={toggleEnabled}>
           {current.enabled ? $_("glyphlapse.lapse.enabled") : $_("glyphlapse.lapse.disabled")}
         </button>
-        <!-- Repli : le Glyph Button de la photo est hors champ, et l'appui long
-             est la seule commande du toy. Il n'apparaît pas quand le bouton est
-             là — un doublon permanent apprendrait la mauvaise interaction. -->
-        {#if !buttonReachable}
-          <button type="button" onclick={longPress}>{$_("glyphlapse.lapse.simulate")}</button>
-        {/if}
       </div>
       <p class="note">{@html $_("glyphlapse.lapse.note1")}</p>
       <p class="note">{@html $_("glyphlapse.lapse.note2")}</p>

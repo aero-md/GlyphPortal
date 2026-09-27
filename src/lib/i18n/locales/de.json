@@ -23,16 +23,13 @@
     },
     "pane": {
       "device": "Gerät",
+      "render": "Darstellung",
       "scale": "Vorschau-Maßstab",
       "phone": "Telefon",
       "large": "Groß",
       "led": "LED-Darstellung",
       "sharp": "Sharp",
-      "soft": "Soft",
-      "toPhone": "Zu Telefon wechseln",
-      "toLarge": "Zu Groß wechseln",
-      "toSharp": "Zu Sharp wechseln",
-      "toSoft": "Zu Soft wechseln"
+      "soft": "Soft"
     },
     "button": {
       "longPress": "Langer Druck",
@@ -260,7 +257,6 @@
     "description": "Vorschau des Glyph Toys Just a dice: ein Würfel, mit einem Schütteln auf der Glyph Matrix eines Nothing Phone geworfen.",
     "sub": "Ein Würfel mit mehreren Formen",
     "action": "Nächster Würfel",
-    "compactNote": "Auf dem Phone (4a) Pro zeigt die Matrix in Ruhe ein Icon des Körpers und das Ergebnis als Ziffern — dreizehn Spalten tragen keine lesbare Polyeder-Taumelbewegung.",
     "dieSeg": "Würfel",
     "solids": {
       "d6": "Würfel",

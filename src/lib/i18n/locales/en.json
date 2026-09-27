@@ -23,16 +23,13 @@
     },
     "pane": {
       "device": "Device",
+      "render": "Render",
       "scale": "Preview scale",
       "phone": "Phone",
       "large": "Large",
       "led": "LED rendering",
       "sharp": "Sharp",
-      "soft": "Soft",
-      "toPhone": "Switch to phone",
-      "toLarge": "Switch to large",
-      "toSharp": "Switch to sharp",
-      "toSoft": "Switch to soft"
+      "soft": "Soft"
     },
     "button": {
       "longPress": "Long press",
@@ -260,7 +257,6 @@
     "description": "Preview of the Just a dice Glyph Toy: a die thrown with a shake on the Glyph Matrix of a Nothing Phone.",
     "sub": "A die with several shapes",
     "action": "Next die",
-    "compactNote": "On Phone (4a) Pro, the matrix shows an icon of the solid at rest and the result as digits — thirteen columns can't carry a legible polyhedron tumble.",
     "dieSeg": "Die",
     "solids": {
       "d6": "cube",

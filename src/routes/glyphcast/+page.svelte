@@ -11,6 +11,7 @@
   import Card from "$lib/ui/Card.svelte";
   import PreviewPane from "$lib/matrix/PreviewPane.svelte";
   import type { PreviewMode } from "$lib/matrix/Preview.svelte";
+  import RenderSeg from "$lib/ui/RenderSeg.svelte";
   import Seg from "$lib/ui/Seg.svelte";
   import Shell from "$lib/ui/Shell.svelte";
   import Slider from "$lib/ui/Slider.svelte";
@@ -270,8 +271,8 @@
     <PreviewPane
       {frame}
       bind:device
-      bind:mode
-      bind:style={ledStyle}
+      {mode}
+      style={ledStyle}
       compare={hasImg ? rawFrame : null}
     >
       <!-- Trois états, pas deux : sans source la matrice peut porter une trame
@@ -315,6 +316,7 @@
         </label>
       </div>
       <p class="note">{$_("glyphcast.source.note")}</p>
+      <RenderSeg bind:mode bind:style={ledStyle} />
     </Card>
 
     <Card

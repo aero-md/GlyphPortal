@@ -23,16 +23,13 @@
     },
     "pane": {
       "device": "Appareil",
+      "render": "Rendu",
       "scale": "Échelle de préview",
       "phone": "Téléphone",
       "large": "Grand",
       "led": "Rendu des LED",
       "sharp": "Sharp",
-      "soft": "Soft",
-      "toPhone": "Passer en téléphone",
-      "toLarge": "Passer en grand",
-      "toSharp": "Passer en sharp",
-      "toSoft": "Passer en soft"
+      "soft": "Soft"
     },
     "button": {
       "longPress": "Appui long",
@@ -260,7 +257,6 @@
     "description": "Préview du Glyph Toy Just a dice : un dé jeté d'une secousse sur la Glyph Matrix d'un Nothing Phone.",
     "sub": "Un dé de plusieurs formes",
     "action": "Dé suivant",
-    "compactNote": "Sur Phone (4a) Pro, la matrice montre une icône du solide au repos et le résultat en chiffres — treize colonnes ne portent pas une culbute lisible d'un polyèdre.",
     "dieSeg": "Dé",
     "solids": {
       "d6": "cube",

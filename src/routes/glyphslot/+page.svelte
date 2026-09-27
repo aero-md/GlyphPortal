@@ -4,6 +4,7 @@
   import Card from "$lib/ui/Card.svelte";
   import PreviewPane from "$lib/matrix/PreviewPane.svelte";
   import type { PreviewMode } from "$lib/matrix/Preview.svelte";
+  import RenderSeg from "$lib/ui/RenderSeg.svelte";
   import Shell from "$lib/ui/Shell.svelte";
   import { SlotRenderer, type JackpotFx } from "./lib/render";
   import {
@@ -180,8 +181,8 @@
       {frame}
       {device}
       devices={[device]}
-      bind:mode
-      bind:style={ledStyle}
+      {mode}
+      style={ledStyle}
       action={busy ? $_("glyphslot.spinCard.busy") : $_("glyphslot.spinCard.spin")}
       onlongpress={longPress}
     />
@@ -203,6 +204,7 @@
           rel="noopener noreferrer">{$_("common.toyCard.download")}</a
         >
       </div>
+      <RenderSeg bind:mode bind:style={ledStyle} />
     </Card>
 
     <Card
