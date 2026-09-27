@@ -148,6 +148,7 @@
         <b>FLOAT</b>
         {$_("common.toyCard.onlyPack", { values: { app: "Haloglyph" } })}
       </p>
+      <RenderSeg bind:mode={previewMode} bind:style={ledStyle} />
       <Seg
         label={$_("float.instrument.seg")}
         value={mode}
@@ -157,7 +158,6 @@
         ]}
         onchange={(m) => (mode = m)}
       />
-      <RenderSeg bind:mode={previewMode} bind:style={ledStyle} />
     </Card>
 
     <Card ref="01" title={$_("float.instrument.title")} stat={$_(`float.modes.${mode}`)}>

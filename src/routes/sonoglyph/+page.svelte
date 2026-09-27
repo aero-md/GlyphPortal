@@ -208,6 +208,7 @@
          premier, c'est le seul réglage qui change ce qui tourne sur
          l'appareil — les autres cartes ne changent que ce qui l'alimente. -->
     <Card ref="00" title={$_("common.kind.toy")} stat="Haloglyph">
+      <RenderSeg bind:mode bind:style={ledStyle} />
       <Seg
         label={$_("sonoglyph.toySeg")}
         bind:value={toy}
@@ -217,7 +218,6 @@
           { v: "onde" as Toy, t: $_("sonoglyph.toys.wave") },
         ]}
       />
-      <RenderSeg bind:mode bind:style={ledStyle} />
     </Card>
 
     <Card

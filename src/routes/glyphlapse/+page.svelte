@@ -287,13 +287,13 @@
         values: { enabled: enabledCount, total: LAPSE_COUNT },
       })}"
     >
+      <RenderSeg bind:mode bind:style={ledStyle} />
       <Seg
         label={$_("glyphlapse.lapse.seg")}
         value={active}
         options={ROMAN.map((r, i) => ({ v: i, t: r }))}
         onchange={switchLapse}
       />
-      <RenderSeg bind:mode bind:style={ledStyle} />
     </Card>
 
     <Card ref="01" title={$_("glyphlapse.lapse.title")} stat={device.name}>

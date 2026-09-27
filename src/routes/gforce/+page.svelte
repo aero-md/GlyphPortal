@@ -112,6 +112,7 @@
         <b>G-FORCES</b>
         {$_("common.toyCard.onlyPack", { values: { app: "Haloglyph" } })}
       </p>
+      <RenderSeg bind:mode={previewMode} bind:style={ledStyle} />
       <Seg
         label={$_("gforce.pad.seg")}
         value={mode}
@@ -121,7 +122,6 @@
         ]}
         onchange={(m) => (mode = m)}
       />
-      <RenderSeg bind:mode={previewMode} bind:style={ledStyle} />
     </Card>
 
     <Card ref="01" title={$_("gforce.pad.title")} stat={$_(`gforce.modes.${mode}`)}>
