@@ -28,7 +28,11 @@
       "large": "Groß",
       "led": "LED-Darstellung",
       "sharp": "Sharp",
-      "soft": "Soft"
+      "soft": "Soft",
+      "toPhone": "Zu Telefon wechseln",
+      "toLarge": "Zu Groß wechseln",
+      "toSharp": "Zu Sharp wechseln",
+      "toSoft": "Zu Soft wechseln"
     },
     "button": {
       "longPress": "Langer Druck",
@@ -178,7 +182,6 @@
       "seg": "Lapse",
       "enabled": "Aktiviert — in der Rotation",
       "disabled": "Deaktiviert",
-      "simulate": "Langen Druck simulieren",
       "note1": "Ein langer Druck auf den Glyph Button geht zum nächsten aktivierten Lapse. Lapse <b>I</b> lässt sich nicht deaktivieren: Ein Toy ohne aktiven Lapse hätte nichts anzuzeigen.",
       "note2": "Der ausgewählte Reiter <b>ist</b> der, den das Toy anzeigt: Es gibt nicht auf der einen Seite den Lapse, den man einstellt, und auf der anderen den, der läuft. So verhält sich die Einstellungs-App — einen Reiter zu wählen schaltet das Toy um."
     },
@@ -257,6 +260,7 @@
     "description": "Vorschau des Glyph Toys Just a dice: ein Würfel, mit einem Schütteln auf der Glyph Matrix eines Nothing Phone geworfen.",
     "sub": "Ein Würfel mit mehreren Formen",
     "action": "Nächster Würfel",
+    "compactNote": "Auf dem Phone (4a) Pro zeigt die Matrix in Ruhe ein Icon des Körpers und das Ergebnis als Ziffern — dreizehn Spalten tragen keine lesbare Polyeder-Taumelbewegung.",
     "dieSeg": "Würfel",
     "solids": {
       "d6": "Würfel",
@@ -283,10 +287,9 @@
       "listening": "hört zu",
       "locked": "gesperrt",
       "shake": "Schütteln",
-      "next": "Nächster Würfel",
       "force": "Seite erzwingen",
       "forceNote": "Diese Schaltflächen gibt es im Toy nicht: Sie sind da, um eine bestimmte Seite zu sehen, ohne auf sie zu warten. Der Wert wird ohnehin <b>zu Beginn gezogen</b> — die Animation entdeckt ihn nicht, sie führt zu ihm hin.",
-      "deviceNote": "Auf dem Gerät: <b>das Telefon schütteln</b> wirft den Würfel, ein <b>langer Druck auf den Glyph Button</b> wechselt den Körper — genau das tun die beiden ersten Schaltflächen oben.",
+      "deviceNote": "Auf dem Gerät: <b>das Telefon schütteln</b> wirft den Würfel — das macht die Schaltfläche oben. Ein <b>langer Druck auf den Glyph Button</b> wechselt den Körper — das macht der Wähler oben auf der Seite direkt.",
       "face": "Seite",
       "landed": "Gelandete Würfe",
       "tally": "Eine Auswertung je Würfel.",
@@ -342,9 +345,6 @@
       "mode": "Modus: {name}",
       "engineReset": "Spitze, Maximum und Leq zurückgesetzt"
     },
-    "toyCard": {
-      "note1": "wird Teil von {app} sein. Das Sono-Modul wird dort alle drei seiner Anzeigen übernehmen. Das ursprüngliche Repo bleibt archiviert, aber der Code lebt darin weiter."
-    },
     "source": {
       "title": "Quelle",
       "mic": "Mikrofon",
@@ -379,7 +379,6 @@
       "title": "Beschleunigung",
       "seg": "Anzeige",
       "label": "Simulierter Schub",
-      "simulate": "Anzeige wechseln",
       "note1": "Das Pad simuliert den Schub, den eine Kurve oder eine Bremsung spüren ließe — nach oben bedeutet Bremsen. Auf dem Gerät ist es der Beschleunigungsmesser des Telefons, auf die horizontale Ebene projiziert, um die Neigung der Halterung zu ignorieren."
     },
     "peaks": {
@@ -402,7 +401,6 @@
       "seg": "Instrument",
       "tilt": "Simulierte Neigung",
       "heading": "Simulierter Kurs",
-      "simulate": "Instrument wechseln",
       "note1": "Das Pad simuliert die Haltung des Telefons: in der Mitte liegt es flach, am Rand steht es hochkant — das lässt die Wasserwaage vom flachen in den Lot-Modus wechseln, wie auf dem Gerät."
     }
   },

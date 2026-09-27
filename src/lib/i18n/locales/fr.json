@@ -28,7 +28,11 @@
       "large": "Grand",
       "led": "Rendu des LED",
       "sharp": "Sharp",
-      "soft": "Soft"
+      "soft": "Soft",
+      "toPhone": "Passer en téléphone",
+      "toLarge": "Passer en grand",
+      "toSharp": "Passer en sharp",
+      "toSoft": "Passer en soft"
     },
     "button": {
       "longPress": "Appui long",
@@ -178,7 +182,6 @@
       "seg": "Lapse",
       "enabled": "Activé — dans la rotation",
       "disabled": "Désactivé",
-      "simulate": "Simuler l'appui long",
       "note1": "L'appui long sur le Glyph Button passe au lapse activé suivant. Le lapse <b>I</b> ne se désactive pas : un toy sans aucun lapse actif n'aurait rien à afficher.",
       "note2": "Le lapse sélectionné (en train d'être configuré) est affiché directement pour voir son rendu en direct — exactement comme dans l'app de réglages du téléphone."
     },
@@ -257,6 +260,7 @@
     "description": "Préview du Glyph Toy Just a dice : un dé jeté d'une secousse sur la Glyph Matrix d'un Nothing Phone.",
     "sub": "Un dé de plusieurs formes",
     "action": "Dé suivant",
+    "compactNote": "Sur Phone (4a) Pro, la matrice montre une icône du solide au repos et le résultat en chiffres — treize colonnes ne portent pas une culbute lisible d'un polyèdre.",
     "dieSeg": "Dé",
     "solids": {
       "d6": "cube",
@@ -283,10 +287,9 @@
       "listening": "à l'écoute",
       "locked": "verrouillé",
       "shake": "Secouer",
-      "next": "Dé suivant",
       "force": "Forcer une face",
       "forceNote": "Ces boutons n'existent pas côté toy : ils sont là pour voir une face précise sans l'attendre. La valeur est de toute façon <b>tirée au départ</b> — l'animation ne la découvre pas, elle y conduit.",
-      "deviceNote": "Sur l'appareil : <b>secouer le téléphone</b> jette le dé, un <b>appui long sur le Glyph Button</b> change de solide — ce que refont les deux premiers boutons ci-dessus.",
+      "deviceNote": "Sur l'appareil : <b>secouer le téléphone</b> jette le dé — c'est ce que refait le bouton ci-dessus. Un <b>appui long sur le Glyph Button</b> change de solide — le sélecteur en tête de page le fait directement.",
       "face": "Face",
       "landed": "Jets posés",
       "tally": "Un tableau par dé.",
@@ -342,9 +345,6 @@
       "mode": "Mode : {name}",
       "engineReset": "Crête, maximum et Leq remis à zéro"
     },
-    "toyCard": {
-      "note1": "fera partie de {app}. Le module Sono y reprendra ses trois affichages. Le dépôt d'origine reste archivé, mais le code continue d'y vivre."
-    },
     "source": {
       "title": "Source",
       "mic": "micro",
@@ -379,7 +379,6 @@
       "title": "Accélération",
       "seg": "Cadran",
       "label": "Poussée simulée",
-      "simulate": "Basculer le cadran",
       "note1": "Le pavé simule la poussée qu'un virage ou un freinage ferait sentir — vers l'avant, c'est un freinage. Sur l'appareil, c'est l'accéléromètre du téléphone, projeté sur le plan horizontal pour ignorer l'inclinaison du support."
     },
     "peaks": {
@@ -402,7 +401,6 @@
       "seg": "Instrument",
       "tilt": "Inclinaison simulée",
       "heading": "Cap simulé",
-      "simulate": "Basculer l'instrument",
       "note1": "Le pavé simule la pose du téléphone : au centre il est à plat, sur le bord il est debout — c'est ce qui fait basculer le niveau du régime plat au régime d'aplomb, comme sur l'appareil."
     }
   },

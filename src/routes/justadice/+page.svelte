@@ -1,5 +1,13 @@
 <script lang="ts">
-  import { DEFAULT_DEVICE, emptyFrame, frameOf, type Frame, type LedStyle } from "$lib";
+  import {
+    DEFAULT_DEVICE,
+    emptyFrame,
+    frameOf,
+    resolveDevice,
+    type Device,
+    type Frame,
+    type LedStyle,
+  } from "$lib";
   import type { Dict } from "$lib/i18n";
   import { _, number } from "svelte-i18n";
   import Card from "$lib/ui/Card.svelte";
@@ -7,6 +15,7 @@
   import type { PreviewMode } from "$lib/matrix/Preview.svelte";
   import Shell from "$lib/ui/Shell.svelte";
   import Seg from "$lib/ui/Seg.svelte";
+  import { DIE_ICON } from "./lib/icons";
   import { DiceRenderer } from "./lib/render";
   import {
     DEAD_HEAD,
@@ -34,14 +43,19 @@
      d'essai pour devenir la référence d'un toy embarqué. */
   const VERSION = "01";
 
-  /* L'appareil est figé, comme pour les trois autres toys — et ici ce n'est pas
-     le rendu qui l'impose. Le dé est un solide lancé de rayons, pas un dessin de
-     dé : rien dans `render.ts` ne connaît la taille de la grille, et le même code
-     tourne sur les 13 × 13 du (4a) Pro. Mais il y tourne mal — la culbute y est
-     grossière et illisible, seul le gros plan final reste net. Offrir le choix
-     revenait à proposer une version dégradée du toy sans dire qu'elle l'est. */
-  const device = DEFAULT_DEVICE;
-  const renderer = new DiceRenderer(device);
+  /* Port compact (4a) Pro — voir `render()` dans `render.ts`. Rien n'y raytrace
+     plus le vrai solide en vol : sur treize colonnes, la culbute d'un
+     dodécaèdre ou d'un icosaèdre est grossière et illisible, quand celle d'un
+     cube reste lisible. On y fait donc toujours tourner un cube générique
+     (`DEFAULT_DIE`, celui du d6) quel que soit le dé choisi — `kin()` — et on
+     lui fait porter la vraie valeur tirée sur le dé réel plutôt que la
+     sienne. Au repos, ni l'un ni l'autre : voir `DIE_ICON`. */
+  let device = $state<Device>(resolveDevice());
+  /* `DEFAULT_DEVICE` et non `device` : l'initial d'un `$state` ne se lit pas
+     hors passe réactive, et `device` ne vaut de toute façon rien d'autre au
+     montage — l'`$effect` plus bas reconstruit tout de suite après. */
+  let renderer = new DiceRenderer(DEFAULT_DEVICE);
+  const compact = $derived(device.id === "phone4apro");
 
   let mode = $state<PreviewMode>("phone");
   let ledStyle = $state<LedStyle>("sharp");
@@ -63,6 +77,17 @@
      comme le sélecteur de la préview doivent le voir. */
   let die = $state<Die>(DEFAULT_DIE);
 
+  /**
+   * Le solide qui pilote la cinématique — orientation, jet, caméra.
+   *
+   * Le vrai dé partout sauf en port compact, où c'est toujours le cube du d6 :
+   * voir la note sur `device` plus haut. `die` garde son rôle propre, la plage
+   * de valeurs et le libellé affichés au rack, quel que soit `kin()`.
+   */
+  function kin(): Die {
+    return compact ? DEFAULT_DIE : die;
+  }
+
   /** Le dé démarre **posé sur sa plus haute face** — un 6 sur le d6. */
   let rest: Quat = restQuat(DEFAULT_DIE, DEFAULT_DIE.faces, 0);
   let th: Throw | null = null;
@@ -71,6 +96,8 @@
   let elapsed: number | null = null;
   /** Le résultat de ce jet a-t-il déjà été relevé ? */
   let landed = false;
+  /** La vraie valeur en cours de lecture — celle de `die`, pas celle de `kin()`. */
+  let trueValue = DEFAULT_DIE.faces;
 
   let stage = $state<Stage>("rest");
   let listening = $state(true);
@@ -103,8 +130,14 @@
     }
     /* Le jet part de l'orientation **courante** : relancer un dé encore en l'air
        ne le téléporte pas dans sa pose de repos, il repart d'où il en était. */
+    const k = kin();
     const from = th && elapsed !== null ? orientationAt(th, elapsed) : rest;
-    th = makeThrow(die, from, force ?? drawValue(die));
+    trueValue = force ?? drawValue(die);
+    /* En port compact, le cube tombe sur une valeur à lui — purement
+       cosmétique, voir `kin()` — jamais sur `trueValue` : rien ne garantit
+       qu'un cube ait seulement une face numérotée `trueValue` si le vrai dé
+       en a vingt. */
+    th = makeThrow(k, from, compact ? drawValue(k) : trueValue);
     t0 = performance.now() / 1000;
     landed = false;
   }
@@ -123,7 +156,7 @@
     }
     if (id === die.id) return;
     die = dieById(id);
-    rest = restQuat(die, die.faces, 0);
+    rest = restQuat(kin(), kin().faces, 0);
     const picked = die.id;
     flash(() => `${picked} — ${$_(`justadice.solids.${picked}`)}`);
   }
@@ -133,11 +166,31 @@
     pick(DICE[(DICE.findIndex((d) => d.id === die.id) + 1) % DICE.length].id);
   }
 
+  /* Un jet en cours n'a plus de sens au changement d'appareil : il est parti
+     avec la géométrie de l'ancien `kin()`, et la culbute d'un dodécaèdre à mi-vol
+     ne devient pas celle du cube compact en cours de route. On le coupe net et
+     on repose le dé — plus propre qu'un jet qui changerait de solide sous les
+     yeux. */
+  $effect(() => {
+    renderer = new DiceRenderer(device);
+    th = null;
+    elapsed = null;
+    landed = false;
+    rest = restQuat(kin(), kin().faces, 0);
+    /* Sans quoi la première image tient l'ancien appareil : la boucle plus bas
+       ne corrige qu'à la prochaine image demandée, un cran après le montage ou
+       la bascule d'appareil. */
+    frame = compact
+      ? frameOf(device, DIE_ICON[die.id])
+      : frameOf(device, renderer.render(kin(), restingView(kin(), rest)).slice());
+  });
+
   $effect(() => {
     let raf = 0;
 
     const step = () => {
       const now = performance.now() / 1000;
+      const k = kin();
 
       if (th) {
         const t = now - t0;
@@ -145,11 +198,12 @@
         /* Le relevé attend la pose, et pas le tirage — qui est connu dès le
            départ. Un jet relancé en vol n'a donc jamais eu lieu : il ne compte
            pas dans le tableau, ce qui est la seule façon honnête de compter des
-           dés. */
+           dés. `trueValue`, jamais `th.value` : en port compact ce dernier est
+           celui, cosmétique, du cube — voir `roll()`. */
         if (t >= T_LAND && !landed) {
           landed = true;
-          last[die.id] = th.value;
-          counts[die.id][th.value - 1] += 1;
+          last[die.id] = trueValue;
+          counts[die.id][trueValue - 1] += 1;
         }
 
         if (t >= T_END) {
@@ -166,7 +220,7 @@
          montrer le bon. Un scintillement d'une image se voit très bien et ne se
          retrouve pas en le cherchant : il ne pouvait sortir que de l'ordre des
          deux lignes. */
-      const view = th && elapsed !== null ? viewAt(die, th, elapsed) : restingView(die, rest);
+      const view = th && elapsed !== null ? viewAt(k, th, elapsed) : restingView(k, rest);
 
       const st = stageAt(elapsed);
       if (st !== stage) stage = st;
@@ -174,7 +228,13 @@
       if (li !== listening) listening = li;
       progress = elapsed === null ? 0 : Math.min(elapsed / T_END, 1);
 
-      frame = frameOf(device, renderer.render(die, view).slice());
+      /* Au repos en port compact, l'icône du dé plutôt qu'un rendu : voir
+         `DIE_ICON`. Le solide générique ne remonte à l'écran que pendant un jet,
+         où il porte la vraie valeur — voir `render()` dans `render.ts`. */
+      frame =
+        compact && !th
+          ? frameOf(device, DIE_ICON[die.id])
+          : frameOf(device, renderer.render(k, view, compact ? trueValue : undefined).slice());
       raf = requestAnimationFrame(step);
     };
 
@@ -259,55 +319,37 @@
   title="Just a dice"
   sub={$_("justadice.sub")}
   stamp={VERSION}
-  {device}
-  devices={[device]}
+  bind:device
   repo="https://github.com/aero-md/justadice"
   {notice}
 >
   {#snippet preview()}
     <PreviewPane
       {frame}
-      {device}
-      devices={[device]}
+      bind:device
       bind:mode
       bind:style={ledStyle}
       bind:buttonReachable
       action={$_("justadice.action")}
       onlongpress={nextDie}
-    >
-      {#snippet controls()}
-        <!-- En tête de rangée, avant l'appareil : c'est le seul réglage ici qui
-             change ce qui tourne sur le téléphone, les trois autres ne changent
-             que la façon de le regarder. -->
-        <Seg
-          label={$_("justadice.dieSeg")}
-          value={die.id}
-          options={DICE.map((d) => ({ v: d.id, t: d.id }))}
-          onchange={pick}
-        />
-      {/snippet}
-    </PreviewPane>
+    />
   {/snippet}
 
   {#snippet rack()}
     <!-- [00] parce que c'est ce qui vient avant tout le reste : la page est une
-         préview, le toy est un APK qui s'installe sur le téléphone. Sans cette
-         carte, rien ne dit où il se récupère. -->
+         préview, et le solide est le seul réglage qui change ce qui tourne sur
+         le téléphone — les autres cartes ne changent que la façon de le
+         regarder ou reprennent son geste. -->
     <Card ref="00" title={$_("common.kind.toy")} stat={device.name}>
-      <p class="note">
-        <b>JUST A DICE</b>
-        {$_("common.toyCard.apk", { values: { device: device.name } })}
-      </p>
-      <p class="note">
-        {$_("common.toyCard.pack", { values: { app: "Haloglyph" } })}
-      </p>
-      <div class="btns">
-        <a
-          href="https://github.com/aero-md/justadice/releases"
-          target="_blank"
-          rel="noopener noreferrer">{$_("common.toyCard.download")}</a
-        >
-      </div>
+      {#if compact}
+        <p class="note">{@html $_("justadice.compactNote")}</p>
+      {/if}
+      <Seg
+        label={$_("justadice.dieSeg")}
+        value={die.id}
+        options={DICE.map((d) => ({ v: d.id, t: d.id }))}
+        onchange={pick}
+      />
     </Card>
 
     <!-- Jeter et lire le résultat sont le même geste, et c'était deux cartes
@@ -329,9 +371,6 @@
       <div class="btns">
         <button type="button" onclick={() => roll()} disabled={!listening}>
           {$_("justadice.throwCard.shake")}
-        </button>
-        <button type="button" onclick={nextDie} disabled={stage !== "rest"}>
-          {$_("justadice.throwCard.next")}
         </button>
         <button
           type="button"

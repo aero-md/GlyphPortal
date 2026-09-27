@@ -28,7 +28,11 @@
       "large": "Large",
       "led": "LED rendering",
       "sharp": "Sharp",
-      "soft": "Soft"
+      "soft": "Soft",
+      "toPhone": "Switch to phone",
+      "toLarge": "Switch to large",
+      "toSharp": "Switch to sharp",
+      "toSoft": "Switch to soft"
     },
     "button": {
       "longPress": "Long press",
@@ -178,7 +182,6 @@
       "seg": "Lapse",
       "enabled": "Enabled — in the rotation",
       "disabled": "Disabled",
-      "simulate": "Simulate the long press",
       "note1": "A long press on the Glyph Button moves to the next enabled lapse. Lapse <b>I</b> cannot be disabled: a toy with no active lapse would have nothing to show.",
       "note2": "The selected tab <b>is</b> the one the toy displays: there is no lapse you configure on one side and another that runs on the other. That is how the settings app behaves — picking a tab switches the toy."
     },
@@ -257,6 +260,7 @@
     "description": "Preview of the Just a dice Glyph Toy: a die thrown with a shake on the Glyph Matrix of a Nothing Phone.",
     "sub": "A die with several shapes",
     "action": "Next die",
+    "compactNote": "On Phone (4a) Pro, the matrix shows an icon of the solid at rest and the result as digits — thirteen columns can't carry a legible polyhedron tumble.",
     "dieSeg": "Die",
     "solids": {
       "d6": "cube",
@@ -283,10 +287,9 @@
       "listening": "listening",
       "locked": "locked",
       "shake": "Shake",
-      "next": "Next die",
       "force": "Force a face",
       "forceNote": "These buttons do not exist on the toy: they are here to see a given face without waiting for it. The value is <b>drawn at the start</b> anyway — the animation does not discover it, it leads to it.",
-      "deviceNote": "On the device: <b>shaking the phone</b> throws the die, a <b>long press on the Glyph Button</b> changes solid — which is what the first two buttons above do.",
+      "deviceNote": "On the device: <b>shaking the phone</b> throws the die — the button above does that. A <b>long press on the Glyph Button</b> changes solid — the selector at the top of the page does that directly.",
       "face": "Face",
       "landed": "Landed throws",
       "tally": "One tally per die.",
@@ -342,9 +345,6 @@
       "mode": "Mode: {name}",
       "engineReset": "Peak, maximum and Leq reset"
     },
-    "toyCard": {
-      "note1": "will be part of {app}. The Sono module will carry all three of its displays over. The original repo stays archived, but the code lives on in it."
-    },
     "source": {
       "title": "Source",
       "mic": "mic",
@@ -379,7 +379,6 @@
       "title": "Acceleration",
       "seg": "Dial",
       "label": "Simulated push",
-      "simulate": "Switch dial",
       "note1": "The pad simulates the push a corner or a braking would give you — toward the top is braking. On the device it is the phone's accelerometer, projected onto the horizontal plane to cancel out the mount's tilt."
     },
     "peaks": {
@@ -402,7 +401,6 @@
       "seg": "Instrument",
       "tilt": "Simulated tilt",
       "heading": "Simulated heading",
-      "simulate": "Switch instrument",
       "note1": "The pad simulates the phone's pose: flat at the centre, standing on edge at the rim — which is what flips the level from the flat regime to the plumb one, as on the device."
     }
   },

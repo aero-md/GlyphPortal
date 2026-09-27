@@ -1,5 +1,6 @@
 /**
- * Fabrique la boucle de mini-prévisu de Just a dice, au format du Glyph Museum.
+ * Fabrique les boucles de mini-prévisu de Just a dice, au format du Glyph
+ * Museum — une par appareil.
  *
  *     bun run scripts/justadice-preview.ts
  *
@@ -13,8 +14,8 @@
  * avec le d12 — un nombre à deux chiffres sur une face non triangulaire — et une
  * vignette de sommaire n'a pas à être exhaustive, elle a à être lisible.
  *
- * Les trois **couvrent les trois façons dont le toy écrit un résultat**, ce qui
- * n'est pas un hasard mais le critère du choix :
+ * Les trois **couvrent les trois façons dont le toy écrit un résultat sur le
+ * (3)**, ce qui n'est pas un hasard mais le critère du choix :
  *
  * - le **d6** tombe sur 5, donc des pips — cinq carrés de 3 × 3 ;
  * - le **d12** tombe sur 9, un chiffre seul, donc la police dilatée ;
@@ -27,6 +28,13 @@
  *
  * Le raccord de boucle est franc — le d20 posé enchaîne sur le d6 posé — et c'est
  * exactement ce que fait un appui long : le solide change d'une image à l'autre.
+ *
+ * Le **(4a) Pro** rejoue les trois mêmes jets, mais à travers le port compact —
+ * voir `compact` dans `render.ts` et la note sur `kin()` dans `+page.svelte` :
+ * c'est toujours le cube du d6 qui culbute, quel que soit le solide affiché, et
+ * c'est lui qui porte la vraie valeur du jet. Entrée et lecture montrent
+ * l'icône du solide plutôt qu'une face — voir `DIE_ICON` — puisque c'est ce que
+ * l'appareil affiche au repos, avant et après chaque jet.
  */
 
 import { mkdir, writeFile } from "node:fs/promises";
@@ -34,7 +42,6 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const OUT = path.join(ROOT, "static/preview/justadice.json");
 
 /* Même greffon que pour les autres boucles, et pour les mêmes deux raisons :
    `$lib` est un alias résolu par SvelteKit, et le catalogue d'appareils importe
@@ -53,16 +60,14 @@ Bun.plugin({
   },
 });
 
-const { DEFAULT_DEVICE } = await import("../src/lib/index");
+const { DEVICES } = await import("../src/lib/index");
 const { DiceRenderer } = await import("../src/routes/justadice/lib/render");
 const { T_END, makeThrow, restQuat, restingView, viewAt } = await import(
   "../src/routes/justadice/lib/dice"
 );
-const { DICE } = await import("../src/routes/justadice/lib/solids");
+const { DEFAULT_DIE, DICE } = await import("../src/routes/justadice/lib/solids");
+const { DIE_ICON } = await import("../src/routes/justadice/lib/icons");
 type DieId = (typeof DICE)[number]["id"];
-
-const device = DEFAULT_DEVICE;
-const renderer = new DiceRenderer(device);
 
 /**
  * Cadence de la boucle exportée.
@@ -122,64 +127,87 @@ function scripted(): () => number {
 /* -------------------------------------------------------------------------- */
 
 /** Les LEDs du disque en consignes 0-255, dans l'ordre de lecture. */
-function toP(values: Float32Array): number[] {
+function toP(device: (typeof DEVICES)[number], values: Float32Array): number[] {
   return device.inside.map((i) => {
     const v = values[i];
     return v <= 0 ? 0 : v >= 1 ? 255 : Math.round(v * 255);
   });
 }
 
-const frames: { p: number[]; d: number }[] = [];
-
-/** Ajoute une trame, ou allonge la précédente si rien n'a changé. */
-function push(p: number[]): void {
-  const last = frames[frames.length - 1];
-  if (last && last.p.length === p.length && last.p.every((v, i) => v === p[i])) {
-    last.d += MS;
-    return;
+function makeFrames() {
+  const frames: { p: number[]; d: number }[] = [];
+  function push(p: number[]): void {
+    const last = frames[frames.length - 1];
+    if (last && last.p.length === p.length && last.p.every((v, i) => v === p[i])) {
+      last.d += MS;
+      return;
+    }
+    frames.push({ p, d: MS });
   }
-  frames.push({ p, d: MS });
+  function hold(p: number[], secondes: number): void {
+    for (let f = 0; f * (1 / FPS) < secondes; f++) push(p);
+  }
+  return { frames, push, hold };
 }
 
-/** Tient une image fixe pendant `secondes`. */
-function hold(p: number[], secondes: number): void {
-  for (let f = 0; f * (1 / FPS) < secondes; f++) push(p);
-}
+for (const device of DEVICES) {
+  const compact = device.id === "phone4apro";
+  const renderer = new DiceRenderer(device);
+  const { frames, push, hold } = makeFrames();
 
-for (const { id, value } of JETS) {
-  const die = DICE.find((d) => d.id === id);
-  if (!die) throw new Error(`dé inconnu : ${id}`);
-  if (value === die.faces) {
-    throw new Error(`${id} entre sur ${die.faces} et y retombe : le jet ne se verrait pas`);
+  for (const { id, value } of JETS) {
+    const die = DICE.find((d) => d.id === id);
+    if (!die) throw new Error(`dé inconnu : ${id}`);
+    if (value === die.faces) {
+      throw new Error(`${id} entre sur ${die.faces} et y retombe : le jet ne se verrait pas`);
+    }
+
+    if (compact) {
+      /* Le cube générique du port compact tumble à la place du vrai solide —
+         voir l'en-tête du fichier — et porte `value`, la vraie lecture, au lieu
+         de la sienne. Entrée et lecture montrent l'icône du solide affiché :
+         c'est ce que l'appareil garde à l'écran hors d'un jet. */
+      hold(toP(device, DIE_ICON[id]), ENTREE);
+      const pose = restQuat(DEFAULT_DIE, DEFAULT_DIE.faces, 0);
+      const th = makeThrow(DEFAULT_DIE, pose, DEFAULT_DIE.faces, scripted());
+      for (let f = 0; f * (1 / FPS) < T_END; f++) {
+        const view = viewAt(DEFAULT_DIE, th, f / FPS);
+        push(toP(device, renderer.render(DEFAULT_DIE, view, value)));
+      }
+      hold(toP(device, DIE_ICON[id]), LECTURE);
+      continue;
+    }
+
+    /* L'entrée du solide : sa plus haute face, à l'aplomb. C'est la pose de
+       démarrage du toy et celle que laisse un appui long. */
+    const pose = restQuat(die, die.faces, 0);
+    hold(toP(device, renderer.render(die, restingView(die, pose))), ENTREE);
+
+    const th = makeThrow(die, pose, value, scripted());
+    for (let f = 0; f * (1 / FPS) < T_END; f++) {
+      push(toP(device, renderer.render(die, viewAt(die, th, f / FPS))));
+    }
+
+    /* Le résultat, posé. La dernière image du jet est déjà la pose de repos — le
+       gros plan s'y termine — donc ce palier ne fait que la prolonger. */
+    hold(toP(device, renderer.render(die, restingView(die, th.qEnd))), LECTURE);
   }
 
-  /* L'entrée du solide : sa plus haute face, à l'aplomb. C'est la pose de
-     démarrage du toy et celle que laisse un appui long. */
-  const pose = restQuat(die, die.faces, 0);
-  hold(toP(renderer.render(die, restingView(die, pose))), ENTREE);
+  /* La version de format identifie la matrice visée, pas une révision : 1 pour
+     le Phone (3). Voir `design.ts` dans le kit — même convention que les autres
+     boucles compactes, qui écrivent `v: 1` quel que soit l'appareil réel. */
+  const json = JSON.stringify({ v: 1, frames });
+  const OUT = path.join(ROOT, "static/preview", compact ? "justadice4apro.json" : "justadice.json");
 
-  const th = makeThrow(die, pose, value, scripted());
-  for (let f = 0; f * (1 / FPS) < T_END; f++) {
-    push(toP(renderer.render(die, viewAt(die, th, f / FPS))));
-  }
+  await mkdir(path.dirname(OUT), { recursive: true });
+  await writeFile(OUT, json);
 
-  /* Le résultat, posé. La dernière image du jet est déjà la pose de repos — le
-     gros plan s'y termine — donc ce palier ne fait que la prolonger. */
-  hold(toP(renderer.render(die, restingView(die, th.qEnd))), LECTURE);
+  const total = frames.reduce((s, f) => s + f.d, 0);
+  console.log(
+    `${path.relative(ROOT, OUT)} — ${frames.length} trames, ` +
+      `${(total / 1000).toFixed(2)} s, ${(json.length / 1024).toFixed(0)} Ko\n` +
+      JETS.map((j) => `  ${j.id} : ${DICE.find((d) => d.id === j.id)!.faces} → ${j.value}`).join(
+        "\n",
+      ),
+  );
 }
-
-/* La version de format identifie la matrice visée, pas une révision : 1 pour le
-   Phone (3). Voir `design.ts` dans le kit. */
-const json = JSON.stringify({ v: 1, frames });
-
-await mkdir(path.dirname(OUT), { recursive: true });
-await writeFile(OUT, json);
-
-const total = frames.reduce((s, f) => s + f.d, 0);
-console.log(
-  `${path.relative(ROOT, OUT)} — ${frames.length} trames, ` +
-    `${(total / 1000).toFixed(2)} s, ${(json.length / 1024).toFixed(0)} Ko\n` +
-    JETS.map((j) => `  ${j.id} : ${DICE.find((d) => d.id === j.id)!.faces} → ${j.value}`).join(
-      "\n",
-    ),
-);

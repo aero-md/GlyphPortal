@@ -17,7 +17,8 @@
     "preview:sonoglyph": "bun run scripts/sonoglyph-preview.ts",
     "preview:glyphlapse": "bun run scripts/glyphlapse-preview.ts",
     "preview:gforce": "bun run scripts/gforce-preview.ts",
-    "preview:float": "bun run scripts/float-preview.ts"
+    "preview:float": "bun run scripts/float-preview.ts",
+    "preview:justadice": "bun run scripts/justadice-preview.ts"
   },
   "dependencies": {
     "lottie-web": "^5.13.0",

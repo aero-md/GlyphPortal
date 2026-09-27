@@ -28,7 +28,11 @@
       "large": "Grande",
       "led": "Resa dei LED",
       "sharp": "Sharp",
-      "soft": "Soft"
+      "soft": "Soft",
+      "toPhone": "Passa a telefono",
+      "toLarge": "Passa a grande",
+      "toSharp": "Passa a sharp",
+      "toSoft": "Passa a soft"
     },
     "button": {
       "longPress": "Pressione lunga",
@@ -178,7 +182,6 @@
       "seg": "Lapse",
       "enabled": "Attivo — nella rotazione",
       "disabled": "Disattivato",
-      "simulate": "Simula la pressione lunga",
       "note1": "La pressione lunga sul Glyph Button passa al lapse attivo successivo. Il lapse <b>I</b> non si disattiva: un toy senza alcun lapse attivo non avrebbe nulla da mostrare.",
       "note2": "La scheda selezionata <b>è</b> quella che il toy mostra: non c'è da una parte il lapse che si regola e dall'altra quello che gira. È il comportamento dell'app delle impostazioni, dove scegliere una scheda cambia il toy."
     },
@@ -257,6 +260,7 @@
     "description": "Anteprima del Glyph Toy Just a dice: un dado lanciato con una scossa sulla Glyph Matrix di un Nothing Phone.",
     "sub": "Un dado con più forme",
     "action": "Dado successivo",
+    "compactNote": "Su Phone (4a) Pro, la matrice mostra un'icona del solido a riposo e il risultato in cifre — tredici colonne non reggono una capriola leggibile di un poliedro.",
     "dieSeg": "Dado",
     "solids": {
       "d6": "cubo",
@@ -283,10 +287,9 @@
       "listening": "in ascolto",
       "locked": "bloccato",
       "shake": "Scuoti",
-      "next": "Dado successivo",
       "force": "Forza una faccia",
       "forceNote": "Questi pulsanti non esistono nel toy: sono qui per vedere una faccia precisa senza aspettarla. Il valore è comunque <b>estratto alla partenza</b> — l'animazione non lo scopre, ci porta.",
-      "deviceNote": "Sul dispositivo: <b>scuotere il telefono</b> lancia il dado, una <b>pressione lunga sul Glyph Button</b> cambia solido — è quello che rifanno i primi due pulsanti qui sopra.",
+      "deviceNote": "Sul dispositivo: <b>scuotere il telefono</b> lancia il dado — è quello che rifà il pulsante qui sopra. Una <b>pressione lunga sul Glyph Button</b> cambia solido — il selettore in cima alla pagina lo fa direttamente.",
       "face": "Faccia",
       "landed": "Lanci posati",
       "tally": "Un conteggio per dado.",
@@ -342,9 +345,6 @@
       "mode": "Modalità: {name}",
       "engineReset": "Picco, massimo e Leq azzerati"
     },
-    "toyCard": {
-      "note1": "farà parte di {app}. Il modulo Sono vi riprenderà tutte e tre le sue visualizzazioni. Il repository originale resta archiviato, ma il codice continua a viverci."
-    },
     "source": {
       "title": "Sorgente",
       "mic": "microfono",
@@ -379,7 +379,6 @@
       "title": "Accelerazione",
       "seg": "Quadrante",
       "label": "Spinta simulata",
-      "simulate": "Cambia quadrante",
       "note1": "Il pad simula la spinta che una curva o una frenata farebbero sentire — verso l'alto è una frenata. Sul dispositivo è l'accelerometro del telefono, proiettato sul piano orizzontale per ignorare l'inclinazione del supporto."
     },
     "peaks": {
@@ -402,7 +401,6 @@
       "seg": "Strumento",
       "tilt": "Inclinazione simulata",
       "heading": "Rotta simulata",
-      "simulate": "Cambia strumento",
       "note1": "Il pad simula la posa del telefono: al centro è piatto, sul bordo è in piedi — è ciò che fa passare la livella dal regime piatto a quello a piombo, come sul dispositivo."
     }
   },

@@ -139,10 +139,18 @@ export class DiceRenderer {
   /**
    * La trame du dé `die` dans la vue `v`.
    *
+   * `override`, s'il est posé, remplace le nombre lu sur la face du dessus —
+   * pips compris, qui s'effacent devant lui. Sert au port compact du (4a) Pro :
+   * la page y fait tourner un solide générique (voir `DEFAULT_DIE` importé par
+   * `+page.svelte`) pour que la culbute reste la même quel que soit le dé
+   * choisi, et passe ici la vraie valeur tirée sur **ce** dé — celle que le
+   * solide générique n'a aucune raison de connaître. Absent, le tampon reste
+   * celui du solide lui-même, comme sur le (3).
+   *
    * Le tampon est réutilisé d'une image à l'autre : à l'appelant d'en prendre une
    * copie s'il le garde.
    */
-  render(die: Die, v: View): Float32Array {
+  render(die: Die, v: View, override?: number): Float32Array {
     const { size, cx, cy, radius, cells, inside, isInside } = this.device;
     const g = this.g;
     const face = this.face;
@@ -299,12 +307,13 @@ export class DiceRenderer {
     const lit = revealAt(v.cam.z);
     if (lit > 0) {
       const fc = die.face[best];
-      if (fc.pips.length) {
+      if (override === undefined && fc.pips.length) {
         for (const p of fc.pips) {
           const s = this.project(p, m, v.pos, ex, ey, k);
           this.block(s[0], s[1], PIP_PX, PIP_PX, best, lit);
         }
       } else {
+        const glyph = override === undefined ? fc.glyph : String(override);
         /* Place disponible pour un nombre, en cellules : le rayon inscrit de la
            face, mesuré dans le cadrage du gros plan et non dans celui de l'image
            courante — c'est ce qui empêche le corps de changer en cours de
@@ -313,11 +322,11 @@ export class DiceRenderer {
         const step = STEPS.find(
           (s) =>
             (s.font.height * s.scale) / 2 <= room &&
-            (textWidth(s.font, fc.glyph) * s.scale) / 2 <= room,
+            (textWidth(s.font, glyph) * s.scale) / 2 <= room,
         );
         if (step) {
           const s = this.project(fc.c, m, v.pos, ex, ey, k);
-          this.text(step.font, step.scale, fc.glyph, s[0], s[1], best, lit);
+          this.text(step.font, step.scale, glyph, s[0], s[1], best, lit);
         }
       }
     }

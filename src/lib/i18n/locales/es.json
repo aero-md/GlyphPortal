@@ -28,7 +28,11 @@
       "large": "Grande",
       "led": "Representación de los LED",
       "sharp": "Sharp",
-      "soft": "Soft"
+      "soft": "Soft",
+      "toPhone": "Cambiar a teléfono",
+      "toLarge": "Cambiar a grande",
+      "toSharp": "Cambiar a sharp",
+      "toSoft": "Cambiar a soft"
     },
     "button": {
       "longPress": "Pulsación larga",
@@ -178,7 +182,6 @@
       "seg": "Lapse",
       "enabled": "Activado — en la rotación",
       "disabled": "Desactivado",
-      "simulate": "Simular la pulsación larga",
       "note1": "La pulsación larga en el Glyph Button pasa al siguiente lapse activado. El lapse <b>I</b> no se desactiva: un toy sin ningún lapse activo no tendría nada que mostrar.",
       "note2": "La pestaña seleccionada <b>es</b> la que el toy muestra: no hay por un lado el lapse que se ajusta y por otro el que corre. Es el comportamiento de la app de ajustes, donde elegir una pestaña cambia el toy."
     },
@@ -257,6 +260,7 @@
     "description": "Vista previa del Glyph Toy Just a dice: un dado lanzado con una sacudida en la Glyph Matrix de un Nothing Phone.",
     "sub": "Un dado con varias formas",
     "action": "Dado siguiente",
+    "compactNote": "En Phone (4a) Pro, la matriz muestra un icono del sólido en reposo y el resultado en cifras — trece columnas no dan para una voltereta legible de un poliedro.",
     "dieSeg": "Dado",
     "solids": {
       "d6": "cubo",
@@ -283,10 +287,9 @@
       "listening": "a la escucha",
       "locked": "bloqueado",
       "shake": "Sacudir",
-      "next": "Dado siguiente",
       "force": "Forzar una cara",
       "forceNote": "Estos botones no existen en el toy: están aquí para ver una cara concreta sin esperarla. El valor se <b>sortea al principio</b> de todos modos — la animación no lo descubre, conduce a él.",
-      "deviceNote": "En el dispositivo: <b>sacudir el teléfono</b> lanza el dado, una <b>pulsación larga en el Glyph Button</b> cambia de sólido — que es lo que rehacen los dos primeros botones de arriba.",
+      "deviceNote": "En el dispositivo: <b>sacudir el teléfono</b> lanza el dado — eso es lo que rehace el botón de arriba. Una <b>pulsación larga en el Glyph Button</b> cambia de sólido — el selector en la parte superior de la página lo hace directamente.",
       "face": "Cara",
       "landed": "Lanzamientos posados",
       "tally": "Un recuento por dado.",
@@ -342,9 +345,6 @@
       "mode": "Modo: {name}",
       "engineReset": "Pico, máximo y Leq puestos a cero"
     },
-    "toyCard": {
-      "note1": "formará parte de {app}. El módulo Sono retomará ahí sus tres pantallas. El repositorio original sigue archivado, pero el código continúa vivo en él."
-    },
     "source": {
       "title": "Fuente",
       "mic": "micrófono",
@@ -379,7 +379,6 @@
       "title": "Aceleración",
       "seg": "Esfera",
       "label": "Empuje simulado",
-      "simulate": "Cambiar de esfera",
       "note1": "El panel simula el empuje que se sentiría en una curva o un frenazo — hacia arriba es frenar. En el dispositivo es el acelerómetro del teléfono, proyectado sobre el plano horizontal para ignorar la inclinación del soporte."
     },
     "peaks": {
@@ -402,7 +401,6 @@
       "seg": "Instrumento",
       "tilt": "Inclinación simulada",
       "heading": "Rumbo simulado",
-      "simulate": "Cambiar de instrumento",
       "note1": "El panel simula la postura del teléfono: en el centro está plano, en el borde está de pie — lo que hace pasar el nivel del régimen plano al de plomada, como en el dispositivo."
     }
   },

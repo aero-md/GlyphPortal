@@ -145,13 +145,19 @@ export const TOYS: Toy[] = [
        qui le faisait figurer en queue de grille. */
     repo: "https://github.com/aero-md/justadice",
     ready: true,
-    /* Trois solides et trois jets — d6, d12, d20 — qui couvrent les **trois façons
-       dont le toy écrit un résultat** : des pips, un chiffre dilaté, deux chiffres
-       en petite police. Chaque solide entre sur sa plus haute face, comme le fait
-       l'appui long, et aucun jet ne retombe sur ce nombre-là : un dé qui montre 20,
-       culbute trois secondes et remontre 20 se lirait comme une animation qui n'a
-       rien fait. Générée en rejouant le moteur, voir `scripts/`. */
-    preview: { phone3: "/preview/justadice.json" },
+    /* Le (3) : trois solides et trois jets — d6, d12, d20 — qui couvrent les
+       **trois façons dont le toy écrit un résultat** : des pips, un chiffre
+       dilaté, deux chiffres en petite police. Chaque solide entre sur sa plus
+       haute face, comme le fait l'appui long, et aucun jet ne retombe sur ce
+       nombre-là : un dé qui montre 20, culbute trois secondes et remontre 20 se
+       lirait comme une animation qui n'a rien fait.
+
+       Le (4a) Pro tourne le cube générique du port compact — voir `compact`
+       dans `render.ts` — quel que soit le solide affiché sur l'icône de
+       repos : la culbute y est donc **la même** d'un dé à l'autre, seul le
+       chiffre du gros plan change. Générées en rejouant le moteur, voir
+       `scripts/`. */
+    preview: { phone3: "/preview/justadice.json", phone4apro: "/preview/justadice4apro.json" },
   },
   {
     slug: "float",
