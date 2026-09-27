@@ -30,8 +30,9 @@
  * exactement ce que fait un appui long : le solide change d'une image à l'autre.
  *
  * Le **(4a) Pro** rejoue les trois mêmes jets, mais à travers le port compact —
- * voir la note sur `kin()` dans `+page.svelte` : c'est toujours le cube du d6
- * qui culbute, quel que soit le solide affiché, et c'est lui qui porte la
+ * voir la note sur `kin()` dans `+page.svelte`. En vol, c'est toujours le cube
+ * du d6 qui culbute, quel que soit le solide affiché. Posé, ce n'est plus un
+ * raytracé mais le carré plat de `renderFlat` (voir `render.ts`), qui porte la
  * vraie valeur du jet. Seule l'entrée montre l'icône du solide — voir
  * `DIE_ICON` — puisque rien n'a encore été jeté ; le résultat, lui, reste posé
  * jusqu'au jet suivant, pas juste le temps d'un gros plan.
@@ -62,7 +63,7 @@ Bun.plugin({
 
 const { DEVICES } = await import("../src/lib/index");
 const { DiceRenderer } = await import("../src/routes/justadice/lib/render");
-const { DEAD_HEAD, T_END, makeThrow, restQuat, restingView, viewAt } = await import(
+const { DEAD_HEAD, REVEAL_OFF, T_END, makeThrow, restQuat, restingView, viewAt } = await import(
   "../src/routes/justadice/lib/dice"
 );
 const { DEFAULT_DIE, DICE } = await import("../src/routes/justadice/lib/solids");
@@ -173,20 +174,21 @@ for (const device of DEVICES) {
       for (let f = 0; f * (1 / FPS) < T_END; f++) {
         const t = f / FPS;
         const view = viewAt(DEFAULT_DIE, th, t);
-        /* Pas de marque tant que la caméra recule encore — voir `DEAD_HEAD` et
-           la note sur `override` dans `+page.svelte` et `render.ts` : sans
-           cette garde, le premier plan du jet montre déjà le résultat, avant
-           même la culbute — et `null`, pas `undefined`, ou ce serait les pips
-           du d6 générique qui flasheraient à la place. */
-        const override = t >= DEAD_HEAD ? value : null;
-        push(toP(device, renderer.render(DEFAULT_DIE, view, override)));
+        /* Même bascule que `+page.svelte` : le raytracé du cube générique ne
+           sert plus qu'à la culbute en vol (`view.cam.z < REVEAL_OFF`, où rien
+           ne se lit de toute façon) ; la caméra arrivée, place à `renderFlat` —
+           voir sa note dans `render.ts`. `DEAD_HEAD` retient le chiffre le
+           temps que la caméra recule encore après ce jet-ci — sans lui le
+           premier plan montrerait déjà le résultat, avant même la culbute. */
+        if (view.cam.z >= REVEAL_OFF) {
+          push(toP(device, renderer.renderFlat(t >= DEAD_HEAD ? String(value) : null)));
+        } else {
+          push(toP(device, renderer.render(DEFAULT_DIE, view)));
+        }
       }
       /* Le résultat, posé — et il y reste jusqu'au prochain jet ou changement de
          solide, jamais un aller-retour vers l'icône après quelques secondes. */
-      hold(
-        toP(device, renderer.render(DEFAULT_DIE, restingView(DEFAULT_DIE, th.qEnd), value)),
-        LECTURE,
-      );
+      hold(toP(device, renderer.renderFlat(String(value))), LECTURE);
       continue;
     }
 

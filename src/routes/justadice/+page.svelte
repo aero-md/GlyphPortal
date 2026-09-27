@@ -20,6 +20,7 @@
   import {
     DEAD_HEAD,
     DEAD_TAIL,
+    REVEAL_OFF,
     T_BRAKE,
     T_END,
     T_LAND,
@@ -246,20 +247,25 @@
          vers l'icône au bout de quelques secondes. */
       const showIcon = compact && !th && !hasResult;
 
+      /* Une fois la caméra arrivée (voir `REVEAL_OFF` dans `dice.ts`), le port
+         compact quitte le raytracé pour `renderFlat` — voir sa note dans
+         `render.ts`. Le solide générique ne sert plus qu'à la culbute en vol,
+         là où rien de tressautant ne se voit puisque rien ne s'y lit encore. */
+      const flat = compact && view.cam.z >= REVEAL_OFF;
+
       /* La marque ne porte `trueValue` qu'une fois la caméra vraiment arrivée
-         au gros plan. Juste après un jet, `elapsed` redémarre près de 0 mais
-         `v.cam.z` tient encore le gros plan du jet précédent le temps du recul
-         — voir `DEAD_HEAD` dans `dice.ts`, « la caméra recule encore ». Sans
-         cette garde, le cube générique révélait le résultat à venir avant même
-         d'avoir commencé à tomber — et `null`, pas `undefined`, tant qu'on y
-         est : sans lui `render()` serait retombé sur les pips du d6 générique,
-         un flash tout aussi faux que le résultat à venir. Voir `override`
-         dans `render.ts`. */
-      const override = !compact ? undefined : elapsed === null || elapsed >= DEAD_HEAD ? trueValue : null;
+         **pour ce jet-ci**. Juste après en avoir lancé un nouveau, `elapsed`
+         redémarre près de 0 mais `v.cam.z` tient encore le gros plan du jet
+         précédent le temps du recul — voir `DEAD_HEAD`, « la caméra recule
+         encore ». Sans cette garde, `flat` serait vrai dès la première image
+         et montrerait le résultat à venir avant même que le dé soit parti. */
+      const pastDeadHead = elapsed === null || elapsed >= DEAD_HEAD;
 
       frame = showIcon
         ? frameOf(device, DIE_ICON[die.id])
-        : frameOf(device, renderer.render(k, view, override).slice());
+        : flat
+          ? frameOf(device, renderer.renderFlat(pastDeadHead ? String(trueValue) : null).slice())
+          : frameOf(device, renderer.render(k, view).slice());
       raf = requestAnimationFrame(step);
     };
 

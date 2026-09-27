@@ -115,6 +115,16 @@ const STEPS: { font: Font; scale: number }[] = [
 ];
 
 /**
+ * Demi-côté du carré du port compact, en cellules — voir `renderFlat`.
+ *
+ * Choisi pour qu'aucun coin ne sorte du disque : à 4 cellules du centre, le
+ * coin est à 4√2 ≈ 5,66, sous le rayon utile du (4a) Pro (6,4 — voir
+ * `maxDist` dans `matrix.ts`). Une cellule de plus et les coins se seraient
+ * fait ronger par la découpe du hublot, ce qui ne se lit plus comme un carré.
+ */
+const FLAT_HALF = 4;
+
+/**
  * La lumière, dans le monde et non dans le repère du dé : elle vient d'en haut,
  * un peu de la gauche, un peu de l'avant. C'est ce qui fait que le lavis des
  * faces change *pendant* la culbute au lieu d'être collé au solide, et que la
@@ -133,38 +143,30 @@ export class DiceRenderer {
   private readonly out: Float32Array;
   /** Face touchée par cellule, ou −1 pour le vide. */
   private readonly face: Int8Array;
+  /** Tampon de travail du port compact — voir `renderFlat`. */
+  private readonly flat: Float32Array;
 
   constructor(readonly device: Device) {
     this.g = new Float32Array(device.cells);
     this.out = new Float32Array(device.cells);
     this.face = new Int8Array(device.cells);
+    this.flat = new Float32Array(device.cells);
   }
 
   /**
-   * La trame du dé `die` dans la vue `v`.
+   * La trame du dé `die` dans la vue `v` — un raytracé, sans savoir qu'un port
+   * compact existe.
    *
-   * `override` a trois états, et ce n'est pas un booléen de plus qu'on aurait pu
-   * lui adjoindre :
-   *
-   * - **absent** (`undefined`) : le tampon reste celui du solide lui-même —
-   *   pips ou chiffre de `die.face`, comme sur le (3).
-   * - **un nombre** : remplace le nombre lu sur la face du dessus, pips
-   *   compris, qui s'effacent devant lui. Sert au port compact du (4a) Pro : la
-   *   page y fait tourner un solide générique (voir `DEFAULT_DIE` importé par
-   *   `+page.svelte`) pour que la culbute reste la même quel que soit le dé
-   *   choisi, et passe ici la vraie valeur tirée sur **ce** dé — celle que le
-   *   solide générique n'a aucune raison de connaître.
-   * - **`null`** : aucune marque, même pas celle du solide générique. Sert au
-   *   même port compact, mais au tout début d'un jet : `v.cam.z` y tient
-   *   encore le gros plan du jet précédent le temps que la caméra recule (voir
-   *   `DEAD_HEAD` dans `dice.ts`), et sans ce troisième état l'appelant n'avait
-   *   que `undefined` à passer pour dire « rien à montrer » — ce qui retombait
-   *   sur les pips du d6 générique, un mot pour un autre.
+   * Sur le (3) c'est tout le rendu, vol et gros plan compris. Sur le (4a) Pro,
+   * `+page.svelte` ne s'en sert plus que pour la culbute en vol — précisément
+   * le régime où `revealAt(v.cam.z)` vaut zéro, donc où rien ici ne dessine de
+   * marque. Une fois la caméra arrivée, `renderFlat` prend le relais : voir la
+   * note qui l'accompagne.
    *
    * Le tampon est réutilisé d'une image à l'autre : à l'appelant d'en prendre une
    * copie s'il le garde.
    */
-  render(die: Die, v: View, override?: number | null): Float32Array {
+  render(die: Die, v: View): Float32Array {
     const { size, cx, cy, radius, cells, inside, isInside } = this.device;
     const g = this.g;
     const face = this.face;
@@ -317,7 +319,7 @@ export class DiceRenderer {
        rognée par l'arête, au lieu de baver sur la face voisine ou dans le vide. */
     // Une marque n'apparaît qu'au gros plan — voir `revealAt`.
     const lit = revealAt(v.cam.z);
-    if (lit > 0 && override !== null) {
+    if (lit > 0) {
       const fc = die.face[best];
 
       /* L'ancre : le centre de la face, **ramenée à la cellule la plus
@@ -340,18 +342,17 @@ export class DiceRenderer {
          révélation. Voir `STEPS`. Sert aussi d'échelle aux pips. */
       const room = (fc.inr * this.device.radius) / die.close;
 
-      if (override === undefined && fc.pips.length) {
+      if (fc.pips.length) {
         for (const [u, w] of fc.pips) {
           this.block(ax + this.cellOffset(u, room), ay + this.cellOffset(w, room), PIP_PX, best, lit);
         }
       } else {
-        const glyph = override === undefined ? fc.glyph : String(override);
         const step = STEPS.find(
           (s) =>
             (s.font.height * s.scale) / 2 <= room &&
-            (textWidth(s.font, glyph) * s.scale) / 2 <= room,
+            (textWidth(s.font, fc.glyph) * s.scale) / 2 <= room,
         );
-        if (step) this.text(step.font, step.scale, glyph, ax, ay, best, lit);
+        if (step) this.text(step.font, step.scale, fc.glyph, ax, ay, best, lit);
       }
     }
 
@@ -370,6 +371,58 @@ export class DiceRenderer {
       if (sx < 0 || sy < 0 || sx >= size || sy >= size) continue;
       out[i] = g[sy * size + sx];
     }
+    return out;
+  }
+
+  /**
+   * Le port compact une fois la caméra arrivée — voir la note sur `render`, et
+   * `+page.svelte` qui bascule ici dès que `v.cam.z` franchit `REVEAL_OFF`.
+   *
+   * Ce n'est plus un raytracé : un carré posé à plat, centré, sans une seule
+   * coordonnée qui dépende de l'orientation du dé. Le bercement de
+   * `orientationAt` (`dice.ts`) continue un peu après la pose — c'est voulu,
+   * ça vend l'arrêt sur un vrai solide — mais sur treize colonnes le solide
+   * qui en dépendait encore avait des arêtes qui tressautaient d'une image à
+   * l'autre pour un reliquat d'angle imperceptible ailleurs.
+   *
+   * Le prix est assumé, et revendiqué : ce n'est plus un solide vu de face,
+   * c'est un pictogramme — le vocabulaire de `DIE_ICON`, plein et net, sans
+   * dégradé qui prétendrait à un éclairage qui n'existe plus.
+   *
+   * `glyph` à `null` : le carré reste nu, rien à lire — la fenêtre morte du
+   * départ d'un jet (voir `DEAD_HEAD` dans `dice.ts`), où la caméra tient
+   * encore le cadrage du jet précédent le temps de reculer.
+   */
+  renderFlat(glyph: string | null): Float32Array {
+    const { size, inside } = this.device;
+    const cx = Math.round(this.device.cx);
+    const cy = Math.round(this.device.cy);
+    const g = this.flat;
+    g.fill(0);
+
+    const x0 = cx - FLAT_HALF;
+    const x1 = cx + FLAT_HALF;
+    const y0 = cy - FLAT_HALF;
+    const y1 = cy + FLAT_HALF;
+    for (let y = Math.max(0, y0); y <= Math.min(size - 1, y1); y++) {
+      for (let x = Math.max(0, x0); x <= Math.min(size - 1, x1); x++) {
+        const edge = x === x0 || x === x1 || y === y0 || y === y1;
+        g[y * size + x] = edge ? EDGE : FILL_MIN + FILL_SPAN;
+      }
+    }
+
+    if (glyph !== null) {
+      const step = STEPS.find(
+        (s) =>
+          (s.font.height * s.scale) / 2 <= FLAT_HALF &&
+          (textWidth(s.font, glyph) * s.scale) / 2 <= FLAT_HALF,
+      );
+      if (step) this.stampFlat(step.font, step.scale, glyph, cx, cy, g);
+    }
+
+    const out = this.out;
+    out.fill(0);
+    for (const i of inside) out[i] = g[i];
     return out;
   }
 
@@ -460,6 +513,37 @@ export class DiceRenderer {
               if (xx < 0 || xx >= this.device.size) continue;
               const j = yy * this.device.size + xx;
               if (this.face[j] === f && this.g[j] < b) this.g[j] = b;
+            }
+          }
+        }
+      }
+      x0 += (rows[0].length + 1) * scale;
+    }
+  }
+
+  /**
+   * Comme `text`, mais sur une trame sans notion de face — voir `renderFlat`,
+   * dont le carré ne rogne aucune marque contre une arête puisqu'il n'y en a
+   * qu'une. Toujours à plein — le carré plat n'a qu'une lecture, allumée.
+   */
+  private stampFlat(font: Font, scale: number, s: string, cx: number, cy: number, buf: Float32Array): void {
+    const h = font.height * scale;
+    const y0 = cy - Math.floor(h / 2);
+    let x0 = cx - Math.floor((textWidth(font, s) * scale) / 2);
+
+    for (const ch of s) {
+      const rows = font.glyphs[ch];
+      if (!rows) continue;
+      for (let r = 0; r < font.height; r++) {
+        for (let c = 0; c < rows[r].length; c++) {
+          if (rows[r][c] !== "1") continue;
+          for (let dy = 0; dy < scale; dy++) {
+            const yy = y0 + r * scale + dy;
+            if (yy < 0 || yy >= this.device.size) continue;
+            for (let dx = 0; dx < scale; dx++) {
+              const xx = x0 + c * scale + dx;
+              if (xx < 0 || xx >= this.device.size) continue;
+              buf[yy * this.device.size + xx] = 1;
             }
           }
         }
