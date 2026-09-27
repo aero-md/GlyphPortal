@@ -66,10 +66,9 @@ export const FILL_SPAN = 0.05;
  * Côté d'un pip, **en cellules d'écran**, et c'est un parti pris contre la
  * perspective.
  *
- * Un pip n'est pas peint sur la face : son centre est projeté, puis un carré de
- * 3 × 3 est tamponné sur la grille. Il garde donc la même taille et reste aligné
- * sur les LEDs quelle que soit l'inclinaison de la face, et pendant que le
- * rapprochement fait grandir le solide sous lui.
+ * Un pip n'est pas peint sur la face : c'est un carré de 3 × 3 tamponné sur la
+ * grille. Il garde donc la même taille et reste aligné sur les LEDs quelle que
+ * soit l'inclinaison de la face.
  *
  * C'est faux, et c'est exactement ce qu'on veut. La version juste — un disque
  * mesuré dans le dé, projeté avec le reste — donnait un pip d'une à quatre
@@ -78,6 +77,11 @@ export const FILL_SPAN = 0.05;
  * plutôt que comme six points. Sur vingt-cinq LEDs de côté, la quantification
  * fait plus de dégâts que l'entorse à la géométrie. Les LEDs ne sont pas un
  * rendu, elles sont une trame : un point y a une taille, pas une distance.
+ *
+ * **Et pas davantage une position.** L'argument vaut mot pour mot pour le
+ * placement, et ne l'avoir tenu qu'à moitié a longtemps coûté un dé
+ * visiblement de travers — voir `cellOffset`. Un pip se pose donc sur une
+ * cellule entière, à un écart entier du centre de la face.
  *
  * Impair, nécessairement : un carré centré sur une cellule a un côté impair.
  */
@@ -139,18 +143,28 @@ export class DiceRenderer {
   /**
    * La trame du dé `die` dans la vue `v`.
    *
-   * `override`, s'il est posé, remplace le nombre lu sur la face du dessus —
-   * pips compris, qui s'effacent devant lui. Sert au port compact du (4a) Pro :
-   * la page y fait tourner un solide générique (voir `DEFAULT_DIE` importé par
-   * `+page.svelte`) pour que la culbute reste la même quel que soit le dé
-   * choisi, et passe ici la vraie valeur tirée sur **ce** dé — celle que le
-   * solide générique n'a aucune raison de connaître. Absent, le tampon reste
-   * celui du solide lui-même, comme sur le (3).
+   * `override` a trois états, et ce n'est pas un booléen de plus qu'on aurait pu
+   * lui adjoindre :
+   *
+   * - **absent** (`undefined`) : le tampon reste celui du solide lui-même —
+   *   pips ou chiffre de `die.face`, comme sur le (3).
+   * - **un nombre** : remplace le nombre lu sur la face du dessus, pips
+   *   compris, qui s'effacent devant lui. Sert au port compact du (4a) Pro : la
+   *   page y fait tourner un solide générique (voir `DEFAULT_DIE` importé par
+   *   `+page.svelte`) pour que la culbute reste la même quel que soit le dé
+   *   choisi, et passe ici la vraie valeur tirée sur **ce** dé — celle que le
+   *   solide générique n'a aucune raison de connaître.
+   * - **`null`** : aucune marque, même pas celle du solide générique. Sert au
+   *   même port compact, mais au tout début d'un jet : `v.cam.z` y tient
+   *   encore le gros plan du jet précédent le temps que la caméra recule (voir
+   *   `DEAD_HEAD` dans `dice.ts`), et sans ce troisième état l'appelant n'avait
+   *   que `undefined` à passer pour dire « rien à montrer » — ce qui retombait
+   *   sur les pips du d6 générique, un mot pour un autre.
    *
    * Le tampon est réutilisé d'une image à l'autre : à l'appelant d'en prendre une
    * copie s'il le garde.
    */
-  render(die: Die, v: View, override?: number): Float32Array {
+  render(die: Die, v: View, override?: number | null): Float32Array {
     const { size, cx, cy, radius, cells, inside, isInside } = this.device;
     const g = this.g;
     const face = this.face;
@@ -296,8 +310,6 @@ export class DiceRenderer {
     }
 
     /* Les marques, en dernier et par-dessus les arêtes : ce sont elles qu'on lit.
-       Le point d'ancrage est projeté à l'écran, puis la marque est tamponnée sur
-       la grille — d'où sa taille constante.
 
        Le tampon n'écrit que sur les cellules de **sa** face, ce qui est
        l'occlusion exacte et gratuite : la passe de rayons a laissé l'identité de
@@ -305,29 +317,41 @@ export class DiceRenderer {
        rognée par l'arête, au lieu de baver sur la face voisine ou dans le vide. */
     // Une marque n'apparaît qu'au gros plan — voir `revealAt`.
     const lit = revealAt(v.cam.z);
-    if (lit > 0) {
+    if (lit > 0 && override !== null) {
       const fc = die.face[best];
+
+      /* L'ancre : le centre de la face, **ramenée à la cellule la plus
+         proche**. Tout ce qui suit se pose en écarts entiers depuis elle, sur
+         un réseau de cellules entières — jamais en coordonnées continues
+         arrondies chacune dans son coin, ce qui cassait la symétrie d'un
+         motif : un 4 en trapèze, la puce médiane du 6 qui changeait de
+         colonne d'une rangée à l'autre. Voir `cellOffset`.
+
+         La marque n'apparaît qu'une fois la pose terminée (voir
+         `REVEAL_OFF` dans `dice.ts`), l'ancre ne bouge donc pas d'une image à
+         l'autre une fois pleine. */
+      const anchor = this.project(fc.c, m, v.pos, ex, ey, k);
+      const ax = Math.round(anchor[0]);
+      const ay = Math.round(anchor[1]);
+
+      /* Place disponible pour un nombre, en cellules : le rayon inscrit de la
+         face, mesuré dans le cadrage du gros plan et non dans celui de l'image
+         courante — c'est ce qui empêche le corps de changer en cours de
+         révélation. Voir `STEPS`. Sert aussi d'échelle aux pips. */
+      const room = (fc.inr * this.device.radius) / die.close;
+
       if (override === undefined && fc.pips.length) {
-        for (const p of fc.pips) {
-          const s = this.project(p, m, v.pos, ex, ey, k);
-          this.block(s[0], s[1], PIP_PX, PIP_PX, best, lit);
+        for (const [u, w] of fc.pips) {
+          this.block(ax + this.cellOffset(u, room), ay + this.cellOffset(w, room), PIP_PX, best, lit);
         }
       } else {
         const glyph = override === undefined ? fc.glyph : String(override);
-        /* Place disponible pour un nombre, en cellules : le rayon inscrit de la
-           face, mesuré dans le cadrage du gros plan et non dans celui de l'image
-           courante — c'est ce qui empêche le corps de changer en cours de
-           révélation. Voir `STEPS`. */
-        const room = (fc.inr * this.device.radius) / die.close;
         const step = STEPS.find(
           (s) =>
             (s.font.height * s.scale) / 2 <= room &&
             (textWidth(s.font, glyph) * s.scale) / 2 <= room,
         );
-        if (step) {
-          const s = this.project(fc.c, m, v.pos, ex, ey, k);
-          this.text(step.font, step.scale, glyph, s[0], s[1], best, lit);
-        }
+        if (step) this.text(step.font, step.scale, glyph, ax, ay, best, lit);
       }
     }
 
@@ -368,14 +392,30 @@ export class DiceRenderer {
     ];
   }
 
-  /** Un rectangle plein centré, rogné à la face `f`. */
-  private block(sx: number, sy: number, w: number, h: number, f: number, b: number): void {
-    const x0 = Math.round(sx - w / 2);
-    const y0 = Math.round(sy - h / 2);
-    for (let dy = 0; dy < h; dy++) {
+  /**
+   * L'écartement d'un pip, **en cellules entières et symétrique**.
+   *
+   * La magnitude est arrondie une fois, puis reprise avec son signe. Arrondir
+   * chaque pip dans son coin — projeter le point puis arrondir le résultat —
+   * donnait un 4 en trapèze : les deux pips du bas tombaient une cellule plus
+   * à gauche que ceux du haut, et la puce médiane du 6 changeait de colonne
+   * d'une rangée à l'autre. Une demi-cellule d'écart suffit à faire basculer
+   * un arrondi, et un dé dont les points ne sont pas alignés a l'air cassé
+   * bien avant qu'on sache dire pourquoi.
+   */
+  private cellOffset(fraction: number, room: number): number {
+    const d = Math.round(Math.abs(fraction) * room);
+    return fraction < 0 ? -d : d;
+  }
+
+  /** Un carré plein centré sur la cellule `(cx, cy)`, rogné à la face `f`. */
+  private block(cx: number, cy: number, side: number, f: number, b: number): void {
+    const x0 = cx - Math.floor(side / 2);
+    const y0 = cy - Math.floor(side / 2);
+    for (let dy = 0; dy < side; dy++) {
       const yy = y0 + dy;
       if (yy < 0 || yy >= this.device.size) continue;
-      for (let dx = 0; dx < w; dx++) {
+      for (let dx = 0; dx < side; dx++) {
         const xx = x0 + dx;
         if (xx < 0 || xx >= this.device.size) continue;
         const j = yy * this.device.size + xx;
@@ -385,7 +425,8 @@ export class DiceRenderer {
   }
 
   /**
-   * Un nombre centré, chaque pixel de police dilaté en carré de `scale`.
+   * Un nombre centré sur la cellule `(cx, cy)`, chaque pixel de police dilaté
+   * en carré de `scale`.
    *
    * Un pixel de blanc entre deux chiffres, dilaté comme le reste — c'est ce que
    * mesure `textWidth`, et le centrage en dépend. Le dix est le seul nombre à deux
@@ -396,14 +437,14 @@ export class DiceRenderer {
     font: Font,
     scale: number,
     s: string,
-    sx: number,
-    sy: number,
+    cx: number,
+    cy: number,
     f: number,
     b: number,
   ): void {
     const h = font.height * scale;
-    const y0 = Math.round(sy - h / 2);
-    let x0 = Math.round(sx - (textWidth(font, s) * scale) / 2);
+    const y0 = cy - Math.floor(h / 2);
+    let x0 = cx - Math.floor((textWidth(font, s) * scale) / 2);
 
     for (const ch of s) {
       const rows = font.glyphs[ch];

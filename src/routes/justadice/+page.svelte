@@ -98,6 +98,15 @@
   let landed = false;
   /** La vraie valeur en cours de lecture — celle de `die`, pas celle de `kin()`. */
   let trueValue = DEFAULT_DIE.faces;
+  /**
+   * En port compact, `die` a-t-il déjà été jeté depuis qu'il est sélectionné ?
+   *
+   * Faux à l'affichage initial et juste après un changement de solide — l'icône
+   * de `die` est alors ce qu'il y a à montrer, personne n'a encore rien jeté.
+   * Vrai dès la pose d'un jet, et **jusqu'au prochain** — pas juste le temps
+   * d'un gros plan : voir la note sur `frame` dans la boucle plus bas.
+   */
+  let hasResult = false;
 
   let stage = $state<Stage>("rest");
   let listening = $state(true);
@@ -157,6 +166,7 @@
     if (id === die.id) return;
     die = dieById(id);
     rest = restQuat(kin(), kin().faces, 0);
+    hasResult = false;
     const picked = die.id;
     flash(() => `${picked} — ${$_(`justadice.solids.${picked}`)}`);
   }
@@ -176,6 +186,7 @@
     th = null;
     elapsed = null;
     landed = false;
+    hasResult = false;
     rest = restQuat(kin(), kin().faces, 0);
     /* Sans quoi la première image tient l'ancien appareil : la boucle plus bas
        ne corrige qu'à la prochaine image demandée, un cran après le montage ou
@@ -202,6 +213,7 @@
            celui, cosmétique, du cube — voir `roll()`. */
         if (t >= T_LAND && !landed) {
           landed = true;
+          hasResult = true;
           last[die.id] = trueValue;
           counts[die.id][trueValue - 1] += 1;
         }
@@ -228,13 +240,26 @@
       if (li !== listening) listening = li;
       progress = elapsed === null ? 0 : Math.min(elapsed / T_END, 1);
 
-      /* Au repos en port compact, l'icône du dé plutôt qu'un rendu : voir
-         `DIE_ICON`. Le solide générique ne remonte à l'écran que pendant un jet,
-         où il porte la vraie valeur — voir `render()` dans `render.ts`. */
-      frame =
-        compact && !th
-          ? frameOf(device, DIE_ICON[die.id])
-          : frameOf(device, renderer.render(k, view, compact ? trueValue : undefined).slice());
+      /* L'icône du dé plutôt qu'un rendu, tant que `die` n'a rien à montrer :
+         voir `DIE_ICON` et la note sur `hasResult`. Un résultat posé y reste
+         ensuite — `restingView` en fait un gros plan fixe, pas un aller-retour
+         vers l'icône au bout de quelques secondes. */
+      const showIcon = compact && !th && !hasResult;
+
+      /* La marque ne porte `trueValue` qu'une fois la caméra vraiment arrivée
+         au gros plan. Juste après un jet, `elapsed` redémarre près de 0 mais
+         `v.cam.z` tient encore le gros plan du jet précédent le temps du recul
+         — voir `DEAD_HEAD` dans `dice.ts`, « la caméra recule encore ». Sans
+         cette garde, le cube générique révélait le résultat à venir avant même
+         d'avoir commencé à tomber — et `null`, pas `undefined`, tant qu'on y
+         est : sans lui `render()` serait retombé sur les pips du d6 générique,
+         un flash tout aussi faux que le résultat à venir. Voir `override`
+         dans `render.ts`. */
+      const override = !compact ? undefined : elapsed === null || elapsed >= DEAD_HEAD ? trueValue : null;
+
+      frame = showIcon
+        ? frameOf(device, DIE_ICON[die.id])
+        : frameOf(device, renderer.render(k, view, override).slice());
       raf = requestAnimationFrame(step);
     };
 

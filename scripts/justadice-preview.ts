@@ -30,11 +30,11 @@
  * exactement ce que fait un appui long : le solide change d'une image à l'autre.
  *
  * Le **(4a) Pro** rejoue les trois mêmes jets, mais à travers le port compact —
- * voir `compact` dans `render.ts` et la note sur `kin()` dans `+page.svelte` :
- * c'est toujours le cube du d6 qui culbute, quel que soit le solide affiché, et
- * c'est lui qui porte la vraie valeur du jet. Entrée et lecture montrent
- * l'icône du solide plutôt qu'une face — voir `DIE_ICON` — puisque c'est ce que
- * l'appareil affiche au repos, avant et après chaque jet.
+ * voir la note sur `kin()` dans `+page.svelte` : c'est toujours le cube du d6
+ * qui culbute, quel que soit le solide affiché, et c'est lui qui porte la
+ * vraie valeur du jet. Seule l'entrée montre l'icône du solide — voir
+ * `DIE_ICON` — puisque rien n'a encore été jeté ; le résultat, lui, reste posé
+ * jusqu'au jet suivant, pas juste le temps d'un gros plan.
  */
 
 import { mkdir, writeFile } from "node:fs/promises";
@@ -62,7 +62,7 @@ Bun.plugin({
 
 const { DEVICES } = await import("../src/lib/index");
 const { DiceRenderer } = await import("../src/routes/justadice/lib/render");
-const { T_END, makeThrow, restQuat, restingView, viewAt } = await import(
+const { DEAD_HEAD, T_END, makeThrow, restQuat, restingView, viewAt } = await import(
   "../src/routes/justadice/lib/dice"
 );
 const { DEFAULT_DIE, DICE } = await import("../src/routes/justadice/lib/solids");
@@ -165,16 +165,28 @@ for (const device of DEVICES) {
     if (compact) {
       /* Le cube générique du port compact tumble à la place du vrai solide —
          voir l'en-tête du fichier — et porte `value`, la vraie lecture, au lieu
-         de la sienne. Entrée et lecture montrent l'icône du solide affiché :
-         c'est ce que l'appareil garde à l'écran hors d'un jet. */
+         de la sienne. L'entrée montre l'icône du solide : rien n'a encore été
+         jeté. */
       hold(toP(device, DIE_ICON[id]), ENTREE);
       const pose = restQuat(DEFAULT_DIE, DEFAULT_DIE.faces, 0);
       const th = makeThrow(DEFAULT_DIE, pose, DEFAULT_DIE.faces, scripted());
       for (let f = 0; f * (1 / FPS) < T_END; f++) {
-        const view = viewAt(DEFAULT_DIE, th, f / FPS);
-        push(toP(device, renderer.render(DEFAULT_DIE, view, value)));
+        const t = f / FPS;
+        const view = viewAt(DEFAULT_DIE, th, t);
+        /* Pas de marque tant que la caméra recule encore — voir `DEAD_HEAD` et
+           la note sur `override` dans `+page.svelte` et `render.ts` : sans
+           cette garde, le premier plan du jet montre déjà le résultat, avant
+           même la culbute — et `null`, pas `undefined`, ou ce serait les pips
+           du d6 générique qui flasheraient à la place. */
+        const override = t >= DEAD_HEAD ? value : null;
+        push(toP(device, renderer.render(DEFAULT_DIE, view, override)));
       }
-      hold(toP(device, DIE_ICON[id]), LECTURE);
+      /* Le résultat, posé — et il y reste jusqu'au prochain jet ou changement de
+         solide, jamais un aller-retour vers l'icône après quelques secondes. */
+      hold(
+        toP(device, renderer.render(DEFAULT_DIE, restingView(DEFAULT_DIE, th.qEnd), value)),
+        LECTURE,
+      );
       continue;
     }
 

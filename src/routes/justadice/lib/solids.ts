@@ -61,10 +61,16 @@ export function norm(v: Vec3): Vec3 {
 /* ---------------------------------- pips ----------------------------------- */
 
 /**
- * Les six motifs du d6, en fractions de la demi-arête de la face.
+ * Les six motifs du d6, en fractions du rayon inscrit de la face — la
+ * demi-arête, sur un carré.
  *
  * Le 6 écarte ses rangées à 0,56 plutôt que 0,52 : à trois rangées le pas est
  * plus serré qu'à deux, et sans cet écart les taches du gros plan se touchent.
+ *
+ * Un motif, pas une géométrie : ce ne sont **pas** des points du solide. Les
+ * pips sont tamponnés sur la trame, à l'écart entier de cellules qu'ils disent
+ * — voir `cellOffset` dans `render.ts`, qui les pose sur un réseau de cellules
+ * entières plutôt que de les faire passer par la projection.
  */
 const PIPS: readonly (readonly [number, number][])[] = [
   [],
@@ -116,8 +122,8 @@ export type Face = {
   value: number;
   /** Le nombre imprimé, vide si la face porte des pips. Deux chiffres au dix. */
   glyph: string;
-  /** Centres des pips dans le repère du dé. Vide sur une face chiffrée. */
-  pips: Vec3[];
+  /** Motif de pips de la face, en fractions du rayon inscrit. Vide sur une face chiffrée. */
+  pips: readonly (readonly [number, number])[];
 };
 
 /**
@@ -401,20 +407,11 @@ function build(
 
   const face: Face[] = raw.map((r, i) => {
     const v = value[i];
-    /* Les pips ne concernent que le d6 : sa face est un carré, donc une base
-       tangente prise sur une arête, et une demi-arête pour unité. */
-    let pips: Vec3[] = [];
-    if (count === 6) {
-      const e = sub(verts[r.f[1]], verts[r.f[0]]);
-      const half = len(e) / 2;
-      const u = norm(e);
-      const w = cross(r.n, u);
-      pips = PIPS[v].map(([a, b]) => [
-        r.c[0] + (a * u[0] + b * w[0]) * half,
-        r.c[1] + (a * u[1] + b * w[1]) * half,
-        r.c[2] + (a * u[2] + b * w[2]) * half,
-      ]);
-    }
+    /* Les pips ne concernent que le d6, et ne sont qu'un motif : aucune base
+       tangente à construire, aucun point à placer dans le solide — voir
+       `PIPS`. Le rayon inscrit d'une face carrée vaut sa demi-arête, donc ses
+       fractions sont déjà à la bonne unité. */
+    const pips = count === 6 ? PIPS[v] : [];
     return {
       n: r.n,
       d: r.d,
