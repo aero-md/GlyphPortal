@@ -139,7 +139,7 @@
          rond, ce qui est la règle de la page : le cercle est réservé aux points
          et aux LEDs. -->
     <div class="h-row">
-      <p class="sub meta"><span class="name">{title}</span> • {sub}</p>
+      <p class="sub meta"><span class="name">{title}</span> <span class="subtitle">• {sub}</span></p>
       <div class="h-tools">
         {#if device}
           <DeviceToggle bind:device {devices} />
@@ -421,6 +421,13 @@
        qui est la seule chose qui doit rester à l'écran. */
     header {
       padding-top: 1.2rem;
+    }
+
+    /* Le sous-titre explique le toy en une phrase — utile sur grand écran, à
+       côté du nom, mais en mobile il ne fait que pousser le sélecteur
+       d'appareil hors de la première ligne visible. Le nom seul suffit. */
+    .subtitle {
+      display: none;
     }
 
     main {
