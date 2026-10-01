@@ -26,7 +26,7 @@
  * résultat, est toujours la plus claire.
  */
 
-import { F3, F5, textWidth, type Device, type Font } from "$lib";
+import { F3, F3D, F5, textWidth, type Device, type Font } from "$lib";
 import { qMat, revealAt, toLocal, topIndex, type View } from "./dice";
 import type { Die, Vec3 } from "./solids";
 
@@ -411,14 +411,10 @@ export class DiceRenderer {
       }
     }
 
-    if (glyph !== null) {
-      const step = STEPS.find(
-        (s) =>
-          (s.font.height * s.scale) / 2 <= FLAT_HALF &&
-          (textWidth(s.font, glyph) * s.scale) / 2 <= FLAT_HALF,
-      );
-      if (step) this.stampFlat(step.font, step.scale, glyph, cx, cy, g);
-    }
+    // `F3D` et non `STEPS` : c'est la police du (4a) Pro, celle que Sonoglyph
+    // pose déjà sur le même cadran de treize colonnes — pas la police du
+    // raytracé, taillée pour le hublot vingt-cinq fois plus grand du (3).
+    if (glyph !== null) this.stampFlat(F3D, 1, glyph, cx, cy, g);
 
     const out = this.out;
     out.fill(0);
