@@ -56,6 +56,7 @@
       "justadice": "Un dé de plusieurs formes. Jeté d'une secousse",
       "gforce": "Un accéléromètre de bord, inspiré des voitures de sport",
       "float": "Un niveau à bulle et une boussole. Minimalistes et efficaces",
+      "altclock": "Une horloge alternative, en trois polices",
       "haloglyph": "Future application qui réunira les glyph toys, et permettra d'utiliser la glyph matrix dans un widget sur l'écran d'accueil",
       "glyphcast": "Convertit une image en rendu Glyph Matrix"
     }
@@ -400,13 +401,26 @@
       "note1": "Le pavé simule la pose du téléphone : au centre il est à plat, sur le bord il est debout — c'est ce qui fait basculer le niveau du régime plat au régime d'aplomb, comme sur l'appareil."
     }
   },
+  "altclock": {
+    "description": "Aperçu d'Alt Clock, une horloge alternative pour la Glyph Matrix : l'heure en gros chiffres, en trois polices.",
+    "sub": "Une horloge alternative",
+    "style": {
+      "seg": "Style",
+      "elegant": "Élégant",
+      "techno_large": "Techno large",
+      "techno": "Techno"
+    },
+    "format": {
+      "seg": "Format de l'heure"
+    }
+  },
   "haloglyph": {
     "description": "Haloglyph : le pack qui réunit les Glyph toys de ce dépôt dans une application Android pour la Glyph Matrix du Nothing Phone (3), et dans un widget qui l'émule ailleurs.",
     "sub": "Le pack qui embarque les toys",
     "pitch": {
-      "stat": "5 toys",
+      "stat": "6 toys",
       "note1": "<b>HALOGLYPH</b> réunit les Glyph toys de ce dépôt dans une seule application Android : sur la Glyph Matrix du Nothing Phone (3) via Glyph Interface, et — faute de matrice — dans un widget d'écran d'accueil qui l'émule au pixel près sur n'importe quel autre téléphone.",
-      "note2": "Encore en brouillon : les cinq toys sont écrits, déclarés au système et tournent déjà dans le hublot, mais le pack n'est pas publié. Glyphslot n'en fait pas partie — une machine à sous impose un classement qui contaminerait tout le reste — et reste un dépôt à part.",
+      "note2": "Encore en brouillon : les six toys sont écrits, déclarés au système et tournent déjà dans le hublot, mais le pack n'est pas publié. Glyphslot n'en fait pas partie — une machine à sous impose un classement qui contaminerait tout le reste — et reste un dépôt à part.",
       "repo": "Voir le dépôt"
     },
     "toys": {
@@ -416,7 +430,8 @@
       "justadice": "d6, d10, d12, d20 suivis en quaternion — secouer pour jeter.",
       "sonoglyph": "Le micro sur la matrice, en spectre, aiguille ou onde.",
       "float": "Niveau à bulle à échelle logarithmique, et boussole en second instrument.",
-      "gforce": "Accéléromètre de bord : une bille pour l'instant, quatre pics pour le trajet."
+      "gforce": "Accéléromètre de bord : une bille pour l'instant, quatre pics pour le trajet.",
+      "altclock": "Horloge alternative : l'heure en gros chiffres, en trois polices."
     },
     "widget": {
       "title": "Le hublot",

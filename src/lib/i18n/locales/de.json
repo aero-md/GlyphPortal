@@ -56,6 +56,7 @@
       "justadice": "Ein Würfel mit mehreren Formen. Mit einem Schütteln geworfen",
       "gforce": "Ein Bord-Beschleunigungsmesser, inspiriert von Sportwagen",
       "float": "Eine Wasserwaage und ein Kompass. Minimalistisch und effektiv",
+      "altclock": "Eine alternative Uhr in drei Schriften",
       "haloglyph": "Künftige App, die die Glyph Toys enthalten und die Glyph Matrix als Homescreen-Widget nutzbar machen wird",
       "glyphcast": "Wandelt ein Bild in eine Glyph-Matrix-Ausgabe um"
     }
@@ -400,13 +401,26 @@
       "note1": "Das Pad simuliert die Haltung des Telefons: in der Mitte liegt es flach, am Rand steht es hochkant — das lässt die Wasserwaage vom flachen in den Lot-Modus wechseln, wie auf dem Gerät."
     }
   },
+  "altclock": {
+    "description": "Vorschau von Alt Clock, einer alternativen Uhr für die Glyph Matrix: die Uhrzeit in großen Ziffern, in drei Schriften.",
+    "sub": "Eine alternative Uhr",
+    "style": {
+      "seg": "Stil",
+      "elegant": "Elegant",
+      "techno_large": "Techno breit",
+      "techno": "Techno"
+    },
+    "format": {
+      "seg": "Stundenformat"
+    }
+  },
   "haloglyph": {
     "description": "Haloglyph: das Pack, das die Glyph Toys dieses Repos in einer Android-App für die Glyph Matrix des Nothing Phone (3) bündelt, und in einem Widget, das sie anderswo nachbildet.",
     "sub": "Das Pack, das die Toys bündelt",
     "pitch": {
-      "stat": "5 Toys",
+      "stat": "6 Toys",
       "note1": "<b>HALOGLYPH</b> bündelt die Glyph Toys dieses Repos in einer einzigen Android-App: auf der Glyph Matrix des Nothing Phone (3) über Glyph Interface, und — mangels Matrix — in einem Homescreen-Widget, das sie pixelgenau auf jedem anderen Telefon nachbildet.",
-      "note2": "Noch ein Entwurf: Die fünf Toys sind geschrieben, beim System registriert und laufen bereits im Widget, aber das Pack ist nicht veröffentlicht. Glyphslot gehört nicht dazu — ein Spielautomat erzwingt eine Altersfreigabe, die den Rest des Packs anstecken würde — und bleibt ein eigenes Repo.",
+      "note2": "Noch ein Entwurf: Die sechs Toys sind geschrieben, beim System registriert und laufen bereits im Widget, aber das Pack ist nicht veröffentlicht. Glyphslot gehört nicht dazu — ein Spielautomat erzwingt eine Altersfreigabe, die den Rest des Packs anstecken würde — und bleibt ein eigenes Repo.",
       "repo": "Zum Repo"
     },
     "toys": {
@@ -416,7 +430,8 @@
       "justadice": "d6, d10, d12, d20, in Quaternionen verfolgt — mit Schütteln werfen.",
       "sonoglyph": "Das Mikrofon auf der Matrix, als Spektrum, Zeiger oder Welle.",
       "float": "Eine Wasserwaage auf logarithmischer Skala, und ein Kompass als zweites Instrument.",
-      "gforce": "Ein Bord-Beschleunigungsmesser: eine Kugel für den Moment, vier Spitzenwerte für die Fahrt."
+      "gforce": "Ein Bord-Beschleunigungsmesser: eine Kugel für den Moment, vier Spitzenwerte für die Fahrt.",
+      "altclock": "Alternative Uhr: die Uhrzeit in großen Ziffern, in drei Schriften."
     },
     "widget": {
       "title": "Das Widget",

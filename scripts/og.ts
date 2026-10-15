@@ -39,7 +39,11 @@ mkdirSync(outDir, { recursive: true });
 
 /* Pas de Haloglyph ici : `ready: false` n'a pas de route dans le portail —
    voir `inject-meta.ts`, qui l'exclut pour la même raison. */
-const SLUGS = ["home", "glyphslot", "glyphlapse", "sonoglyph", "justadice", "gforce", "float", "glyphcast"];
+const ALL_SLUGS = ["home", "glyphslot", "glyphlapse", "sonoglyph", "justadice", "gforce", "float", "altclock", "glyphcast"];
+/* `bun run og altclock` ne refait que la carte demandée : régénérer les neuf
+   réécrit aussi celles qui n'ont pas changé, et un PNG capturé n'est jamais
+   identique au pixel près d'une exécution à l'autre. */
+const SLUGS = process.argv.length > 2 ? process.argv.slice(2) : ALL_SLUGS;
 
 async function waitReady(timeoutMs = 20000): Promise<void> {
   const start = Date.now();

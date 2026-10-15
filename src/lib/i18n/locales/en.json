@@ -56,6 +56,7 @@
       "justadice": "A die with several shapes. Thrown with a shake",
       "gforce": "A car accelerometer, inspired by sports cars",
       "float": "A bubble level and a compass. Minimal and effective",
+      "altclock": "An alternative clock, in three typefaces",
       "haloglyph": "Future app that will hold the glyph toys, and let you run the glyph matrix as a home screen widget",
       "glyphcast": "Turns an image into a Glyph Matrix render"
     }
@@ -400,13 +401,26 @@
       "note1": "The pad simulates the phone's pose: flat at the centre, standing on edge at the rim — which is what flips the level from the flat regime to the plumb one, as on the device."
     }
   },
+  "altclock": {
+    "description": "Preview of Alt Clock, an alternative clock for the Glyph Matrix: the time in big digits, in three typefaces.",
+    "sub": "An alternative clock",
+    "style": {
+      "seg": "Style",
+      "elegant": "Elegant",
+      "techno_large": "Wide techno",
+      "techno": "Techno"
+    },
+    "format": {
+      "seg": "Hour format"
+    }
+  },
   "haloglyph": {
     "description": "Haloglyph: the pack that bundles this repo's Glyph toys into one Android app for the Glyph Matrix of the Nothing Phone (3), and into a widget that emulates it elsewhere.",
     "sub": "The pack that bundles the toys",
     "pitch": {
-      "stat": "5 toys",
+      "stat": "6 toys",
       "note1": "<b>HALOGLYPH</b> bundles this repo's Glyph toys into a single Android app: on the Glyph Matrix of the Nothing Phone (3) through Glyph Interface, and — lacking a matrix — into a home-screen widget that emulates it pixel for pixel on any other phone.",
-      "note2": "Still a draft: the five toys are written, registered with the system, and already running in the widget, but the pack isn't published. Glyphslot isn't part of it — a slot machine forces a rating that would contaminate the rest of the pack — and stays a repo of its own.",
+      "note2": "Still a draft: the six toys are written, registered with the system, and already running in the widget, but the pack isn't published. Glyphslot isn't part of it — a slot machine forces a rating that would contaminate the rest of the pack — and stays a repo of its own.",
       "repo": "View the repo"
     },
     "toys": {
@@ -416,7 +430,8 @@
       "justadice": "d6, d10, d12, d20 tracked in quaternions — shake to throw.",
       "sonoglyph": "The mic on the matrix, as spectrum, needle, or wave.",
       "float": "A bubble level on a logarithmic scale, and a compass as second instrument.",
-      "gforce": "A car accelerometer: a ball for right now, four peaks for the drive."
+      "gforce": "A car accelerometer: a ball for right now, four peaks for the drive.",
+      "altclock": "An alternative clock: the time in big digits, in three typefaces."
     },
     "widget": {
       "title": "The widget",

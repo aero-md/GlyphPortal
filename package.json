@@ -18,6 +18,7 @@
     "preview:glyphlapse": "bun run scripts/glyphlapse-preview.ts",
     "preview:gforce": "bun run scripts/gforce-preview.ts",
     "preview:float": "bun run scripts/float-preview.ts",
+    "preview:altclock": "bun run scripts/altclock-preview.ts",
     "preview:justadice": "bun run scripts/justadice-preview.ts"
   },
   "dependencies": {

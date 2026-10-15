@@ -22,12 +22,17 @@
      0,3 tombe dans les quatre premières secondes — la phase aiguille — sur un
      cadran net. */
   const DEFAULT_POSTER = 0.94;
-  const POSTER: Partial<Record<Slug, number>> = { sonoglyph: 0.3 };
+  /* Alt Clock : sa boucle est un diaporama des trois styles, trois secondes
+     chacun. 0,1 tombe dans le premier, l'Élégant, qui est le style d'origine ;
+     0,94 aurait pris le dernier. */
+  const POSTER: Partial<Record<Slug, number>> = { sonoglyph: 0.3, altclock: 0.1 };
 
+  /* `preview` est un objet `{ phone3, phone4apro? }` depuis que les toys portent
+     une boucle par appareil — la carte prend celle du (3), la matrice d'origine.
+     Cette fonction lisait encore l'ancien format (chaîne ou tableau), et la
+     requête partait sur « [object Object] » : aucune carte ne se rendait. */
   function previewUrl(slug: string): string | undefined {
-    const toy = TOYS.find((t) => t.slug === slug);
-    if (!toy?.preview) return undefined;
-    return Array.isArray(toy.preview) ? toy.preview[0] : toy.preview;
+    return TOYS.find((t) => t.slug === slug)?.preview?.phone3;
   }
 
   async function sample(url: string, slug: string): Promise<Frame | null> {

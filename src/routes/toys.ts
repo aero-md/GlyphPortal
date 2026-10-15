@@ -49,7 +49,8 @@ export type Slug =
   | "glyphcast"
   | "haloglyph"
   | "gforce"
-  | "float";
+  | "float"
+  | "altclock";
 
 export type Toy = {
   /** Segment d'URL sous glyph.suns.red, et nom du dossier au déploiement. */
@@ -105,7 +106,7 @@ export const TOYS: Toy[] = [
     name: "HALOGLYPH",
     kind: "app",
     repo: "https://github.com/aero-md/haloglyph",
-    /* `/haloglyph/+page.svelte` existe déjà (pack, cinq toys, hublot) mais
+    /* `/haloglyph/+page.svelte` existe déjà (pack, six toys, hublot) mais
        reste débranchée pour l'instant — la tuile revient au dépôt en
        attendant. Repasser `ready` à `true` suffira à la rebrancher. */
     ready: false,
@@ -176,6 +177,17 @@ export const TOYS: Toy[] = [
     repo: "https://github.com/aero-md/haloglyph",
     ready: true,
     preview: { phone3: "/preview/gforce.json", phone4apro: "/preview/gforce4apro.json" },
+  },
+  {
+    slug: "altclock",
+    name: "ALT CLOCK",
+    kind: "toy",
+    /* Écrit dans Haloglyph, comme Float et G-Meter : pas de dépôt à lui. */
+    repo: "https://github.com/aero-md/haloglyph",
+    ready: true,
+    /* Les trois styles, trois secondes chacun, sur la même heure. Le (4a) Pro
+       n'en a qu'un, la police compacte étant la même pour les trois. */
+    preview: { phone3: "/preview/altclock.json", phone4apro: "/preview/altclock4apro.json" },
   },
   {
     slug: "glyphslot",

@@ -13,7 +13,7 @@
   const REPO = "https://github.com/aero-md/haloglyph";
   const YEAR = new Date().getFullYear();
 
-  /* Les cinq toys du pack qui ont une préview sur ce domaine — Slot n'en fait
+  /* Les six toys du pack qui ont une préview sur ce domaine — Slot n'en fait
      pas partie (voir la carte [00]), et Haloglyph lui-même n'a pas de
      matrice à faire tourner. */
   const TOYS = [
@@ -22,6 +22,7 @@
     { slug: "sonoglyph", name: "SONOGLYPH" },
     { slug: "float", name: "FLOAT" },
     { slug: "gforce", name: "G-METER" },
+    { slug: "altclock", name: "ALT CLOCK" },
   ] as const;
 </script>
 

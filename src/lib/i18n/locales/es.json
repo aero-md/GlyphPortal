@@ -56,6 +56,7 @@
       "justadice": "Un dado de varias formas. Lanzado con una sacudida",
       "gforce": "Un acelerómetro de a bordo, inspirado en los coches deportivos",
       "float": "Un nivel de burbuja y una brújula. Minimalistas y eficaces",
+      "altclock": "Un reloj alternativo, en tres tipografías",
       "haloglyph": "Futura aplicación que reunirá los glyph toy, y permitirá usar la glyph matrix como widget en la pantalla de inicio",
       "glyphcast": "Convierte una imagen en un resultado Glyph Matrix"
     }
@@ -400,13 +401,26 @@
       "note1": "El panel simula la postura del teléfono: en el centro está plano, en el borde está de pie — lo que hace pasar el nivel del régimen plano al de plomada, como en el dispositivo."
     }
   },
+  "altclock": {
+    "description": "Vista previa de Alt Clock, un reloj alternativo para la Glyph Matrix: la hora en cifras grandes, en tres tipografías.",
+    "sub": "Un reloj alternativo",
+    "style": {
+      "seg": "Estilo",
+      "elegant": "Elegante",
+      "techno_large": "Techno ancho",
+      "techno": "Techno"
+    },
+    "format": {
+      "seg": "Formato de hora"
+    }
+  },
   "haloglyph": {
     "description": "Haloglyph: el pack que reúne los Glyph toys de este repositorio en una aplicación Android para la Glyph Matrix del Nothing Phone (3), y en un widget que la emula en otros teléfonos.",
     "sub": "El pack que embarca los toys",
     "pitch": {
-      "stat": "5 toys",
+      "stat": "6 toys",
       "note1": "<b>HALOGLYPH</b> reúne los Glyph toys de este repositorio en una sola aplicación Android: en la Glyph Matrix del Nothing Phone (3) vía Glyph Interface, y — a falta de matriz — en un widget de pantalla de inicio que la emula al píxel en cualquier otro teléfono.",
-      "note2": "Todavía en borrador: los cinco toys están escritos, declarados al sistema y ya funcionan en el widget, pero el pack no está publicado. Glyphslot no forma parte de él — una máquina tragaperras impone una clasificación que contaminaría el resto — y sigue siendo un repositorio aparte.",
+      "note2": "Todavía en borrador: los seis toys están escritos, declarados al sistema y ya funcionan en el widget, pero el pack no está publicado. Glyphslot no forma parte de él — una máquina tragaperras impone una clasificación que contaminaría el resto — y sigue siendo un repositorio aparte.",
       "repo": "Ver el repositorio"
     },
     "toys": {
@@ -416,7 +430,8 @@
       "justadice": "d6, d10, d12, d20 seguidos en cuaterniones — sacude para lanzar.",
       "sonoglyph": "El micrófono en la matriz, en espectro, aguja u onda.",
       "float": "Nivel de burbuja a escala logarítmica, y brújula como segundo instrumento.",
-      "gforce": "Acelerómetro de a bordo: una bola para el instante, cuatro picos para el trayecto."
+      "gforce": "Acelerómetro de a bordo: una bola para el instante, cuatro picos para el trayecto.",
+      "altclock": "Reloj alternativo: la hora en cifras grandes, en tres tipografías."
     },
     "widget": {
       "title": "El widget",
