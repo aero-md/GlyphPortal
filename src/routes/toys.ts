@@ -185,9 +185,10 @@ export const TOYS: Toy[] = [
     /* Écrit dans Haloglyph, comme Float et G-Meter : pas de dépôt à lui. */
     repo: "https://github.com/aero-md/haloglyph",
     ready: true,
-    /* Les trois styles, trois secondes chacun, sur la même heure. Le (4a) Pro
-       n'en a qu'un, la police compacte étant la même pour les trois. */
-    preview: { phone3: "/preview/altclock.json", phone4apro: "/preview/altclock4apro.json" },
+    /* Les trois styles, trois secondes chacun, sur la même heure. Le (3)
+       seulement : le (4a) Pro a sa propre horloge d'origine, et le toy n'y a
+       aucun intérêt — d'où la mention « Exclusif au Phone (3) » du sommaire. */
+    preview: { phone3: "/preview/altclock.json" },
   },
   {
     slug: "glyphslot",

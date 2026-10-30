@@ -20,6 +20,13 @@ export type Breakdown = {
   seconds: number;
   /** Écart total en jours entiers, pour le format « Jours ». */
   totalDays: number;
+  /** Écart total en heures entières, pour le format « Heures ». */
+  totalHours: number;
+  /**
+   * Millisecondes de la seconde en cours (0..999). Le front de l'anneau les lit
+   * pour glisser d'une cellule à l'autre plutôt que sauter.
+   */
+  millis: number;
 };
 
 /** Ajoute `n` mois en ramenant le quantième au dernier jour du mois d'arrivée. */
@@ -67,6 +74,8 @@ export function breakdown(refMs: number, nowMs: number): Breakdown {
     minutes,
     seconds,
     totalDays: Math.floor((b.getTime() - a0.getTime()) / 86400000),
+    totalHours: Math.floor((b.getTime() - a0.getTime()) / 3600000),
+    millis: (b.getTime() - a0.getTime()) % 1000,
   };
 }
 
@@ -101,13 +110,13 @@ export function units(d: Breakdown): Unit[] {
 /* Réglages d'un lapse                                                         */
 /* -------------------------------------------------------------------------- */
 
-/* Les libellés des quatre mises en page et des deux rendus de la minute sont
+/* Les libellés des cinq mises en page et des trois rendus de la minute sont
    dans `glyphlapse.formats` et `glyphlapse.secondsModes` des dictionnaires de
    langue, dans l'ordre de ces deux types-ci. Ils ne servaient qu'à peupler des
    sélecteurs : le moteur, lui, ne connaît que les indices. */
-export type Format = 0 | 1 | 2 | 3;
+export type Format = 0 | 1 | 2 | 3 | 4;
 
-export type SecondsMode = 0 | 1;
+export type SecondsMode = 0 | 1 | 2;
 
 /** Chiffres romains — les trois lapses sont numérotés comme dans l'app. */
 export const ROMAN = ["I", "II", "III"] as const;

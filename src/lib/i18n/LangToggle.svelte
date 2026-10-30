@@ -13,6 +13,10 @@
   import { LOCALES, endonym, setLocale } from "$lib/i18n";
   import { _, locale } from "svelte-i18n";
 
+  /* `up` ouvre le menu au-dessus du bouton. Dans un pied de page, vers le bas il
+     sortait du document et allongeait la page, donc la faisait défiler. */
+  let { up = false }: { up?: boolean } = $props();
+
   let open = $state(false);
   let root = $state<HTMLElement>();
   let trigger = $state<HTMLButtonElement>();
@@ -101,7 +105,7 @@
   </button>
 
   {#if open}
-    <ul class="menu" id="lang-menu" use:focusCurrent>
+    <ul class="menu" class:up id="lang-menu" use:focusCurrent>
       {#each LOCALES as code (code)}
         <li>
           <button
@@ -163,6 +167,11 @@
     /* opaque : le rack passe dessous et la trame de fond ne doit pas
        transparaître à travers les entrées */
     background: var(--bg);
+  }
+
+  .menu.up {
+    top: auto;
+    bottom: calc(100% + 4px);
   }
 
   .menu button {

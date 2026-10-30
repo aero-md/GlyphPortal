@@ -436,17 +436,16 @@
   );
 
   /* La barre de repli remplace le Glyph Button quand il n'y en a pas à l'écran.
-     Les deux rôles n'ont pas le même besoin, et c'est ce qui décide :
+     Elle ne porte plus que le rôle « hold » : un confort de préview, sans
+     équivalent une fois qu'on lit la matrice LED par LED en mode grand — d'où
+     `mode === "phone"` ci-dessous.
 
-     - « press » est la **seule entrée du toy**. Elle doit rester atteignable
-       partout, donc aussi en mode grand, où aucun dos n'est affiché.
-     - « hold » est un confort de préview. En mode grand — qui ne prétend pas
-       émuler l'appareil mais lire la matrice LED par LED — la comparaison au
-       rendu brut n'a rien à dire, et la barre n'ajoutait qu'une ligne de chrome
-       sous un disque déjà contraint en hauteur. */
-  const barre = $derived(
-    role === "press" ? mode === "large" || !dev.button : mode === "phone" && !dev.button,
-  );
+     Le rôle « press » n'en a plus : c'était le seul moyen de déclencher
+     l'appui long quand le Glyph Button n'est pas à l'écran (mode grand, ou
+     appareil qui n'en porte pas), mais chaque toy qui a un mode l'expose
+     maintenant directement dans sa carte [00] — la barre ne faisait plus que
+     répéter ce sélecteur sous un autre nom. */
+  const barre = $derived(role === "hold" && mode === "phone" && !dev.button);
 </script>
 
 <figure class="device">
@@ -520,17 +519,11 @@
     {/if}
   </div>
 
-  <!-- Repli quand aucun Glyph Button n'est à l'écran pour porter la fonction —
-       voir `barre`, qui n'applique pas la même règle aux deux rôles. -->
+  <!-- Repli quand aucun Glyph Button n'est à l'écran pour porter le maintien
+       A/B — voir `barre`. -->
   {#if barre}
     <button class="ab" class:is-held={active} disabled={!armed} {...handlers}>
-      {role === "press"
-        ? pressed
-          ? "…"
-          : hintText
-        : held
-          ? $_("common.button.raw")
-          : $_("common.button.holdAb")}
+      {held ? $_("common.button.raw") : $_("common.button.holdAb")}
     </button>
   {/if}
 

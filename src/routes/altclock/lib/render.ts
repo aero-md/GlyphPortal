@@ -12,15 +12,15 @@
  * x 5–19, y 2–22. Pour ceux de 5×8 (Techno) : coin en (7, 4), bloc en x 7–17,
  * y 4–20. Les deux sont centrés sur (12, 12).
  *
- * ## Le (4a) Pro n'a pas la place
+ * ## Le (3) seulement
  *
- * Treize colonnes ne portent pas des chiffres de 7 sur 10. Le port compact
- * écrit les mêmes deux lignes en `F3D`, le chiffre de tout cadran compact du
- * pack, **quel que soit le style** : aucune trame n'existe pour ce port, et on
- * n'invente pas trois polices de 3×5.
+ * Les polices sont dessinées pour les 25 × 25. Le (4a) Pro a sa propre horloge
+ * d'origine : le disposer en deux lignes verticales n'y apporte rien, et la
+ * préview du portail ne le propose pas. L'app Haloglyph, elle, écrit quand même
+ * l'heure en `F3D` sur ce port ; cette préview ne le reproduit pas.
  */
 
-import { F3D, Grid, type Device, type Font } from "$lib";
+import { Grid, type Device, type Font } from "$lib";
 import { ELEGANT, TECHNO, TECHNO_LARGE } from "./fonts";
 
 export type AltClockStyle = "elegant" | "techno_large" | "techno";
@@ -52,12 +52,10 @@ function two(n: number): string {
 
 export class AltClockRenderer {
   private readonly grid: Grid;
-  private readonly compact: boolean;
   private readonly size: number;
 
   constructor(device: Device) {
     this.grid = new Grid(device);
-    this.compact = device.id === "phone4apro";
     this.size = device.size;
   }
 
@@ -73,7 +71,7 @@ export class AltClockRenderer {
   /** Deux lignes de chiffres, sans rien supposer d'une heure. */
   renderLines(top: string, bottom: string, style: AltClockStyle): Float32Array {
     this.grid.clear();
-    const font = this.compact ? F3D : FONTS[style];
+    const font = FONTS[style];
     const y0 = Math.round((this.size - (2 * font.height + 1)) / 2);
     this.grid.centeredText(font, top, y0, 1);
     this.grid.centeredText(font, bottom, y0 + font.height + 1, 1);

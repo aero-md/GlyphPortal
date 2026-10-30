@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DEFAULT_DEVICE, frameOf, resolveDevice, type Device, type Frame, type LedStyle } from "$lib";
+  import { DEFAULT_DEVICE, frameOf, type Frame, type LedStyle } from "$lib";
   import { _ } from "svelte-i18n";
   import Card from "$lib/ui/Card.svelte";
   import PreviewPane from "$lib/matrix/PreviewPane.svelte";
@@ -11,15 +11,11 @@
 
   const VERSION = "01";
 
-  /* `resolveDevice()` et non `DEFAULT_DEVICE` : Alt Clock dessine les deux
-     appareils, donc c'est le réglage global (thème, langue, appareil) qui
-     pilote l'appareil d'ouverture — voir `devicePref.ts`. Sur le (4a) Pro, les
-     trois styles s'écrivent avec la même police compacte : voir `render.ts`. */
-  let device = $state<Device>(resolveDevice());
-  /* `DEFAULT_DEVICE` et non `device` : l'initial d'un `$state` ne se lit pas
-     hors passe réactive, et l'`$effect` ci-dessous reconstruit tout de suite
-     après. */
-  let renderer = new AltClockRenderer(DEFAULT_DEVICE);
+  /* Les trois polices sont dessinées pour les 25 × 25 du (3), en deux lignes
+     verticales : le (4a) Pro a sa propre horloge d'origine, que ce toy n'a pas
+     à refaire. L'appareil est donc figé, comme celui de Glyphslot. */
+  const device = DEFAULT_DEVICE;
+  const renderer = new AltClockRenderer(device);
 
   let style = $state<AltClockStyle>("elegant");
   let format = $state<HourFormat>("h24");
@@ -27,7 +23,7 @@
   let previewMode = $state<PreviewMode>("phone");
   let ledStyle = $state<LedStyle>("sharp");
 
-  let frame = $state<Frame>(frameOf(DEFAULT_DEVICE, new Float32Array(DEFAULT_DEVICE.cells)));
+  let frame = $state<Frame>(frameOf(device, new Float32Array(device.cells)));
 
   /* L'heure du visiteur, relue à chaque seconde : le toy ne redessine qu'à la
      minute, mais la page n'a pas à deviner à quel moment de la minute on est
@@ -39,7 +35,6 @@
   });
 
   $effect(() => {
-    renderer = new AltClockRenderer(device);
     frame = frameOf(device, renderer.render(now.getHours(), now.getMinutes(), format, style).slice());
   });
 </script>
@@ -53,12 +48,13 @@
   title="Alt Clock"
   sub={$_("altclock.sub")}
   stamp={VERSION}
-  bind:device
+  {device}
+  devices={[device]}
   repo="https://github.com/aero-md/haloglyph"
   home={true}
 >
   {#snippet preview()}
-    <PreviewPane {frame} bind:device mode={previewMode} style={ledStyle} />
+    <PreviewPane {frame} {device} devices={[device]} mode={previewMode} style={ledStyle} />
   {/snippet}
 
   {#snippet rack()}
@@ -67,6 +63,7 @@
         <b>ALT CLOCK</b>
         {$_("common.toyCard.onlyPack", { values: { app: "Haloglyph" } })}
       </p>
+      <p class="note">{$_("altclock.note1")}</p>
       <RenderSeg bind:mode={previewMode} bind:style={ledStyle} />
       <Seg
         label={$_("altclock.style.seg")}

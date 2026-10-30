@@ -12,6 +12,7 @@
  * désaccorder du contenu.
  */
 
+import { MIN_LIT, ledAlpha } from "./alpha";
 import type { Device } from "./devices";
 import type { Frame } from "./frame";
 
@@ -274,14 +275,14 @@ export function paint(
     const y = (i - x) / size;
     const b = frame.values[i];
 
-    if (b <= 0.02) {
+    if (b <= MIN_LIT) {
       ctx.fillStyle = OFF[style];
     } else if (style === "soft") {
       // rampe quasi linéaire : sans halo pour porter l'intensité, un plancher
       // haut écraserait tout le bas de la plage sur un même gris
-      ctx.fillStyle = `rgba(${ON},${0.08 + 0.92 * b})`;
+      ctx.fillStyle = `rgba(${ON},${ledAlpha(b, 0.08)})`;
     } else {
-      ctx.fillStyle = `rgba(${ON},${0.25 + 0.75 * b})`;
+      ctx.fillStyle = `rgba(${ON},${ledAlpha(b, 0.25)})`;
       ctx.shadowColor = `rgba(${ON},${0.8 * b})`;
       ctx.shadowBlur = g.cell * 0.55 * b;
     }

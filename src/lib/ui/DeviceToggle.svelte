@@ -77,9 +77,14 @@
     border-color: var(--ink);
   }
 
+  /* Blanc en dur, pas `--bg` : en clair `--bg` est déjà quasi blanc donc ça ne
+     changeait rien à l'œil, mais en sombre `--bg` est quasi noir — le
+     libellé retombait sombre sur le rouge au lieu de rester lisible. Le
+     rouge d'accent est assez sombre dans les deux thèmes pour porter du
+     texte clair sans jamais recalculer lequel. */
   button.on {
     background: var(--accent);
-    color: var(--bg);
+    color: #fff;
     border-color: var(--accent);
   }
 </style>

@@ -27,6 +27,7 @@
  * Ces deux-là doivent rester uniques, c'est la raison d'être du paquet.
  */
 
+import { MIN_LIT, ledAlpha } from "./alpha";
 import type { Device } from "./devices";
 import type { Frame } from "./frame";
 
@@ -176,10 +177,10 @@ export function paintThumb(ctx: CanvasRenderingContext2D, frame: Frame, g: Thumb
     const y = (i - x) / size;
     const b = frame.values[i];
 
-    if (b <= 0.02) {
+    if (b <= MIN_LIT) {
       ctx.fillStyle = OFF;
     } else {
-      ctx.fillStyle = `rgba(${ON},${FLOOR + (1 - FLOOR) * b})`;
+      ctx.fillStyle = `rgba(${ON},${ledAlpha(b, FLOOR)})`;
       ctx.shadowColor = `rgba(${ON},${0.8 * b})`;
       ctx.shadowBlur = g.cell * HALO * b;
     }

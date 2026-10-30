@@ -151,11 +151,13 @@
       "Dicht",
       "Kompakt",
       "Zyklus",
-      "Tage"
+      "Tage",
+      "Stunden"
     ],
     "secondsModes": [
       "Ring",
-      "Sanduhr"
+      "Sanduhr",
+      "Diagonale"
     ],
     "units": {
       "years": "{n, plural, one {# Jahr} other {# Jahre}}",
@@ -193,13 +195,13 @@
     "format": {
       "title": "Format",
       "seg": "Layout",
-      "note1": "<b>Dicht</b> schreibt die ganze Feinheit, notfalls zwei Einheiten pro Zeile. <b>Kompakt</b> behält nur die beiden führenden Einheiten, in 5×7. <b>Zyklus</b> lässt sie einzeln durchlaufen. <b>Tage</b> nennt nur die Gesamtzahl.",
+      "note1": "<b>Dicht</b> schreibt die ganze Feinheit, notfalls zwei Einheiten pro Zeile. <b>Kompakt</b> behält nur die beiden führenden Einheiten, in 5×7. <b>Zyklus</b> lässt sie einzeln durchlaufen. <b>Tage</b> nennt nur die Gesamtzahl. <b>Stunden</b> gibt die ganze Spanne in Stunden an.",
       "compactNote": "Auf dem Phone (4a) Pro passt in dreizehn Spalten nur <b>Zyklus</b> — als einziges Layout."
     },
     "seconds": {
       "title": "Sekunden",
       "seg": "Darstellung der Minute",
-      "note1": "<b>Ring</b> füllt den Rand ab zwölf Uhr — im Uhrzeigersinn, wenn Zeit sich ansammelt, gegen den Uhrzeigersinn, wenn sie abläuft. <b>Sanduhr</b> hebt oder senkt einen Sandstand, dessen Oberfläche ein Kegel ist: Spitze in der Mitte bei „seit\", Trichter bei „bis\"."
+      "note1": "<b>Ring</b> füllt den Rand ab zwölf Uhr — im Uhrzeigersinn, wenn Zeit sich ansammelt, gegen den Uhrzeigersinn, wenn sie abläuft. <b>Sanduhr</b> hebt oder senkt einen Sandstand, dessen Oberfläche ein Kegel ist: Spitze in der Mitte bei „seit\", Trichter bei „bis\". <b>Diagonale</b> färbt den Hintergrund mit einer schrägen Front von der oberen linken zur unteren rechten Ecke, bewusst schwach, damit der Text lesbar bleibt."
     },
     "readout": {
       "title": "Ablesung",
@@ -404,6 +406,7 @@
   "altclock": {
     "description": "Vorschau von Alt Clock, einer alternativen Uhr für die Glyph Matrix: die Uhrzeit in großen Ziffern, in drei Schriften.",
     "sub": "Eine alternative Uhr",
+    "note1": "Eine Uhr, die zum Anpassen gedacht ist. Vertikales Format auf dem Phone (3), im Stil der Original-Uhr des (4a) Pro.",
     "style": {
       "seg": "Stil",
       "elegant": "Elegant",

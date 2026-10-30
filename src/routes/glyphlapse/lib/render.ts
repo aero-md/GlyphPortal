@@ -21,6 +21,15 @@ import { units } from "./lapse";
 /** Pente du talus de sable, en cellules de descente par cellule d'écart. */
 const SLOPE = 0.45;
 
+/** Cellules sur lesquelles le bord de l'anneau passe de l'éteint au plein niveau. */
+const RING_SOFT = 8;
+
+/** Niveau du fond diagonal : un fond, le texte reste lisible par-dessus. */
+const DIAG_LEVEL = 0.04;
+
+/** Lignes `x + y` sur lesquelles le front diagonal monte de 0 au niveau du fond. */
+const DIAG_SOFT = 3;
+
 /** Durées des deux glissements, en secondes. */
 export const FMT_SLIDE = 0.3;
 export const LAPSE_SLIDE = 0.35;
@@ -53,8 +62,10 @@ export class LapseRenderer {
   private readonly SIZE: number;
   private readonly CX: number;
   private readonly CY: number;
-  /** L'anneau du kit est déjà trié par angle depuis 12 h, sens horaire. */
+  /** Le contour du disque, trié par angle depuis 12 h, sens horaire. */
   private readonly ring: Int32Array;
+  private readonly diagMin: number;
+  private readonly diagMax: number;
   /**
    * Port compact (4a) Pro, en mode dégradé — voir `cycleCompact()`,
    * `ringSeconds()` et `hourglass()`. Treize colonnes ne portent ni Dense
@@ -70,7 +81,20 @@ export class LapseRenderer {
     this.SIZE = device.size;
     this.CX = device.cx;
     this.CY = device.cy;
-    this.ring = this.disc.ring;
+    /* Le contour strict, trié depuis 12 h : un pixel d'épaisseur tout du long.
+       La couronne du kit (`disc.ring`, `rayon − 1,2`) fait un escalier dans les
+       diagonales, qui se lit comme deux pixels de large. */
+    const { edge, angleOf } = this.disc;
+    const turn = (i: number) => {
+      const a = angleOf(i);
+      return a < 0 ? a + 2 * Math.PI : a;
+    };
+    this.ring = Int32Array.from(edge).sort((a, b) => turn(a) - turn(b));
+
+    // étendue de `x + y` sur les LEDs : la diagonale du disque
+    const sums = Array.from(device.inside, (i) => (i % device.size) + Math.floor(i / device.size));
+    this.diagMin = Math.min(...sums);
+    this.diagMax = Math.max(...sums);
     this.compact = device.id === "phone4apro";
   }
 
@@ -92,6 +116,7 @@ export class LapseRenderer {
     this.grid.clear();
     this.content(format, d, t);
     if (sec === 1) this.hourglass(d, t);
+    else if (sec === 2) this.diagonal(d);
     else this.ringSeconds(d);
 
     let g = this.grid.g;
@@ -222,7 +247,7 @@ export class LapseRenderer {
   }
 
   /* ---------------------------------------------------------------------- */
-  /* Les quatre formats                                                      */
+  /* Les cinq formats                                                       */
   /* ---------------------------------------------------------------------- */
 
   private content(fmt: Format, d: Breakdown, t: number): void {
@@ -244,7 +269,8 @@ export class LapseRenderer {
     if (fmt === 0) this.dense(u);
     else if (fmt === 1) this.formatCompact(u);
     else if (fmt === 2) this.cycle(u, t);
-    else this.days(d);
+    else if (fmt === 3) this.days(d);
+    else this.hours(d);
   }
 
   /** Dense — la granularité complète, deux unités par ligne quand il le faut. */
@@ -354,6 +380,18 @@ export class LapseRenderer {
     this.centered(textWidth(F5, s) <= this.SIZE ? F5 : F3, s, this.CY, 1);
   }
 
+  /**
+   * Heures — même notation que Jours, en heures pleines : « H-1008 ». Au-delà de
+   * ce que tient la police étroite (≈ 11 ans), la marque saute plutôt que de
+   * rogner le nombre.
+   */
+  private hours(d: Breakdown): void {
+    const n = d.totalHours;
+    const s = d.dir === "until" ? "H-" + n : n + "H";
+    const text = textWidth(F3, s) <= this.SIZE ? s : String(n);
+    this.centered(textWidth(F5, text) <= this.SIZE ? F5 : F3, text, this.CY, 1);
+  }
+
   /* ---------------------------------------------------------------------- */
   /* Les secondes                                                            */
   /* ---------------------------------------------------------------------- */
@@ -361,22 +399,63 @@ export class LapseRenderer {
   /**
    * L'anneau : la minute en cours, remplie depuis 12 h. Le sens suit la
    * direction — horaire quand le temps s'accumule, antihoraire quand il se
-   * consomme. La tête est à pleine intensité, la traîne au tiers.
+   * consomme. Les cellules allumées sont au tiers d'intensité, sans tête plus
+   * vive : ni comète, ni surbrillance avant l'extinction.
+   *
+   * Le front est **fractionnaire** (les millisecondes le font avancer) et
+   * chaque cellule monte de 0 à son niveau en ligne droite sur `RING_SOFT`
+   * cellules. Une seule rampe, donc : une cellule ne brille jamais plus que son
+   * niveau, et en « jusqu'à », vue à l'envers, elle s'éteint de la même façon —
+   * progressivement, pas en paliers.
    *
    * Adoucie sur (4a) Pro : le cerne y est à un pas ou deux du texte central
-   * (`cycleCompact`) plutôt qu'à quatre ou cinq comme sur le (3), et une tête
-   * à pleine intensité s'y lit comme un pixel du chiffre plutôt que comme un
-   * repère de seconde à part.
+   * (`cycleCompact`) plutôt qu'à quatre ou cinq comme sur le (3), et un anneau
+   * trop vif s'y lit comme un pixel du chiffre plutôt que comme un repère de
+   * seconde à part.
    */
   private ringSeconds(d: Breakdown): void {
     const g = this.grid.g;
     const n = this.ring.length;
-    const k = Math.round((d.seconds / 60) * n);
-    const head = this.compact ? 0.55 : 1;
     const trail = this.compact ? 0.16 : 0.32;
-    for (let j = 0; j < k; j++) {
-      const idx = d.dir === "since" ? j : (n - 1 - j) % n;
-      g[this.ring[idx]] = Math.max(g[this.ring[idx]], j === k - 1 ? head : trail);
+    const p = ((d.seconds + d.millis / 1000) / 60) * n;
+    const since = d.dir === "since";
+    for (let idx = 0; idx < n; idx++) {
+      // rang d'allumage : en « jusqu'à » le front recule, la dernière cellule
+      // de l'ordre est la première allumée
+      const rank = since ? idx : n - 1 - idx;
+      const passed = p - rank;
+      if (passed <= 0) continue;
+      const b = trail * Math.min(1, passed / RING_SOFT);
+      g[this.ring[idx]] = Math.max(g[this.ring[idx]], b);
+    }
+  }
+
+  /**
+   * Remplissage diagonal en arrière-plan : un front oblique, du coin haut-gauche
+   * au coin bas-droit, qui avance de façon continue sur la minute. En « jusqu'à »
+   * il part du coin opposé et se retire à mesure que les secondes décroissent.
+   *
+   * Très faible luminosité, et un front en dégradé de `DIAG_SOFT` lignes, sans
+   * surbrillance : une ligne monte de 0 au niveau du fond en continu, pas de
+   * palier avant d'apparaître. Adoucie sur (4a) Pro comme le sablier (`dim`).
+   */
+  private diagonal(d: Breakdown): void {
+    const f = (d.seconds + d.millis / 1000) / 60;
+    if (f <= 0) return;
+    const g = this.grid.g;
+    const since = d.dir === "since";
+    const dim = this.compact ? 0.6 : 1;
+    const range = Math.max(1, this.diagMax - this.diagMin);
+    // le front parcourt la diagonale **plus** sa largeur : à f = 1 la dernière
+    // ligne a fini sa montée, à f = 0 la première n'a pas commencé
+    const front = f * (range + DIAG_SOFT);
+    for (const i of this.device.inside) {
+      const x = i % this.SIZE;
+      const y = (i - x) / this.SIZE;
+      const u0 = x + y - this.diagMin;
+      const u = since ? u0 : range - u0;
+      const fill = Math.min(1, Math.max(0, (front - u) / DIAG_SOFT));
+      if (fill > 0) g[i] = Math.max(g[i], DIAG_LEVEL * fill * dim);
     }
   }
 

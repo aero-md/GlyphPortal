@@ -151,11 +151,13 @@
       "Denso",
       "Compatto",
       "Ciclo",
-      "Giorni"
+      "Giorni",
+      "Ore"
     ],
     "secondsModes": [
       "Anello",
-      "Clessidra"
+      "Clessidra",
+      "Diagonale"
     ],
     "units": {
       "years": "{n, plural, one {# anno} other {# anni}}",
@@ -193,13 +195,13 @@
     "format": {
       "title": "Formato",
       "seg": "Impaginazione",
-      "note1": "<b>Denso</b> scrive tutta la granularità, due unità per riga quando serve. <b>Compatto</b> tiene solo le due unità di testa, in 5×7. <b>Ciclo</b> le fa scorrere una a una. <b>Giorni</b> dice solo il totale.",
+      "note1": "<b>Denso</b> scrive tutta la granularità, due unità per riga quando serve. <b>Compatto</b> tiene solo le due unità di testa, in 5×7. <b>Ciclo</b> le fa scorrere una a una. <b>Giorni</b> dice solo il totale. <b>Ore</b> esprime tutto l'intervallo in ore.",
       "compactNote": "Su Phone (4a) Pro, tredici colonne ospitano solo <b>Ciclo</b>: è l'unica impaginazione che ci sta."
     },
     "seconds": {
       "title": "Secondi",
       "seg": "Resa del minuto",
-      "note1": "<b>Anello</b> riempie il bordo a partire da mezzogiorno — orario quando il tempo si accumula, antiorario quando si consuma. <b>Clessidra</b> alza o abbassa un livello di sabbia la cui superficie è un cono: punta al centro in «da», imbuto in «fino a»."
+      "note1": "<b>Anello</b> riempie il bordo a partire da mezzogiorno — orario quando il tempo si accumula, antiorario quando si consuma. <b>Clessidra</b> alza o abbassa un livello di sabbia la cui superficie è un cono: punta al centro in «da», imbuto in «fino a». <b>Diagonale</b> tinge lo sfondo con un fronte obliquo dall'angolo in alto a sinistra a quello in basso a destra, molto tenue per mantenere leggibile il testo."
     },
     "readout": {
       "title": "Lettura",
@@ -404,6 +406,7 @@
   "altclock": {
     "description": "Anteprima di Alt Clock, un orologio alternativo per la Glyph Matrix: l'ora in grandi cifre, in tre caratteri.",
     "sub": "Un orologio alternativo",
+    "note1": "Un orologio pensato per essere personalizzabile. Formato verticale sul Phone (3), con lo stesso stile dell'orologio originale del (4a) Pro.",
     "style": {
       "seg": "Stile",
       "elegant": "Elegante",

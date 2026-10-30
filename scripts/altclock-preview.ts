@@ -1,6 +1,6 @@
 /**
  * Fabrique les boucles de mini-prévisu d'Alt Clock (Haloglyph), au format du
- * Glyph Museum — une par appareil.
+ * Glyph Museum — celle du (3) seulement.
  *
  *     bun run scripts/altclock-preview.ts
  *
@@ -9,9 +9,8 @@
  * vignette qui n'en montrerait qu'un mentirait par omission, comme celle de
  * Sonoglyph avec ses deux affichages.
  *
- * Le (4a) Pro écrit les trois styles avec la même police compacte (voir
- * `render.ts`) : trois trames identiques de suite, donc fusionnées en une seule
- * qui dure neuf secondes, comme dans les autres scripts.
+ * Pas de boucle pour le (4a) Pro : le toy n'y a aucun intérêt, cet appareil a sa
+ * propre horloge d'origine. Voir `toys.ts` et `render.ts`.
  *
  * L'heure est figée, pas celle du jour de génération : une vignette de sommaire
  * montre à quoi ressemble le toy, elle ne donne pas l'heure. `10 28` met quatre
@@ -38,40 +37,37 @@ Bun.plugin({
   },
 });
 
-const { DEVICES } = await import("../src/lib/index");
+const { DEFAULT_DEVICE: device } = await import("../src/lib/index");
 const { AltClockRenderer, STYLES } = await import("../src/routes/altclock/lib/render");
 
 const HOUR = 10;
 const MINUTE = 28;
 const HOLD_MS = 3000;
 
-function toP(device: (typeof DEVICES)[number], values: Float32Array): number[] {
+function toP(device: typeof import("../src/lib/index").DEFAULT_DEVICE, values: Float32Array): number[] {
   return device.inside.map((i) => {
     const v = values[i];
     return v <= 0 ? 0 : v >= 1 ? 255 : Math.round(v * 255);
   });
 }
 
-for (const device of DEVICES) {
-  const renderer = new AltClockRenderer(device);
-  const compact = device.id === "phone4apro";
-  const frames: { p: number[]; d: number }[] = [];
+const renderer = new AltClockRenderer(device);
+const frames: { p: number[]; d: number }[] = [];
 
-  for (const style of STYLES) {
-    const p = toP(device, renderer.render(HOUR, MINUTE, "h24", style));
-    const last = frames[frames.length - 1];
-    if (last && last.p.every((v, i) => v === p[i])) last.d += HOLD_MS;
-    else frames.push({ p, d: HOLD_MS });
-  }
-
-  const json = JSON.stringify({ v: 1, frames });
-  const OUT = path.join(ROOT, "static/preview", compact ? "altclock4apro.json" : "altclock.json");
-
-  await mkdir(path.dirname(OUT), { recursive: true });
-  await writeFile(OUT, json);
-
-  const total = frames.reduce((s, f) => s + f.d, 0);
-  console.log(
-    `${path.relative(ROOT, OUT)} — ${frames.length} trames, ${(total / 1000).toFixed(2)} s, ${(json.length / 1024).toFixed(0)} Ko`,
-  );
+for (const style of STYLES) {
+  const p = toP(device, renderer.render(HOUR, MINUTE, "h24", style));
+  const last = frames[frames.length - 1];
+  if (last && last.p.every((v, i) => v === p[i])) last.d += HOLD_MS;
+  else frames.push({ p, d: HOLD_MS });
 }
+
+const json = JSON.stringify({ v: 1, frames });
+const OUT = path.join(ROOT, "static/preview/altclock.json");
+
+await mkdir(path.dirname(OUT), { recursive: true });
+await writeFile(OUT, json);
+
+const total = frames.reduce((s, f) => s + f.d, 0);
+console.log(
+  `${path.relative(ROOT, OUT)} — ${frames.length} trames, ${(total / 1000).toFixed(2)} s, ${(json.length / 1024).toFixed(0)} Ko`,
+);

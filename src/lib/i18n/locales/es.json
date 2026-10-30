@@ -151,11 +151,13 @@
       "Denso",
       "Compacto",
       "Ciclo",
-      "Días"
+      "Días",
+      "Horas"
     ],
     "secondsModes": [
       "Anillo",
-      "Reloj de arena"
+      "Reloj de arena",
+      "Diagonal"
     ],
     "units": {
       "years": "{n, plural, one {# año} other {# años}}",
@@ -193,13 +195,13 @@
     "format": {
       "title": "Formato",
       "seg": "Composición",
-      "note1": "<b>Denso</b> escribe toda la granularidad, dos unidades por línea cuando hace falta. <b>Compacto</b> solo conserva las dos unidades de cabeza, en 5×7. <b>Ciclo</b> las hace desfilar una a una. <b>Días</b> solo dice el total.",
+      "note1": "<b>Denso</b> escribe toda la granularidad, dos unidades por línea cuando hace falta. <b>Compacto</b> solo conserva las dos unidades de cabeza, en 5×7. <b>Ciclo</b> las hace desfilar una a una. <b>Días</b> solo dice el total. <b>Horas</b> expresa todo el intervalo en horas.",
       "compactNote": "En Phone (4a) Pro, trece columnas solo dan para <b>Ciclo</b>: es el único formato que cabe."
     },
     "seconds": {
       "title": "Segundos",
       "seg": "Representación del minuto",
-      "note1": "<b>Anillo</b> rellena el borde desde las doce — en sentido horario cuando el tiempo se acumula, antihorario cuando se consume. <b>Reloj de arena</b> sube o baja un nivel de arena cuya superficie es un cono: punta en el centro en «desde», embudo en «hasta»."
+      "note1": "<b>Anillo</b> rellena el borde desde las doce — en sentido horario cuando el tiempo se acumula, antihorario cuando se consume. <b>Reloj de arena</b> sube o baja un nivel de arena cuya superficie es un cono: punta en el centro en «desde», embudo en «hasta». <b>Diagonal</b> tiñe el fondo con un frente oblicuo de la esquina superior izquierda a la inferior derecha, muy tenue para que el texto siga legible."
     },
     "readout": {
       "title": "Lectura",
@@ -404,6 +406,7 @@
   "altclock": {
     "description": "Vista previa de Alt Clock, un reloj alternativo para la Glyph Matrix: la hora en cifras grandes, en tres tipografías.",
     "sub": "Un reloj alternativo",
+    "note1": "Un reloj pensado para personalizarse. Formato vertical en el Phone (3), con el mismo estilo que el reloj original del (4a) Pro.",
     "style": {
       "seg": "Estilo",
       "elegant": "Elegante",

@@ -8,11 +8,12 @@
    * fortiori un disque noir façon dos d'appareil — mentirait, Haloglyph
    * n'étant ni un toy qui s'allume ni un appareil qu'on regarde par un verre.
    *
-   * 12 rayons (9 pleins + 3 accent), pas 16 : version épaissie retenue côté
-   * app (hw=15 contre 11), noyau vide r=68 inchangé.
+   * 10 fers de lance (7 pleins + 3 accent), tournés de 15°, largeur 40 à la
+   * base et pointes à 130 / 164 : version retenue côté app. Noyau vide r=68
+   * inchangé.
    *
    * Les rayons suivent le thème plutôt que de garder les couleurs figées de
-   * l'app : `--ink` (noir en clair, blanc en sombre) pour les neuf pleins,
+   * l'app : `--ink` (noir en clair, blanc en sombre) pour les huit pleins,
    * `--accent` (rouge en clair, le même rouge adouci en sombre) pour le
    * quadrant qui porte l'accent — les deux jetons existent déjà dans
    * `app.css` pour exactement cette bascule.
@@ -27,19 +28,17 @@
 
 <svg viewBox="0 0 512 512" width={size} height={size} aria-hidden="true">
   <g fill="var(--ink)">
-    <path d="M271 188L271 159A15 15 0 0 0 241 159L241 188Z" />
-    <path d="M307.39 302.99L332.50 317.49A15 15 0 0 0 347.50 291.51L322.39 277.01Z" />
-    <path d="M277.01 322.39L308.51 376.95A15 15 0 0 0 334.49 361.95L302.99 307.39Z" />
-    <path d="M241 324L241 353A15 15 0 0 0 271 353L271 324Z" />
-    <path d="M209.01 307.39L177.51 361.95A15 15 0 0 0 203.49 376.95L234.99 322.39Z" />
-    <path d="M189.61 277.01L164.50 291.51A15 15 0 0 0 179.50 317.49L204.61 302.99Z" />
-    <path d="M188 241L125 241A15 15 0 0 0 125 271L188 271Z" />
-    <path d="M204.61 209.01L179.50 194.51A15 15 0 0 0 164.50 220.49L189.61 234.99Z" />
-    <path d="M234.99 189.61L203.49 135.05A15 15 0 0 0 177.51 150.05L209.01 204.61Z" />
+    <path d="M302.14 309.81L349.1 340.31L393.54 345.32L370.89 306.76L323.92 276.26Z" />
+    <path d="M261.7 326.65L269.58 347.19L302.59 377.37L306.92 332.85L299.04 312.32Z" />
+    <path d="M219.08 316.51L204.59 370.6L213.55 414.41L243.22 380.95L257.72 326.86Z" />
+    <path d="M190.57 283.25L173.47 297.1L154.97 337.81L198.64 328.18L215.74 314.34Z" />
+    <path d="M187.05 239.59L131.12 242.52L92.22 264.58L133.22 282.46L189.14 279.53Z" />
+    <path d="M209.86 202.19L191.41 190.21L146.97 185.2L169.63 223.76L188.08 235.74Z" />
+    <path d="M250.3 185.35L230.23 133.07L197.23 102.89L192.89 147.4L212.96 199.68Z" />
   </g>
   <g fill="var(--accent)">
-    <path d="M302.99 204.61L334.49 150.05A15 15 0 0 0 308.51 135.05L277.01 189.61Z" />
-    <path d="M322.39 234.99L347.50 220.49A15 15 0 0 0 332.50 194.51L307.39 209.01Z" />
-    <path d="M324 271L387 271A15 15 0 0 0 387 241L324 241Z" />
+    <path d="M292.92 195.49L298.61 174.24L289.65 130.43L259.98 163.89L254.28 185.14Z" />
+    <path d="M321.43 228.75L364.95 193.51L383.45 152.79L339.78 162.42L296.26 197.66Z" />
+    <path d="M324.95 272.41L346.92 271.26L385.82 249.2L344.83 231.32L322.86 232.47Z" />
   </g>
 </svg>

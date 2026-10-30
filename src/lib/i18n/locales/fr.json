@@ -151,11 +151,13 @@
       "Dense",
       "Compact",
       "Cycle",
-      "Jours"
+      "Jours",
+      "Heures"
     ],
     "secondsModes": [
       "Anneau",
-      "Sablier"
+      "Sablier",
+      "Diagonale"
     ],
     "units": {
       "years": "{n, plural, one {# an} other {# ans}}",
@@ -193,13 +195,13 @@
     "format": {
       "title": "Format",
       "seg": "Mise en page",
-      "note1": "<b>Dense</b> écrit toute la granularité. <b>Compact</b> ne garde que les deux unités de tête. <b>Cycle</b> les fait défiler une par une. <b>Jours</b> n'affiche que le nombre de jours. Les unités plus grandes que le laps de temps à représenter ne sont jamais affichées.",
+      "note1": "<b>Dense</b> écrit toute la granularité. <b>Compact</b> ne garde que les deux unités de tête. <b>Cycle</b> les fait défiler une par une. <b>Jours</b> n'affiche que le nombre de jours. <b>Heures</b> exprime tout l'écart en heures. Les unités plus grandes que le laps de temps à représenter ne sont jamais affichées.",
       "compactNote": "Sur Phone (4a) Pro, treize colonnes ne portent que <b>Cycle</b> : c'est le seul format qui y tient."
     },
     "seconds": {
       "title": "Secondes",
       "seg": "Rendu de la minute",
-      "note1": "<b>Anneau</b> affiche un cercle qui se forme au bord de la Glyph Matrix au fil de la minute qui passe, ou qui se consume en mode compte à rebours. <b>Sablier</b> remplit tout l'arrière-plan de sable au fil de la minute, ou commence rempli et se vide."
+      "note1": "<b>Anneau</b> affiche un cercle qui se forme au bord de la Glyph Matrix au fil de la minute qui passe, ou qui se consume en mode compte à rebours. <b>Sablier</b> remplit tout l'arrière-plan de sable au fil de la minute, ou commence rempli et se vide. <b>Diagonale</b> teinte l'arrière-plan d'un front oblique, du coin haut-gauche au coin bas-droit, très discret pour garder le texte lisible."
     },
     "readout": {
       "title": "Relevé",
@@ -404,6 +406,7 @@
   "altclock": {
     "description": "Aperçu d'Alt Clock, une horloge alternative pour la Glyph Matrix : l'heure en gros chiffres, en trois polices.",
     "sub": "Une horloge alternative",
+    "note1": "Une horloge pensée pour être personnalisable. Format vertical sur le Phone (3), pour retrouver le style de l'horloge d'origine du (4a) Pro.",
     "style": {
       "seg": "Style",
       "elegant": "Élégant",
