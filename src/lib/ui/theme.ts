@@ -6,6 +6,9 @@
  * même. Une clé par app ferait repasser le visiteur en clair à chaque saut d'une
  * préview à l'autre, alors que c'est visiblement le même site.
  *
+ * Sombre par défaut : c'est le thème de la première visite, tant que le
+ * visiteur n'a rien choisi (le fond d'écran y est aussi le plus travaillé).
+ *
  * Le thème est posé sur `<html>` **avant le premier paint** par le script inline
  * du `<head>` — voir `THEME_BOOT`. Un `onMount` s'exécute après, et un visiteur
  * en sombre prendrait un flash clair à chaque chargement de page.
@@ -27,7 +30,7 @@ const THEME_COLOR: Record<Theme, string> = { light: "#eff0f1", dark: "#0e1013" }
  * importer de TypeScript, donc ces cinq lignes existent forcément en double.
  */
 export const THEME_BOOT = `(function () {
-  var t = localStorage.getItem("glyph:theme") || "light";
+  var t = localStorage.getItem("glyph:theme") || "dark";
   document.documentElement.setAttribute("data-theme", t);
   document.querySelector('meta[name="theme-color"]')
     .setAttribute("content", t === "dark" ? "#0e1013" : "#eff0f1");

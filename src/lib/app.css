@@ -31,6 +31,16 @@
   --hover: rgba(255, 255, 255, 0.72);
   --accent: #d11a11;
 
+  /* Verre dépoli : les cartes et les tuiles ne sont plus des aplats, ce sont des
+     panneaux translucides posés sur le fond d'écran. Le filet est plus clair que
+     la surface (une arête qui prend la lumière), pas plus sombre comme les
+     hairlines du reste de la page. */
+  --glass: rgba(255, 255, 255, 0.42);
+  --glass-hover: rgba(255, 255, 255, 0.58);
+  --glass-edge: rgba(255, 255, 255, 0.6);
+  --glass-shadow: 0 8px 32px rgba(20, 30, 40, 0.1);
+  --glass-filter: blur(20px) saturate(1.5);
+
   color-scheme: light;
 }
 
@@ -48,6 +58,11 @@
   --line-strong: rgba(232, 233, 234, 0.28);
   --hover: rgba(232, 233, 234, 0.05);
   --accent: #ff3b2e;
+
+  --glass: rgba(26, 31, 36, 0.45);
+  --glass-hover: rgba(40, 47, 54, 0.58);
+  --glass-edge: rgba(255, 255, 255, 0.12);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
 
   color-scheme: dark;
 }
@@ -71,6 +86,36 @@ body {
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+}
+
+/* --- fond d'écran ---
+   Calque fixe derrière tout : le `body` garde `--bg` en repli, le temps que
+   l'image arrive ou si elle manque. Les images sont en 16:9 : `cover` les
+   recadre sur un écran portrait, d'où le centrage.
+
+   Un fond par appareil : le 1 pour Phone (3), le 4 pour Phone (4a) Pro. Les
+   compositions 2, 3 et 5 restent dans `static/bg/`, gardées pour la suite. */
+.bg {
+  --bg-light: url(/bg/1-light.webp);
+  --bg-dark: url(/bg/1-dark.webp);
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-color: var(--bg);
+  background-image: var(--bg-light);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+:root[data-device="phone4apro"] .bg {
+  --bg-light: url(/bg/4-light.webp);
+  --bg-dark: url(/bg/4-dark.webp);
+}
+
+:root[data-theme="dark"] .bg {
+  background-image: var(--bg-dark);
 }
 
 /* les boutons n'héritent pas de font-family : sans ça ils repassent en Arial */

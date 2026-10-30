@@ -4,12 +4,12 @@
      premier rendu. L'anglais plutôt que le français parce que c'est la langue
      de repli, donc celle que porte réellement la coquille pré-rendue — qui, `ssr`
      étant faux, ne contient aucun texte. -->
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="%sveltekit.assets%/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#eff0f1" />
+    <meta name="theme-color" content="#0e1013" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -27,7 +27,7 @@
          cinq copies, une par index.html ; il n'en reste qu'une. -->
     <script>
       (function () {
-        var t = localStorage.getItem("glyph:theme") || "light";
+        var t = localStorage.getItem("glyph:theme") || "dark";
         document.documentElement.setAttribute("data-theme", t);
         document
           .querySelector('meta[name="theme-color"]')

@@ -17,7 +17,9 @@
   import LangToggle from "$lib/i18n/LangToggle.svelte";
   import { _, number } from "svelte-i18n";
   import { DEVICES, type Device } from "../matrix/devices";
+  import { readDevicePref } from "../matrix/devicePref";
   import DeviceToggle from "./DeviceToggle.svelte";
+  import { syncBackdrop } from "./deviceBackdrop.svelte";
   import ThemeToggle from "./ThemeToggle.svelte";
 
   type Props = {
@@ -77,6 +79,10 @@
     rack,
   }: Props = $props();
 
+  /* Sans appareil (toy qui n'en montre pas), c'est le réglage global qui fait
+     foi pour le fond. */
+  syncBackdrop(() => device?.id ?? readDevicePref());
+
   /* --- défilement du rack ---
      Le fondu haut/bas est proportionnel à la distance déjà parcourue, plafonnée
      à FADE — il apparaît donc en douceur sans transition CSS, et reste nul tant
@@ -125,6 +131,11 @@
         })
       : "",
   );
+
+  /* Le sélecteur ne se rend lui-même que si le choix est réel (voir
+     DeviceToggle) — connu d'ici aussi, pour ne pas poser le tiret de l'en-tête
+     devant un sélecteur qui restera vide. */
+  const showDeviceToggle = $derived(!!device && devices.length > 1);
 </script>
 
 <span class="reg tl"></span>
@@ -141,6 +152,18 @@
     <div class="h-row">
       <p class="sub meta"><span class="name">{title}</span> <span class="subtitle">• {sub}</span></p>
       <div class="h-tools">
+        {#if home}
+          <a class="home" href="/">
+            <svg class="home-icon" viewBox="0 0 10 10" aria-hidden="true">
+              <path class="home-roof" d="M1.3 5 L5 1.3 L8.7 5" />
+              <rect class="home-wall" x="2.6" y="6.1" width="4.8" height="3.3" rx="0.9" />
+            </svg>
+            {$_("common.home")}
+          </a>
+        {/if}
+        {#if home && showDeviceToggle}
+          <span class="h-sep" aria-hidden="true">—</span>
+        {/if}
         {#if device}
           <DeviceToggle bind:device {devices} />
         {/if}
@@ -164,11 +187,8 @@
   <footer>
     <div class="f-row">
       <div class="f-tools">
-        {#if home}
-          <a class="home" href="/">◂ {$_("common.home")}</a>
-        {/if}
         <ThemeToggle />
-        <LangToggle />
+        <LangToggle up />
       </div>
       {#if spec}<span class="meta">{spec}</span>{/if}
       <a class="sig" href={repo} target="_blank" rel="noopener noreferrer">
@@ -194,7 +214,8 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: var(--bg);
+    /* Transparente : c'est le fond d'écran qui porte la page, les cartes sont
+       en verre par-dessus. */
   }
 
   .page.dragging {
@@ -240,6 +261,9 @@
     color: var(--ink);
   }
 
+  /* En-tête : accueil, tiret de séparation puis sélecteur d'appareil — dans
+     cet ordre, l'accueil quitte l'instrument pendant que le reste y règle
+     l'appareil qu'on regarde. */
   .h-tools {
     flex: none;
     display: flex;
@@ -247,9 +271,9 @@
     gap: 0.6rem;
   }
 
-  /* Même rangée que `.h-tools`, redescendue au pied : accueil, thème et
-     langue y ont cédé leur place à l'en-tête au sélecteur d'appareil
-     (changement structurel, 2026-09-20). */
+  /* Même rangée que `.h-tools`, redescendue au pied : thème et langue y sont
+     restés seuls quand l'accueil est remonté à côté du sélecteur d'appareil
+     (changement structurel, 2026-09-22). */
   .f-tools {
     flex: none;
     display: flex;
@@ -257,10 +281,13 @@
     gap: 0.6rem;
   }
 
-  /* Même habillage que la bascule de thème : c'est une commande, pas une
-     mention. Le chevron plein plutôt qu'une flèche — la page ne trace que des
-     angles vifs et des filets. */
+  /* Même gabarit que les boutons du sélecteur d'appareil voisin — même
+     padding, même chasse de texte — pour que la rangée lise comme un seul
+     groupe de commandes plutôt que deux tailles de bouton cousues ensemble. */
   .home {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
     border: 1px solid var(--line-strong);
     padding: 0.34rem 0.6rem;
     font-size: 10px;
@@ -278,6 +305,37 @@
     color: var(--ink);
     border-color: var(--ink);
     text-decoration: none;
+  }
+
+  /* Toit en chevron épais, mur en bloc plein séparé par un vide — pas un
+     pentagone fermé : la ligne de toit se lit d'elle-même, elle n'a pas
+     besoin de rejoindre le mur pour se faire reconnaître. */
+  .home-icon {
+    width: 11px;
+    height: 11px;
+    flex: none;
+    overflow: visible;
+  }
+
+  .home-roof {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .home-wall {
+    fill: currentColor;
+  }
+
+  /* Le seul tiret long de la page : la puce du sous-titre marque une pause
+     dans la phrase, celui-ci sépare deux commandes qui n'ont rien à faire
+     ensemble — l'accueil quitte l'outil, le sélecteur choisit l'appareil. */
+  .h-sep {
+    color: var(--faint);
+    font-size: 11px;
   }
 
   /* --- corps --- */
@@ -444,8 +502,10 @@
       z-index: 3;
       /* opaque et refermée par un filet : le rack passe dessous, la trame de
          fond ne doit pas transparaître à travers */
-      background: var(--bg);
-      border-bottom: 1px solid var(--line);
+      background: var(--glass);
+      -webkit-backdrop-filter: var(--glass-filter);
+      backdrop-filter: var(--glass-filter);
+      border-bottom: 1px solid var(--glass-edge);
       /* un peu d'air en haut : épinglée, la bande toucherait sinon le bord de
          l'écran */
       padding: 0.6rem 0 0.8rem;

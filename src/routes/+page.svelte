@@ -15,6 +15,7 @@
   import { _ } from "svelte-i18n";
   import DeviceToggle from "$lib/ui/DeviceToggle.svelte";
   import ThemeToggle from "$lib/ui/ThemeToggle.svelte";
+  import { syncBackdrop } from "$lib/ui/deviceBackdrop.svelte";
   import HaloglyphMark from "$lib/ui/HaloglyphMark.svelte";
   import ToyPreview from "$lib/matrix/ToyPreview.svelte";
   import { deviceById, type Device } from "$lib/matrix/devices";
@@ -29,6 +30,9 @@
      l'endroit où ce choix se fait le plus naturellement, avant même d'ouvrir
      un toy. */
   let device = $state<Device>(resolveDevice());
+
+  /* Le fond d'écran suit le sélecteur — voir `syncBackdrop`. */
+  syncBackdrop(() => device.id);
 
   /* Encombrement de la mini-prévisu, en px CSS. Déclaré ici et passé au
      composant plutôt que laissé à son défaut : c'est la mise en page de la tuile
@@ -129,8 +133,8 @@
 
   <main>
     <ul class="grid">
-      {#each tuiles as toy (toy.slug)}
-        <li>
+      {#each tuiles as toy, i (toy.slug)}
+        <li class:wide={i === 0 && tuiles.length % 2 === 1}>
           <!-- Haloglyph n'a ni route ni dépôt à offrir en clic — sa description
                dit déjà « future application » — donc pas de `href` du tout : un
                `<a>` sans `href` n'est plus un lien (pas de navigation, pas de
@@ -220,7 +224,7 @@
     <div class="f-row">
       <div class="f-tools">
         <ThemeToggle />
-        <LangToggle />
+        <LangToggle up />
       </div>
       <a class="sig" href="https://github.com/aero-md" target="_blank" rel="noopener noreferrer">
         © {YEAR} aero-md
@@ -250,7 +254,6 @@
     display: flex;
     flex-direction: column;
     justify-content: safe center;
-    background: var(--bg);
   }
 
   header {
@@ -352,6 +355,23 @@
     gap: 2rem;
   }
 
+  /* Nombre de tuiles impair : la première prend les deux colonnes, sinon la
+     dernière ligne resterait boiteuse. Uniquement en mode deux colonnes — sous
+     1200 px la grille n'en a qu'une et `1 / -1` n'aurait rien à étendre. */
+  @media (min-width: 1200px) {
+    .wide {
+      grid-column: 1 / -1;
+    }
+
+    /* Le contenu reste dans une boîte virtuelle centrée, large d'une tuile
+       normale (500 px) plus 30 % : sans ça le texte colle à gauche et le disque
+       à droite, aux deux bouts d'un ruban vide. Le pourcentage d'un rembourrage
+       se calcule sur la largeur du `<li>`, donc sur la tuile entière. */
+    .wide .tile {
+      padding-inline: calc((100% - 650px) / 2 + 2rem);
+    }
+  }
+
   /* La hauteur de la tuile n'est déclarée nulle part — c'est le disque plus le
      rembourrage, et c'est ce qu'on veut : elle suivra la préview réelle quand
      elle remplacera le placeholder. */
@@ -363,7 +383,12 @@
     /* Pas de filet : c'est la surface qui détoure la tuile. Les deux ensemble
        feraient panneau, et la page n'a qu'un seul registre de traits fins. */
     border-radius: 1rem;
-    background: var(--bg-2);
+    background: var(--glass);
+    -webkit-backdrop-filter: var(--glass-filter);
+    backdrop-filter: var(--glass-filter);
+    box-shadow:
+      var(--glass-shadow),
+      inset 0 1px 0 var(--glass-edge);
     transition: background 0.12s;
   }
 
@@ -415,7 +440,7 @@
      `<a>` sans `href` puisque la pseudo-classe ne regarde pas cet attribut. */
   .tile:not(.disabled):hover,
   .tile:not(.disabled):focus-visible {
-    background: var(--bg-2-hover);
+    background: var(--glass-hover);
     text-decoration: none;
   }
 

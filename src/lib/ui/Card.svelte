@@ -37,20 +37,28 @@
 
 <style>
   .card {
-    border: 1px solid var(--line);
-    background: var(--bg);
+    /* Verre dépoli : le fond d'écran passe flouté derrière. Pas de bordure —
+       l'ombre portée et le reflet interne du bord haut (`--glass-edge`)
+       suffisent à détourer la vitre. Angles vifs conservés — le cercle reste
+       réservé aux points et aux LEDs. */
+    background: var(--glass);
+    -webkit-backdrop-filter: var(--glass-filter);
+    backdrop-filter: var(--glass-filter);
+    box-shadow:
+      var(--glass-shadow),
+      inset 0 1px 0 var(--glass-edge);
   }
 
   /* L'accent rouge, celui de la référence `[nn]` juste au-dessus — un second
      ton aurait mis deux couleurs à trois centimètres l'une de l'autre pour
      dire la même chose.
 
-     Deux pixels obtenus par un filet de bordure plus une ombre interne :
-     passer la bordure à 2 px décalerait la carte d'un pixel au chargement de
-     l'image, et toute la colonne avec. */
+     Deux pixels obtenus par une ombre interne : une bordure de 2 px décalerait
+     la carte au chargement de l'image, et toute la colonne avec. */
   .card.cta {
-    border-color: var(--accent);
-    box-shadow: inset 0 0 0 1px var(--accent);
+    box-shadow:
+      var(--glass-shadow),
+      inset 0 0 0 2px var(--accent);
   }
 
   header {

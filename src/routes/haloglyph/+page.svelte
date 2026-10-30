@@ -9,6 +9,11 @@
   import { _ } from "svelte-i18n";
   import ThemeToggle from "$lib/ui/ThemeToggle.svelte";
   import Card from "$lib/ui/Card.svelte";
+  import { readDevicePref } from "$lib/matrix/devicePref";
+  import { syncBackdrop } from "$lib/ui/deviceBackdrop.svelte";
+
+  /* Pas d'appareil à montrer ici : le fond suit le réglage global. */
+  syncBackdrop(readDevicePref);
 
   const REPO = "https://github.com/aero-md/haloglyph";
   const YEAR = new Date().getFullYear();
@@ -110,7 +115,6 @@ cd haloglyph
     min-height: 100dvh;
     display: flex;
     flex-direction: column;
-    background: var(--bg);
   }
 
   header {
