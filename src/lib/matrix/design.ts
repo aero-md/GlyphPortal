@@ -123,6 +123,11 @@ function expand(device: Device, p: number[], out: Float32Array): void {
   for (let k = 0; k < inside.length; k++) out[inside[k]] = level(p[k]);
 }
 
+function sameValues(a: Float32Array, b: Float32Array): boolean {
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
+}
+
 /**
  * Un dessin joué comme une animation.
  *
@@ -164,20 +169,41 @@ export function designSampler(design: Design, device: Device): MatrixSampler {
   }
   const duration = acc;
 
+  /* Pas de lecture de chaque trame : le même numéro pour deux trames voisines
+     dont les consignes sont identiques. Un dessin exporté d'un moteur en pose
+     beaucoup — un toy au repos écrit la même image à chaque tic — et les
+     repeindre serait payer pour ne rien changer. Seules les voisines comptent :
+     une image qui revient plus tard est bien un changement. */
+  const steps: number[] = [];
+  let step = 0;
+  for (let i = 0; i < banks.length; i++) {
+    if (i > 0 && !sameValues(banks[i], banks[i - 1])) step++;
+    steps.push(step);
+  }
+
   /* Tableau de sortie unique, recopié depuis la banque de la trame courante.
      `frameOf` recompte `lit` et `mean` à chaque appel — les préviews ne s'en
      servent pas, mais le contrat de `Frame` dit qu'ils sont justes. */
   const out = new Float32Array(device.cells);
 
+  const indexAt = (t: number): number => {
+    const wrapped = duration > 0 ? ((t % duration) + duration) % duration : 0;
+    let i = 0;
+    while (i < ends.length - 1 && wrapped >= ends[i]) i++;
+    return i;
+  };
+
   return {
     duration,
+    still: step === 0,
 
     frameAt(t: number): Frame {
-      const wrapped = duration > 0 ? ((t % duration) + duration) % duration : 0;
-      let i = 0;
-      while (i < ends.length - 1 && wrapped >= ends[i]) i++;
-      out.set(banks[i]);
+      out.set(banks[indexAt(t)]);
       return frameOf(device, out);
+    },
+
+    stepAt(t: number): number {
+      return steps[indexAt(t)];
     },
 
     destroy() {

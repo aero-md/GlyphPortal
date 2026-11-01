@@ -41,6 +41,21 @@ export type MatrixSampler = {
    * `paint` synchrone, et ce qui interdit de la mettre de côté.
    */
   frameAt(t: number): Frame;
+  /**
+   * Identifiant de ce que `frameAt(t)` montrerait, sans le calculer : deux
+   * instants de même identifiant donnent la même image, il est donc inutile de
+   * la repeindre.
+   *
+   * Facultatif — un échantillonneur qui ne sait pas dire si l'image a changé
+   * (le Lottie, dont chaque instant est un rendu) l'omet, et l'appelant repeint
+   * à chaque tour comme avant. Les dessins, eux, le savent : leurs trames durent
+   * 40 ms au mieux, et sans cela on les repeignait à la cadence de l'écran, deux
+   * à quatre fois trop souvent ; un dessin à une trame se repeignait à l'infini
+   * pour la même image.
+   */
+  stepAt?(t: number): number;
+  /** Vrai si l'image ne change jamais : une boucle à une seule image n'a rien à rejouer. */
+  readonly still?: boolean;
   destroy(): void;
 };
 

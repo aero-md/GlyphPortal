@@ -28,6 +28,7 @@
   import { emptyFrame } from "./frame";
   import { lottieSampler, type MatrixSampler } from "./lottieFrame";
   import { paintThumb, thumbGrid, THUMB_BG, type ThumbGrid } from "./thumb";
+  import { offFrame, onFrame } from "./frames";
 
 
   type Props = {
@@ -137,14 +138,49 @@
 
     const gele = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+    /* Neuf boucles en même temps ne tiennent que si chacune ne dépense que ce
+       qu'elle doit. Trois économies, aucune ne touche à ce qu'on voit :
+
+       - **on ne repeint que quand l'image change.** Les trames durent 40 ms au
+         mieux, et la plupart bien plus ; l'écran, lui, tourne à 60 Hz ou plus.
+         Repeindre à chaque tour donnait la même image deux à trente fois de
+         suite. L'horloge reste celle du temps réel, donc le changement tombe
+         au même instant — il n'y a pas de cadence à choisir ;
+       - **une image fixe ne boucle pas** du tout ;
+       - **une tuile hors de l'écran s'arrête**, et reprend à l'heure qu'il est
+         quand elle revient — pas là où elle s'était arrêtée, ce qui la ferait
+         apparaître en retard sur sa voisine. En colonne unique, sur un
+         téléphone, c'est la plupart des tuiles. */
+    let running = false;
+    let visible = false;
+    let loading = false;
+    let lastStep = -1;
+
     const loop = (now: number) => {
-      if (!alive || !sampler) return;
+      if (!alive || !running || !sampler) return;
       if (!t0) t0 = now;
-      paintThumb(ctx, sampler.frameAt((now - t0) / 1000), g);
-      raf = requestAnimationFrame(loop);
+      const t = (now - t0) / 1000;
+      const step = sampler.stepAt?.(t);
+      if (step === undefined || step !== lastStep) {
+        paintThumb(ctx, sampler.frameAt(t), g);
+        lastStep = step ?? -1;
+      }
+      raf = onFrame(loop);
+    };
+
+    const play = () => {
+      if (running || gele || !sampler || sampler.still) return;
+      running = true;
+      raf = onFrame(loop);
+    };
+
+    const pause = () => {
+      running = false;
+      offFrame(raf);
     };
 
     const start = async () => {
+      loading = true;
       try {
         const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -170,8 +206,12 @@
         }
         sampler = s;
 
-        if (gele) paintThumb(ctx, s.frameAt(s.duration * poster), g);
-        else raf = requestAnimationFrame(loop);
+        /* Une image tout de suite, même hors écran ou gelée : c'est celle que
+           montre une tuile fixe, et pour les autres elle évite d'attendre le
+           premier tour de boucle avec un disque éteint. */
+        paintThumb(ctx, s.frameAt(gele ? s.duration * poster : 0), g);
+        lastStep = s.stepAt?.(0) ?? -1;
+        if (visible) play();
       } catch {
         /* Le disque éteint peint plus haut fait office d'échec. Une vignette de
            sommaire n'a pas de quoi rendre compte d'une erreur, et la tuile reste
@@ -182,13 +222,19 @@
     /* Rien n'est téléchargé tant que la tuile n'approche pas de l'écran : un
        Lottie de toy pèse quelques centaines de kilo-octets, et le sommaire en
        aligne autant qu'il a d'entrées. La marge les fait partir juste avant
-       d'être vus. `requestAnimationFrame` s'arrête tout seul quand l'onglet
-       passe en arrière-plan, il n'y a donc rien à ajouter pour ce cas. */
+       d'être vus, et la boucle s'arrête dès que la tuile en sort.
+       `requestAnimationFrame` s'arrête tout seul quand l'onglet passe en
+       arrière-plan, il n'y a donc rien à ajouter pour ce cas.
+
+       Observateur gardé jusqu'au démontage, et non coupé à la première
+       intersection : c'est lui qui rallume la boucle au retour. On lit la
+       **dernière** entrée, la plus récente, si le navigateur en a regroupé. */
     const io = new IntersectionObserver(
       (entries) => {
-        if (!entries.some((e) => e.isIntersecting)) return;
-        io.disconnect();
-        void start();
+        visible = entries[entries.length - 1].isIntersecting;
+        if (!visible) pause();
+        else if (sampler) play();
+        else if (!loading) void start();
       },
       { rootMargin: "200px" },
     );
@@ -196,8 +242,9 @@
 
     return () => {
       alive = false;
+      running = false;
       io.disconnect();
-      cancelAnimationFrame(raf);
+      offFrame(raf);
       sampler?.destroy();
     };
   });
@@ -236,6 +283,12 @@
     flex: none;
     position: relative;
     display: block;
+    /* Le canvas se repeint en continu : `contain` dit au navigateur que rien de
+       ce qui bouge ici ne touche la mise en page ni le rendu du reste de la
+       tuile — son verre dépoli en particulier. Sans lui, le reste de la page
+       est un voisin potentiellement concerné à chaque image. La taille est
+       posée en ligne par le composant, ce qui rend `size` sûr. */
+    contain: layout paint size style;
   }
 
   /* Le verre du hublot. Le disque est la surface d'un appareil, pas celle de la
