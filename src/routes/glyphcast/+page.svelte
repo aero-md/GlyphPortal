@@ -561,14 +561,17 @@
     position: relative;
     display: block;
     border: 1px solid var(--line-strong);
+    border-radius: 0.7rem;
     padding: 0.9rem 0.75rem;
     cursor: pointer;
-    transition: background 0.12s;
+    transition:
+      background 0.12s,
+      border-color 0.12s;
   }
 
   .drop:hover,
   .drop.armed {
-    background: var(--hover);
+    background: var(--seg-track);
     border-color: var(--accent);
   }
 
@@ -609,23 +612,23 @@
      −665 px et la mise en page ne se remettait jamais droite. */
   .filebtn {
     position: relative;
-    border: 1px solid var(--line-strong);
-    background: transparent;
+    border: 0;
+    background: var(--seg-track);
     color: var(--dim);
-    border-radius: 0;
-    padding: 0.34rem 0.6rem;
+    border-radius: 0.5rem;
+    padding: 0.4rem 0.8rem;
     font-size: 10px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     cursor: pointer;
     transition:
       color 0.12s,
-      border-color 0.12s;
+      background 0.12s;
   }
 
   .filebtn:hover {
     color: var(--ink);
-    border-color: var(--ink);
+    background: var(--seg-hover);
   }
 
   .filebtn input {

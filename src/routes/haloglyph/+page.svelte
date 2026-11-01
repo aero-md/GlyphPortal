@@ -8,8 +8,7 @@
   import LangToggle from "$lib/i18n/LangToggle.svelte";
   import { _ } from "svelte-i18n";
   import ThemeToggle from "$lib/ui/ThemeToggle.svelte";
-  import Card from "$lib/ui/Card.svelte";
-  import { readDevicePref } from "$lib/matrix/devicePref";
+  import Card from "$lib/ui/Card.svelte";  import { readDevicePref } from "$lib/matrix/devicePref";
   import { syncBackdrop } from "$lib/ui/deviceBackdrop.svelte";
 
   /* Pas d'appareil à montrer ici : le fond suit le réglage global. */
@@ -48,7 +47,7 @@
         <span class="name">Haloglyph</span> • {$_("haloglyph.sub")}
       </p>
       <div class="h-tools">
-        <a class="home" href="/">◂ {$_("common.home")}</a>
+        <a class="home" href="/">{$_("common.home")}</a>
         <ThemeToggle />
         <LangToggle />
       </div>
@@ -154,8 +153,9 @@ cd haloglyph
   }
 
   .home {
-    border: 1px solid var(--line-strong);
-    padding: 0.34rem 0.6rem;
+    background: var(--seg-track);
+    border-radius: 0.7rem;
+    padding: 0.55rem 0.9rem;
     font-size: 10px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -163,13 +163,13 @@ cd haloglyph
     white-space: nowrap;
     transition:
       color 0.12s,
-      border-color 0.12s;
+      background 0.12s;
   }
 
   .home:hover,
   .home:focus-visible {
     color: var(--ink);
-    border-color: var(--ink);
+    background: var(--seg-hover);
     text-decoration: none;
   }
 

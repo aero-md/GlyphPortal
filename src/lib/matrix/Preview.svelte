@@ -698,22 +698,25 @@
   /* équivalent du Glyph Button quand il n'y a pas de téléphone à l'écran */
   .ab {
     flex: none;
-    border: 1px solid var(--line-strong);
-    background: transparent;
+    border: 0;
+    background: var(--seg-track);
     color: var(--dim);
-    border-radius: 0;
-    padding: 0.34rem 0.7rem;
+    border-radius: 0.5rem;
+    padding: 0.4rem 0.8rem;
     font-size: 10px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     cursor: pointer;
     touch-action: none;
     user-select: none;
+    transition:
+      background 0.12s,
+      color 0.12s;
   }
 
   .ab:not(:disabled):hover {
     color: var(--ink);
-    border-color: var(--ink);
+    background: var(--seg-hover);
   }
 
   .ab:disabled {
@@ -721,10 +724,12 @@
     cursor: default;
   }
 
+  /* Enfoncé : le même voile rouge que la surbrillance du sélecteur d'appareil
+     (`.segmented.accent` dans `app.css`). */
   .ab.is-held {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: var(--bg);
+    background: color-mix(in srgb, var(--accent) 24%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent);
+    color: var(--ink);
   }
 
   /* Bande calculée dans le script — voir previewBand / SHARE. Le fondu y est

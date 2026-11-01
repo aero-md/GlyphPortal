@@ -131,7 +131,11 @@
     </div>
   </header>
 
-  <main>
+  <!-- `.stage` tient les deux fondus en haut et en bas de la liste — voir
+       `.edge` dans `app.css` : ce ne peut pas être des enfants de `main`, ils
+       défileraient avec lui. -->
+  <div class="stage">
+  <main class="scroll">
     <ul class="grid">
       {#each tuiles as toy, i (toy.slug)}
         <li class:wide={i === 0 && tuiles.length % 2 === 1}>
@@ -215,6 +219,9 @@
       {/each}
     </ul>
   </main>
+  <span class="edge top"></span>
+  <span class="edge bottom"></span>
+  </div>
 
   <!-- Même pied que chaque page de toy — voir `Shell` — thème, langue et
        signature vers le dépôt, pour la même raison de cohérence : ce sont des
@@ -234,26 +241,20 @@
 </div>
 
 <style>
-  /* Tout est centré dans la fenêtre : l'index est court, et posé en haut d'un
-     écran de bureau il laissait les deux tiers de la page vides sous lui.
-
-     `safe center` et non `center` : dès que le contenu dépasse la fenêtre — en
-     colonne unique, quatre tuiles empilées font le double d'un écran de
-     téléphone — un centrage strict déborde des DEUX côtés, et ce qui sort par
-     le haut n'est atteignable par aucun défilement. Le mot-clé rend la main au
-     bord de départ dans ce cas. Un navigateur qui ne le connaît pas jette la
-     déclaration entière et laisse tout en haut, ce qui est exactement le repli
-     qu'on voudrait. */
+  /* Même invariant que `Shell` : **la page ne défile pas.** Elle occupe la
+     fenêtre, l'en-tête et le pied restent en place, et seule la liste de tuiles
+     défile (voir `main`). En colonne unique la règle s'inverse — voir la
+     requête média en bas de feuille. */
   .page {
     position: relative;
     z-index: 2;
     max-width: 1120px;
     margin: 0 auto;
     padding: 2.5rem 2.4rem;
-    min-height: 100dvh;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
-    justify-content: safe center;
+    overflow: hidden;
   }
 
   header {
@@ -296,8 +297,35 @@
     gap: 0.6rem;
   }
 
+  /* Le seul élément qui défile. `min-height: 0` pour qu'il puisse descendre sous
+     la taille de la liste au lieu de pousser le pied hors de la fenêtre.
+
+     Colonne flex et `margin-block: auto` sur la grille : une liste plus courte
+     que la fenêtre reste centrée comme avant, une liste plus haute démarre en
+     haut — contrairement à `justify-content: center`, qui ferait déborder les
+     premières tuiles hors de portée du défilement.
+
+     Aucun masque ni opacité ici : voir la note de `.card` dans `Card.svelte`,
+     le flou des tuiles de verre en dépend. */
+  .stage {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
   main {
-    flex: none;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  main > .grid {
+    margin-block: auto;
   }
 
   /* Même pied que la coquille des préviews — voir `Shell` — repris ici plutôt
@@ -552,6 +580,25 @@
   @media (max-width: 1199px) {
     .grid {
       grid-template-columns: minmax(0, 800px);
+    }
+  }
+
+  /* Même bascule que `Shell` : en colonne unique la page redevient défilante,
+     une zone fixe en plus des tuiles ne laisserait presque rien à l'écran sur
+     un téléphone. */
+  @media (max-width: 960px), (max-width: 1080px) and (max-aspect-ratio: 5 / 4) {
+    .page {
+      height: auto;
+      min-height: 100dvh;
+      overflow: visible;
+    }
+
+    main {
+      overflow: visible;
+    }
+
+    .edge {
+      display: none;
     }
   }
 

@@ -18,8 +18,7 @@
   import { _, number } from "svelte-i18n";
   import { DEVICES, type Device } from "../matrix/devices";
   import { readDevicePref } from "../matrix/devicePref";
-  import DeviceToggle from "./DeviceToggle.svelte";
-  import { syncBackdrop } from "./deviceBackdrop.svelte";
+  import DeviceToggle from "./DeviceToggle.svelte";  import { syncBackdrop } from "./deviceBackdrop.svelte";
   import ThemeToggle from "./ThemeToggle.svelte";
 
   type Props = {
@@ -83,36 +82,6 @@
      foi pour le fond. */
   syncBackdrop(() => device?.id ?? readDevicePref());
 
-  /* --- défilement du rack ---
-     Le fondu haut/bas est proportionnel à la distance déjà parcourue, plafonnée
-     à FADE — il apparaît donc en douceur sans transition CSS, et reste nul tant
-     que la liste tient dans la hauteur. */
-  const FADE = 32;
-  let rackEl = $state<HTMLElement | null>(null);
-  let rackTop = $state(0);
-  let rackMax = $state(0);
-  const fadeTop = $derived(Math.min(FADE, rackTop));
-  const fadeBot = $derived(Math.min(FADE, rackMax - rackTop));
-
-  function syncRack() {
-    if (!rackEl) return;
-    rackTop = rackEl.scrollTop;
-    rackMax = Math.max(0, rackEl.scrollHeight - rackEl.clientHeight);
-  }
-
-  $effect(() => {
-    const el = rackEl;
-    if (!el) return;
-    syncRack();
-    /* La limite de défilement bouge sans qu'aucun scroll ne soit émis : la
-       fenêtre change la hauteur du cadre, un curseur conditionnel apparaît et
-       disparaît. On observe donc le cadre et chacun de ses enfants. */
-    const ro = new ResizeObserver(syncRack);
-    ro.observe(el);
-    for (const card of Array.from(el.children)) ro.observe(card);
-    return () => ro.disconnect();
-  });
-
   /* Millésime lu à l'exécution, pas écrit en dur : un pied de page figé sur
      l'année de la dernière compilation vieillit tout seul. */
   const YEAR = new Date().getFullYear();
@@ -154,10 +123,6 @@
       <div class="h-tools">
         {#if home}
           <a class="home" href="/">
-            <svg class="home-icon" viewBox="0 0 10 10" aria-hidden="true">
-              <path class="home-roof" d="M1.3 5 L5 1.3 L8.7 5" />
-              <rect class="home-wall" x="2.6" y="6.1" width="4.8" height="3.3" rx="0.9" />
-            </svg>
             {$_("common.home")}
           </a>
         {/if}
@@ -174,14 +139,13 @@
   <main>
     {@render preview()}
 
-    <div
-      class="rack"
-      bind:this={rackEl}
-      onscroll={syncRack}
-      style="--fade-t:{fadeTop}px;--fade-b:{fadeBot}px"
-    >
+    <div class="rack scroll">
       {@render rack()}
     </div>
+    <!-- Fondus du rack, voir `.edge` dans `app.css` : hors du rack, pour ne pas
+         défiler avec lui. -->
+    <span class="edge top"></span>
+    <span class="edge bottom"></span>
   </main>
 
   <footer>
@@ -285,11 +249,9 @@
      padding, même chasse de texte — pour que la rangée lise comme un seul
      groupe de commandes plutôt que deux tailles de bouton cousues ensemble. */
   .home {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    border: 1px solid var(--line-strong);
-    padding: 0.34rem 0.6rem;
+    background: var(--seg-track);
+    border-radius: 0.7rem;
+    padding: 0.55rem 0.9rem;
     font-size: 10px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -297,37 +259,14 @@
     white-space: nowrap;
     transition:
       color 0.12s,
-      border-color 0.12s;
+      background 0.12s;
   }
 
   .home:hover,
   .home:focus-visible {
     color: var(--ink);
-    border-color: var(--ink);
+    background: var(--seg-hover);
     text-decoration: none;
-  }
-
-  /* Toit en chevron épais, mur en bloc plein séparé par un vide — pas un
-     pentagone fermé : la ligne de toit se lit d'elle-même, elle n'a pas
-     besoin de rejoindre le mur pour se faire reconnaître. */
-  .home-icon {
-    width: 11px;
-    height: 11px;
-    flex: none;
-    overflow: visible;
-  }
-
-  .home-roof {
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.6;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    vector-effect: non-scaling-stroke;
-  }
-
-  .home-wall {
-    fill: currentColor;
   }
 
   /* Le seul tiret long de la page : la puce du sous-titre marque une pause
@@ -344,6 +283,7 @@
      Le minmax(0, …) lui permet de descendre sous la taille du contenu, sinon
      le rack pousserait au lieu de défiler. */
   main {
+    position: relative;
     flex: 1 1 auto;
     min-height: 0;
     display: grid;
@@ -357,10 +297,18 @@
     gap: 1.6rem;
   }
 
-  /* Le seul élément qui défile. Le fondu est un masque et non un aplat posé
-     par-dessus : le fond reste intact dans la bande, comme sur le bas de la
-     photo du téléphone. Les bornes viennent du script — à 0 le dégradé est plat
-     et n'enlève rien. */
+  /* Fondus haut et bas du rack : une bande absolue par bord, placée dans la
+     cellule du rack (colonne 2) — `main` est positionné, donc c'est cette
+     cellule qui leur sert de bloc conteneur. */
+  .edge {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  /* Le seul élément qui défile. Aucun masque ni opacité ici : un masque sur un
+     ancêtre fait de lui la racine du fond pour `backdrop-filter`, et les
+     cartes de verre ne floutaient plus que du vide — le fond d'écran passait
+     net à travers. Le fondu est fait par `.edge`, voir `app.css`. */
   .rack {
     flex: 1 1 auto;
     display: flex;
@@ -368,30 +316,10 @@
     gap: 1rem;
     min-width: 0;
     overflow-y: auto;
-    /* gouttière réservée en permanence : sans ça l'apparition d'un curseur
-       conditionnel décale toute la colonne d'une largeur d'ascenseur */
-    scrollbar-gutter: stable;
-    padding-right: 0.5rem;
     /* L'arrondi sous-pixel du flex + gap accumulé fait parfois tomber le bas
        de `scrollHeight` un poil avant la bordure de la dernière carte, qui se
        retrouve alors coupée d'un pixel une fois défilé au maximum. */
     padding-bottom: 1px;
-    scrollbar-width: thin;
-    scrollbar-color: var(--line-strong) transparent;
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      transparent 0,
-      #000 var(--fade-t, 0px),
-      #000 calc(100% - var(--fade-b, 0px)),
-      transparent 100%
-    );
-    mask-image: linear-gradient(
-      to bottom,
-      transparent 0,
-      #000 var(--fade-t, 0px),
-      #000 calc(100% - var(--fade-b, 0px)),
-      transparent 100%
-    );
   }
 
   /* --- pied --- */
@@ -513,10 +441,10 @@
 
     .rack {
       overflow: visible;
-      padding-right: 0;
-      scrollbar-gutter: auto;
-      -webkit-mask-image: none;
-      mask-image: none;
+    }
+
+    .edge {
+      display: none;
     }
   }
 </style>

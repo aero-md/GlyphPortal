@@ -8,6 +8,7 @@
     type Frame,
     type LedStyle,
   } from "$lib";
+  import { offFrame, onFrame } from "$lib/matrix/frames";
   import type { Dict } from "$lib/i18n";
   import { _, number } from "svelte-i18n";
   import Card from "$lib/ui/Card.svelte";
@@ -267,11 +268,11 @@
         : flat
           ? frameOf(device, renderer.renderFlat(pastDeadHead ? String(trueValue) : null).slice())
           : frameOf(device, renderer.render(k, view).slice());
-      raf = requestAnimationFrame(step);
+      raf = onFrame(step);
     };
 
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
+    raf = onFrame(step);
+    return () => offFrame(raf);
   });
 
   let flashTimer: ReturnType<typeof setTimeout>;

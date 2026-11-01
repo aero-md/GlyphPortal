@@ -41,6 +41,14 @@
   --glass-shadow: 0 8px 32px rgba(20, 30, 40, 0.1);
   --glass-filter: blur(20px) saturate(1.5);
 
+  /* Sélecteur exclusif : un rail légèrement teinté, et l'option retenue qui
+     s'y détache en surbrillance — plus claire que le rail dans les deux
+     thèmes. */
+  --seg-track: rgba(20, 22, 26, 0.08);
+  --seg-on: rgba(255, 255, 255, 0.92);
+  --seg-hover: rgba(20, 22, 26, 0.15);
+  --seg-on-shadow: 0 1px 3px rgba(20, 30, 40, 0.2);
+
   color-scheme: light;
 }
 
@@ -63,6 +71,11 @@
   --glass-hover: rgba(40, 47, 54, 0.58);
   --glass-edge: rgba(255, 255, 255, 0.12);
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+
+  --seg-track: rgba(255, 255, 255, 0.07);
+  --seg-on: rgba(255, 255, 255, 0.2);
+  --seg-hover: rgba(255, 255, 255, 0.14);
+  --seg-on-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 
   color-scheme: dark;
 }
@@ -95,27 +108,37 @@ body {
 
    Un fond par appareil : le 1 pour Phone (3), le 4 pour Phone (4a) Pro. Les
    compositions 2, 3 et 5 restent dans `static/bg/`, gardées pour la suite. */
+:root {
+  --bg-img: url(/bg/1-light.webp);
+  /* Le nom de la chronologie de défilement de `.scroll`, visible de toute la
+     page : les fondus de `.edge` la lisent sans être ses descendants. */
+  timeline-scope: --scrolled;
+}
+
+:root[data-theme="dark"] {
+  --bg-img: url(/bg/1-dark.webp);
+}
+
+:root[data-device="phone4apro"] {
+  --bg-img: url(/bg/4-light.webp);
+}
+
+/* Le plus spécifique en dernier : sans lui, la règle de l'appareil effacerait
+   celle du thème sombre (même spécificité, ordre de déclaration). */
+:root[data-device="phone4apro"][data-theme="dark"] {
+  --bg-img: url(/bg/4-dark.webp);
+}
+
 .bg {
-  --bg-light: url(/bg/1-light.webp);
-  --bg-dark: url(/bg/1-dark.webp);
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
   background-color: var(--bg);
-  background-image: var(--bg-light);
+  background-image: var(--bg-img);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-}
-
-:root[data-device="phone4apro"] .bg {
-  --bg-light: url(/bg/4-light.webp);
-  --bg-dark: url(/bg/4-dark.webp);
-}
-
-:root[data-theme="dark"] .bg {
-  background-image: var(--bg-dark);
 }
 
 /* les boutons n'héritent pas de font-family : sans ça ils repassent en Arial */
@@ -142,6 +165,80 @@ a:focus-visible {
 :focus-visible {
   outline: 1px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* --- zone qui défile, sans barre ---
+   Pour les deux seules zones qui défilent seules : la liste du sommaire et le
+   rack des préviews. Le défilement reste à la molette, au tactile et au
+   clavier ; ce sont les fondus de `.edge` qui disent qu'il y a une suite.
+   `scroll-timeline` publie le défilement sous un nom que ces fondus lisent. */
+.scroll {
+  scrollbar-width: none;
+  scroll-timeline: --scrolled block;
+}
+
+/* --- fondu aux bords d'une zone qui défile ---
+   Les cartes s'estompent dans le fond d'écran en haut et en bas de la liste.
+
+   Ce n'est PAS un masque sur la zone : un masque, une opacité ou un filtre sur
+   un ancêtre des cartes en fait la racine du fond, et leur `backdrop-filter`
+   ne floute plus que du vide (voir `Card.svelte`). À la place, deux bandes
+   posées PAR-DESSUS, qui repeignent le fond d'écran lui-même — `fixed` + `cover`
+   + `center` comme `.bg`, donc au pixel près — sous un dégradé de masque. Le
+   masque est sur la bande, qui n'est l'ancêtre de rien.
+
+   Leur opacité suit le défilement de `.scroll` : nulle tant qu'on est au bord
+   (le haut de la liste n'est pas estompé au repos), pleine après `--edge`
+   parcourus ; en bas, l'inverse. Sans défilement possible la chronologie est
+   inactive et la base, à 0, ne montre rien. À poser dans un parent
+   `position: relative` — ou une cellule de grille — qui contient la zone. */
+.edge {
+  --edge: 56px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--edge);
+  z-index: 3;
+  pointer-events: none;
+  background: var(--bg-img) center / cover fixed no-repeat;
+  opacity: 0;
+  animation-fill-mode: both;
+  animation-timing-function: linear;
+  animation-timeline: --scrolled;
+}
+
+.edge.top {
+  top: 0;
+  -webkit-mask-image: linear-gradient(to bottom, #000, transparent);
+  mask-image: linear-gradient(to bottom, #000, transparent);
+  animation-name: edge-in;
+  animation-range: 0px var(--edge);
+}
+
+.edge.bottom {
+  bottom: 0;
+  -webkit-mask-image: linear-gradient(to top, #000, transparent);
+  mask-image: linear-gradient(to top, #000, transparent);
+  animation-name: edge-out;
+  animation-range: calc(100% - var(--edge)) 100%;
+}
+
+@keyframes edge-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes edge-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 /* --- repères d'imprimerie aux quatre angles --- */
@@ -237,8 +334,8 @@ a:focus-visible {
 /* --- commandes de carte --- */
 /* Non scopées : ce sont les mêmes boutons dans toutes les préviews, et les
    passer en composant pour trois déclarations coûterait plus que ça ne rend.
-   Même habillage que `Seg` et `ThemeToggle`, à dessein — rien dans cette page
-   ne doit avoir l'air d'un widget de framework. */
+   Même habillage que `Seg` et `ThemeToggle`, à dessein : un rail teinté sans
+   filet, coins arrondis, l'état retenu en surbrillance. */
 .btns {
   display: flex;
   flex-wrap: wrap;
@@ -251,11 +348,11 @@ a:focus-visible {
 .btns button,
 .btns a {
   position: relative;
-  border: 1px solid var(--line-strong);
-  background: transparent;
+  border: 0;
+  background: var(--seg-track);
   color: var(--dim);
-  border-radius: 0;
-  padding: 0.34rem 0.6rem;
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.8rem;
   font-size: 12px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -263,15 +360,14 @@ a:focus-visible {
   transition:
     background 0.12s,
     color 0.12s,
-    border-color 0.12s;
+    box-shadow 0.12s;
 }
 
 .btns button:not(:disabled):hover,
 .btns a:hover,
 .btns a:focus-visible {
   color: var(--ink);
-  border-color: var(--ink);
-  /* le soulignement global des liens ferait déborder le trait de l'encadré */
+  background: var(--seg-hover);
   text-decoration: none;
 }
 
@@ -280,21 +376,70 @@ a:focus-visible {
   cursor: default;
 }
 
-/* État retenu, inversé en plein encre : il se lit à la forme et pas seulement
-   à la couleur. */
+/* État retenu, en surbrillance comme l'option d'un sélecteur exclusif. */
 .btns button.on {
-  background: var(--ink);
-  color: var(--bg);
-  border-color: var(--ink);
+  background: var(--seg-on);
+  color: var(--ink);
+  box-shadow: var(--seg-on-shadow);
 }
 
-/* Le survol repeint le texte en encre, et l'état retenu a déjà l'encre pour
-   fond : la souris posée sur un bouton actif effaçait son libellé. La règle du
-   survol est plus spécifique que celle de l'état — il faut donc la reprendre
-   ici, et pas seulement compter sur l'ordre des déclarations. */
+/* La règle du survol est plus spécifique que celle de l'état : sans cette
+   reprise, la souris posée sur un bouton actif lui retirait sa surbrillance. */
 .btns button.on:hover,
 .btns button.on:focus-visible {
-  color: var(--bg);
+  background: var(--seg-on);
+  color: var(--ink);
+}
+
+/* --- sélecteur exclusif ---
+   Un seul rectangle arrondi pour tout le groupe, l'option retenue en
+   surbrillance à l'intérieur. Global pour la même raison que `.btns` : `Seg`,
+   `RenderSeg` et `DeviceToggle` sont le même geste. `.accent` : surbrillance
+   rouge, réservée au sélecteur d'appareil — la seule commande qui change ce
+   qui tourne sur l'appareil. */
+.segmented {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 0.7rem;
+  background: var(--seg-track);
+}
+
+.segmented button {
+  border: 0;
+  background: transparent;
+  color: var(--dim);
+  border-radius: 0.5rem;
+  padding: 0.34rem 0.7rem;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s,
+    box-shadow 0.12s;
+}
+
+.segmented button:hover {
+  color: var(--ink);
+}
+
+.segmented button.on {
+  background: var(--seg-on);
+  color: var(--ink);
+  box-shadow: var(--seg-on-shadow);
+}
+
+/* Un voile de rouge plutôt qu'un aplat : la surbrillance se lit sans crier, et
+   un filet de la même teinte la détache du rail. Le libellé reste à l'encre,
+   lisible sur le voile dans les deux thèmes. */
+.segmented.accent button.on {
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent);
 }
 
 /* --- prose de carte --- */

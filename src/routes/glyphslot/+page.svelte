@@ -1,5 +1,6 @@
 <script lang="ts">
   import { DEFAULT_DEVICE, frameOf, type Frame, type LedStyle } from "$lib";
+  import { offFrame, onFrame } from "$lib/matrix/frames";
   import { _ } from "svelte-i18n";
   import Card from "$lib/ui/Card.svelte";
   import PreviewPane from "$lib/matrix/PreviewPane.svelte";
@@ -132,11 +133,11 @@
           : null;
 
       frame = frameOf(device, renderer.render(offsets, result).slice());
-      raf = requestAnimationFrame(step);
+      raf = onFrame(step);
     };
 
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
+    raf = onFrame(step);
+    return () => offFrame(raf);
   });
 
   function longPress() {

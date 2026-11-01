@@ -21,7 +21,7 @@
 <div class="seg">
   <span class="name">{$_("common.pane.render")}</span>
   <div class="opts">
-    <div class="group" role="group" aria-label={$_("common.pane.scale")}>
+    <div class="segmented" role="group" aria-label={$_("common.pane.scale")}>
       <button type="button" class:on={mode === "phone"} aria-pressed={mode === "phone"} onclick={() => (mode = "phone")}>
         {$_("common.pane.phone")}
       </button>
@@ -29,8 +29,7 @@
         {$_("common.pane.large")}
       </button>
     </div>
-    <span class="sep" aria-hidden="true">—</span>
-    <div class="group" role="group" aria-label={$_("common.pane.led")}>
+    <div class="segmented" role="group" aria-label={$_("common.pane.led")}>
       <button type="button" class:on={style === "sharp"} aria-pressed={style === "sharp"} onclick={() => (style = "sharp")}>
         {$_("common.pane.sharp")}
       </button>
@@ -58,44 +57,7 @@
     gap: 0.5rem;
   }
 
-  .group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-
-  /* Même tiret que celui de l'en-tête (`Shell`, `.h-sep`) : il sépare deux
-     commandes qui n'ont rien à faire ensemble, ici l'échelle et le rendu des
-     LED sous un même intitulé faute d'avoir chacune le sien. */
-  .sep {
-    color: var(--faint);
-    font-size: 11px;
-  }
-
-  button {
-    border: 1px solid var(--line-strong);
-    background: transparent;
-    color: var(--dim);
-    border-radius: 0;
-    padding: 0.34rem 0.6rem;
-    font-size: 10px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition:
-      background 0.12s,
-      color 0.12s,
-      border-color 0.12s;
-  }
-
-  button:hover {
-    color: var(--ink);
-    border-color: var(--ink);
-  }
-
-  button.on {
-    background: var(--ink);
-    color: var(--bg);
-    border-color: var(--ink);
-  }
+  /* Deux rails côte à côte, un par réglage — l'échelle et le rendu des LED
+     sous un même intitulé faute d'avoir chacun le sien. Habillage dans
+     `app.css`, voir `.segmented`. */
 </style>

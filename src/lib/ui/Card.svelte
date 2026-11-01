@@ -39,8 +39,12 @@
   .card {
     /* Verre dépoli : le fond d'écran passe flouté derrière. Pas de bordure —
        l'ombre portée et le reflet interne du bord haut (`--glass-edge`)
-       suffisent à détourer la vitre. Angles vifs conservés — le cercle reste
-       réservé aux points et aux LEDs. */
+       suffisent à détourer la vitre. Même rayon que les tuiles du sommaire.
+
+       Aucun ancêtre ne doit porter de masque, de filtre ni d'opacité : il
+       deviendrait la racine du fond et le flou ne verrait plus le fond
+       d'écran (voir `.rack` de `Shell`). */
+    border-radius: 1rem;
     background: var(--glass);
     -webkit-backdrop-filter: var(--glass-filter);
     backdrop-filter: var(--glass-filter);

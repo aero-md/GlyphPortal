@@ -1,5 +1,6 @@
 <script lang="ts">
   import { DEFAULT_DEVICE, frameOf, resolveDevice, type Device, type Frame, type LedStyle } from "$lib";
+  import { offFrame, onFrame } from "$lib/matrix/frames";
   import { _ } from "svelte-i18n";
   import Card from "$lib/ui/Card.svelte";
   import PreviewPane from "$lib/matrix/PreviewPane.svelte";
@@ -110,11 +111,11 @@
       reading = engine.snapshot();
       const values = renderer.render(reading, mode, engine.range);
       frame = frameOf(device, values.slice());
-      raf = requestAnimationFrame(step);
+      raf = onFrame(step);
     };
 
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
+    raf = onFrame(step);
+    return () => offFrame(raf);
   });
 </script>
 

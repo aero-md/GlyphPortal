@@ -1,5 +1,6 @@
 <script lang="ts">
   import { DEFAULT_DEVICE, frameOf, resolveDevice, type Device, type Frame, type LedStyle } from "$lib";
+  import { offFrame, onFrame } from "$lib/matrix/frames";
   import type { Dict } from "$lib/i18n";
   import { _, date, json } from "svelte-i18n";
   import Card from "$lib/ui/Card.svelte";
@@ -131,11 +132,11 @@
         .slice();
       frame = frameOf(device, values);
       readout = d;
-      raf = requestAnimationFrame(step);
+      raf = onFrame(step);
     };
 
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
+    raf = onFrame(step);
+    return () => offFrame(raf);
   });
 
   /* --- commandes --- */
@@ -397,17 +398,18 @@
 
   .field input {
     width: 100%;
-    border: 1px solid var(--line-strong);
-    border-radius: 0;
-    background: transparent;
+    border: 0;
+    border-radius: 0.5rem;
+    background: var(--seg-track);
     color: var(--ink);
-    padding: 0.4rem 0.5rem;
+    padding: 0.5rem 0.7rem;
     font-size: 11px;
     letter-spacing: 0.04em;
+    transition: background 0.12s;
   }
 
   .field input:hover {
-    border-color: var(--ink);
+    background: var(--seg-hover);
   }
 
   /* L'icône de calendrier de Chrome est noire en dur : elle disparaît sur fond

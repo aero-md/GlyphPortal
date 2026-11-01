@@ -131,25 +131,23 @@
   }
 
   /* Même habillage que la bascule de thème et que le lien d'accueil : c'est une
-     commande de l'en-tête, elle porte le filet du registre. */
+     commande de l'en-tête, elle porte le rail teinté. */
   .code {
     display: block;
-    background: transparent;
-    border: 1px solid var(--line-strong);
-    border-radius: 0;
-    padding: 0.34rem 0.6rem;
+    background: var(--seg-track);
+    border: 0;
+    border-radius: 0.7rem;
+    padding: 0.55rem 0.9rem;
     cursor: pointer;
     font-size: 10px;
     letter-spacing: 0.14em;
     color: var(--ink);
-    transition:
-      color 0.12s,
-      border-color 0.12s;
+    transition: background 0.12s;
   }
 
   .code:hover,
   .code[aria-expanded="true"] {
-    border-color: var(--ink);
+    background: var(--seg-hover);
   }
 
   /* Aligné à droite : le sélecteur est en bout de rangée, un menu ouvert vers la
@@ -163,10 +161,12 @@
     margin: 0;
     padding: 0;
     min-width: 100%;
-    border: 1px solid var(--line-strong);
-    /* opaque : le rack passe dessous et la trame de fond ne doit pas
-       transparaître à travers les entrées */
+    padding: 3px;
+    border-radius: 0.7rem;
+    /* Opaque, contrairement aux cartes : le menu passe par-dessus le rack et
+       ses textes ne doivent pas transparaître à travers les entrées. */
     background: var(--bg);
+    box-shadow: var(--glass-shadow);
   }
 
   .menu.up {
@@ -181,7 +181,7 @@
     width: 100%;
     background: transparent;
     border: none;
-    border-radius: 0;
+    border-radius: 0.5rem;
     padding: 0.34rem 0.6rem;
     cursor: pointer;
     font-size: 10px;
@@ -199,11 +199,12 @@
     color: var(--ink);
   }
 
-  /* La langue active s'inverse en plein encre, comme l'option retenue d'un
-     sélecteur exclusif : l'état se lit à la forme, pas seulement à la couleur. */
+  /* La langue active est en surbrillance, comme l'option retenue d'un
+     sélecteur exclusif. */
   .menu button.on {
-    background: var(--ink);
-    color: var(--bg);
+    background: var(--seg-on);
+    color: var(--ink);
+    box-shadow: var(--seg-on-shadow);
   }
 
   .c {
@@ -223,6 +224,6 @@
   }
 
   .menu button.on .n {
-    color: var(--bg);
+    color: var(--dim);
   }
 </style>

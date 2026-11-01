@@ -20,16 +20,16 @@
 </button>
 
 <style>
-  /* Même habillage que les boutons du rack : sans filet il se lisait comme une
-     simple mention de pied de page, pas comme une commande. */
+  /* Même habillage que les boutons du rack : sans le rail teinté il se lisait
+     comme une simple mention de pied de page, pas comme une commande. */
   button {
     display: inline-flex;
     align-items: center;
     gap: 0.45em;
-    background: transparent;
-    border: 1px solid var(--line-strong);
-    border-radius: 0;
-    padding: 0.34rem 0.6rem;
+    background: var(--seg-track);
+    border: 0;
+    border-radius: 0.7rem;
+    padding: 0.55rem 0.9rem;
     cursor: pointer;
     font-size: 10px;
     letter-spacing: 0.14em;
@@ -37,12 +37,12 @@
     color: var(--dim);
     transition:
       color 0.12s,
-      border-color 0.12s;
+      background 0.12s;
   }
 
   button:hover {
     color: var(--ink);
-    border-color: var(--ink);
+    background: var(--seg-hover);
   }
 
   .k {
